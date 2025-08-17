@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+    <title>RPGストーリー画面</title>
+    <link rel="stylesheet" href="css/game.css" />
+    <link rel="stylesheet" href="css/battle.css">
+    <link rel="stylesheet" href="css/log.css">
+  </head>
+  <body>
+    <div id="app">
+      <!-- ヘッダー -->
+      <header>
+        <div id="header-info">
+          <h1>所持金: <span id="money-display">0</span></h1>
+          <h1>現在地: <span id="location-display">0</span></h1>
+          <button onclick="showLog()">ログを確認する</button>
+          <!-- <h1>進行度: <span id="progress-display">3/10</span></h1> -->
+          <!-- <button onclick="fetchData()">d</button> -->
+          <button onclick="saveGame()">s</button>
+        </div>
+      </header>
+      <!-- オーバーレイ -->
+      <div id="overlay" style="display: none;"></div>
+
+      <!-- メインエリア -->
+      <main>
+        <!-- 場所の画像とストーリーテキスト -->
+        <div id="story-area">
+          <!-- 移動中の短い演出用 -->
+          <div id="transition-text" class="hidden"></div>
+          <!-- ストーリーテキスト用 -->
+          <!-- <div id="text-container" class="hidden" onclick="showNextText()">
+            <p id="story-text"></p>
+          </div> -->
+          <div id="text-container" style="cursor: pointer;">
+            <div id="story-text"></div>
+          </div>
+          <div id="log-container" style="display: none;">
+            <button id="close-log">✕</button>
+            <!-- ログ内容がここに挿入されます -->
+          </div>
+        </div>
+        <div id="guild-area" class="hidden">
+          <h2>冒険者ギルド</h2>
+
+          <!-- ギルド内のアクション -->
+          <div id="guild-actions">
+            <button onclick="showGuildQuests()">
+              <span>📜</span> クエスト確認
+            </button>
+            <button id="reportQuests" onclick="reportQuestsAtGuild()">
+              <span>💬</span> クエスト報告
+            </button>
+            <button onclick="showGuildInfo()"><span>★</span> ランク情報</button>
+            <button onclick="returnToMain()">
+              <span>🚪</span> ギルドを出る
+            </button>
+          </div>
+          <div id="guild-content"></div>
+
+          <!-- クエスト表示領域 -->
+          <div id="quest-rank-selection" class="hidden">
+            <h3>ランクを選択してください</h3>
+
+            <div id="rank-buttons">
+              <!-- ランクボタンを動的に生成 -->
+            </div>
+          </div>
+
+          <div id="quest-details" class="hidden">
+            <!-- クエスト進捗表示 -->
+            <p id="quest-progress">1/3</p>
+
+            <!-- クエスト情報 -->
+            <h3 id="quest-title"></h3>
+            <div id="quest-detail">
+              <div class="quest-image">
+                <img src="images/locations/capital.webp" alt="エリア画像" />
+              </div>
+              <p id="quest-description"></p>
+              <p id="quest-rewards"></p>
+              <p id="quest-location"></p>
+              <p id="quest-npc"></p>
+              <!-- 条件メッセージ -->
+              <p id="quest-condition-message" style="color: red"></p>
+            </div>
+
+            <!-- ボタン群 -->
+            <div class="quest-button-group">
+              <button id="prev-quest" onclick="showPreviousQuest()">
+                前へ
+              </button>
+              <button id="next-quest" onclick="showNextQuest()">次へ</button>
+              <button id="accept-quest" onclick="acceptQuestFromDetails()">
+                受注する
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+      <!-- キャラクターステータス（横スライド） -->
+      <div id="character-status">
+        <!-- <div class="character-card">
+            <div class="icon-container">
+                <img src="/images/race-icon.png" alt="種族アイコン">
+                <img src="/images/class-icon.png" alt="クラスアイコン">
+            </div>
+            <div class="content-container">
+                <div class="character-name">キャラクターネーム</div>
+                <div class="status-container">
+                    <div class="status-bar">
+                        <span class="label">HP:</span>
+                        <div class="bar-container">
+                            <div class="bar-fill hp-bar-fill"></div>
+                        </div>
+                        <span class="value">164/200</span>
+                    </div>
+                    <div class="status-bar">
+                        <span class="label">MP:</span>
+                        <div class="bar-container">
+                            <div class="bar-fill mp-bar-fill"></div>
+                        </div>
+                        <span class="value">91/200</span>
+                    </div>
+                    <div class="status-bar">
+                        <span class="label">ST:</span>
+                        <div class="bar-container">
+                            <div class="bar-fill st-bar-fill"></div>
+                        </div>
+                        <span class="value">60/100</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="character-card">
+          <div class="icon-container">
+              <img src="/images/race-icon.png" alt="種族アイコン">
+              <img src="/images/class-icon.png" alt="クラスアイコン">
+          </div>
+          <div class="content-container">
+              <div class="character-name">キャラクターネーム</div>
+              <div class="status-container">
+                  <div class="status-bar">
+                      <span class="label">HP:</span>
+                      <div class="bar-container">
+                          <div class="bar-fill hp-bar-fill"></div>
+                      </div>
+                      <span class="value">164/200</span>
+                  </div>
+                  <div class="status-bar">
+                      <span class="label">MP:</span>
+                      <div class="bar-container">
+                          <div class="bar-fill mp-bar-fill"></div>
+                      </div>
+                      <span class="value">91/200</span>
+                  </div>
+                  <div class="status-bar">
+                      <span class="label">ST:</span>
+                      <div class="bar-container">
+                          <div class="bar-fill st-bar-fill"></div>
+                      </div>
+                      <span class="value">60/100</span>
+                  </div>
+              </div>
+          </div>
+        </div>
+        <div class="character-card">
+          <div class="icon-container">
+              <img src="/images/race-icon.png" alt="種族アイコン">
+              <img src="/images/class-icon.png" alt="クラスアイコン">
+          </div>
+          <div class="content-container">
+              <div class="character-name">キャラクターネーム</div>
+              <div class="status-container">
+                  <div class="status-bar">
+                      <span class="label">HP:</span>
+                      <div class="bar-container">
+                          <div class="bar-fill hp-bar-fill"></div>
+                      </div>
+                      <span class="value">164/200</span>
+                  </div>
+                  <div class="status-bar">
+                      <span class="label">MP:</span>
+                      <div class="bar-container">
+                          <div class="bar-fill mp-bar-fill"></div>
+                      </div>
+                      <span class="value">91/200</span>
+                  </div>
+                  <div class="status-bar">
+                      <span class="label">ST:</span>
+                      <div class="bar-container">
+                          <div class="bar-fill st-bar-fill"></div>
+                      </div>
+                      <span class="value">60/100</span>
+                  </div>
+              </div>
+          </div>
+        </div>
+        <div class="character-card">
+          <div class="icon-container">
+              <img src="/images/race-icon.png" alt="種族アイコン">
+              <img src="/images/class-icon.png" alt="クラスアイコン">
+          </div>
+          <div class="content-container">
+              <div class="character-name">キャラクターネーム</div>
+              <div class="status-container">
+                  <div class="status-bar">
+                      <span class="label">HP:</span>
+                      <div class="bar-container">
+                          <div class="bar-fill hp-bar-fill"></div>
+                      </div>
+                      <span class="value">164/200</span>
+                  </div>
+                  <div class="status-bar">
+                      <span class="label">MP:</span>
+                      <div class="bar-container">
+                          <div class="bar-fill mp-bar-fill"></div>
+                      </div>
+                      <span class="value">91/200</span>
+                  </div>
+                  <div class="status-bar">
+                      <span class="label">ST:</span>
+                      <div class="bar-container">
+                          <div class="bar-fill st-bar-fill"></div>
+                      </div>
+                      <span class="value">60/100</span>
+                  </div>
+              </div>
+          </div>
+        </div> -->
+      </div>
+     <!-- キャラクターステータス（最下層） -->
+
+      <!-- アクションボタン -->
+      <footer id="action-button">
+        <button id="log-button">ログ</button>
+        <button id="explore-button">調べる</button>
+        <button id="move-button" onclick="openMoveModal()">移動</button>
+        <button id="talk-button">話す</button>
+      </footer>
+    </div>
+    <!-- モーダル -->
+    <div id="character-modal" class="hidden">
+      <div id="character-modal-content">
+        <button
+          id="character-close-modal"
+          onclick="closeModal('character-modal')"
+        >
+          ✕
+        </button>
+
+        <!-- メインタブ -->
+        <div id="character-modal-tabs">
+          <button
+            data-tab="stats"
+            class="active"
+            onclick="switchTab(event, 'stats')"
+          >
+            ステータス
+          </button>
+          <!-- <button data-tab="abilities" onclick="switchTab(event, 'abilities')">
+            アビリティ
+          </button> -->
+          <button data-tab="equipment" onclick="switchTab(event, 'equipment')">
+            装備
+          </button>
+          <button data-tab="inventory" onclick="switchTab(event, 'inventory')">
+            所持品
+          </button>
+          <button data-tab="position" onclick="switchTab(event, 'position')">
+            隊列
+          </button>
+          <button data-tab="fame" onclick="switchTab(event, 'fame')">
+            ギルド
+          </button>
+          <div id="tabs-name"></div>
+        </div>
+
+        <!-- モーダルボディ -->
+        <div id="character-modal-body">
+          <div id="stats-content" class="tab-content active">
+            <!-- サブタブ (ステータス用) -->
+            <div id="icon-navigation">
+              <button onclick="switchCategory('level')">Lv</button>
+              <button onclick="switchCategory('inStats')">⚔ ステータス</button>
+              <button onclick="switchCategory('Techniques')">📜 技能</button>
+              <button onclick="switchCategory('resistance')">🛡 耐性</button>
+              <button onclick="switchCategory('body')">身体武器</button>
+              <button onclick="switchCategory('abilities')"> アビリティ</button>
+            </div>
+
+            <div id="content">
+              <div id="level-content" class="category-content">
+                <table id="levelTable" border="1">
+                  <thead>
+                    <tr>
+                      <th>名前</th>
+                      <th>Lv</th>
+                      <th>ステータス</th>
+                      <th>技能</th>
+                      <th>耐性</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- ここにJavaScriptで行を追加します -->
+                  </tbody>
+                  　
+                </table>
+              </div>
+              <div id="inStats-content" class="category-content active">
+                <table id="statsTable" border="1">
+                  <thead>
+                    <tr>
+                      <th>ステータス</th>
+                      <th>合計値</th>
+                      <th>上昇値</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- ここにJavaScriptで行を追加します -->
+                  </tbody>
+                  　
+                </table>
+              </div>
+              <div id="Techniques-content" class="category-content">
+                <table id="TechniquesTable" border="1">
+                  <thead>
+                    <tr>
+                      <th>ステータス</th>
+                      <th>合計値</th>
+                      <th>上昇値</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- ここにJavaScriptで行を追加します -->
+                  </tbody>
+                  　
+                </table>
+              </div>
+              <div id="resistance-content" class="category-content">
+                <table id="resistanceTable" border="1">
+                  <thead>
+                    <tr>
+                      <th>ステータス</th>
+                      <th>合計値</th>
+                      <th>上昇値</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- ここにJavaScriptで行を追加します -->
+                  </tbody>
+                  　
+                </table>
+              </div>
+              <div id="body-content" class="category-content">
+                <table id="bodyTable" border="1">
+                  <thead>
+                    <tr>
+                      <th>ステータス</th>
+                      <th>合計値</th>
+                      <th>上昇値</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- ここにJavaScriptで行を追加します -->
+                  </tbody>
+                  　
+                </table>
+              </div>
+              <div id="abilities-content" class="category-content">
+                <table id="abilities-table" class="abilities-table" border="1">
+                  <thead>
+                    <tr>
+                      <th>名前</th>
+                      <th>系統</th>
+                      <th>分類</th>
+                      <th>説明</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- 動的にアビリティデータを挿入 -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div id="equipment-content" class="tab-content">
+            <div id="modal-content">
+              <table id="equipment-table" class="equipment-table">
+                <thead>
+                  <tr>
+                    <th>箇所</th>
+                    <th>名前</th>
+                    <th>近/遠</th>
+                    <th>守/減</th>
+                    <th>属性</th>
+                    <th>値</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- 装備データ -->
+                </tbody>
+              </table>
+            </div>
+            <!-- 装備変更サブモーダル -->
+            <div id="change-equipment-modal" class="hidden">
+              <div class="modal-content">
+                <button
+                  id="character-close-modal"
+                  onclick="closeModal2('change-equipment-modal')"
+                >
+                  ✕
+                </button>
+                <p id="current-slot">スロット:</p>
+                <p id="current-item">現在装備:</p>
+                <table id="change-equipment-table" class="equipment-table">
+                  <thead>
+                    <tr>
+                      <th>箇所</th>
+                      <th>名前</th>
+                      <th>近/遠</th>
+                      <th>守/減</th>
+                      <th>属性</th>
+                      <th>値</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- JavaScriptで動的に挿入 -->
+                  </tbody>
+                </table>
+
+                <!-- <button onclick="closeModal2('change-equipment-modal')">戻る</button> -->
+              </div>
+            </div>
+          </div>
+          <div id="inventory-content" class="tab-content">
+            <div class="modal-content">
+              <p>所持アイテム数: <span id="inventory-count">0</span></p>
+              <table id="inventory-table" class="inventory-table">
+                <thead>
+                  <tr>
+                    <th>箇所</th>
+                    <th>名前</th>
+                    <th>近/遠</th>
+                    <th>守/減</th>
+                    <th>属性</th>
+                    <th>値</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- JavaScriptで動的に挿入 -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div id="position-content" class="tab-content">
+            <div id="position-controls">
+              <!-- <button id="set-frontline">全員を前衛に設定</button>
+              <button id="set-backline">全員を後衛に設定</button> -->
+            </div>
+            <div id="character-layout">
+              <!-- 前衛エリア -->
+              <div class="position-area" id="front-row">
+                <h3>前衛</h3>
+                <div class="row">
+                  <div class="slot" data-type="前衛" data-slot="1"></div>
+                  <div class="slot" data-type="前衛" data-slot="2"></div>
+                  <div class="slot" data-type="前衛" data-slot="3"></div>
+                </div>
+              </div>
+            
+              <!-- 後衛エリア -->
+              <div class="position-area" id="back-row">
+                <h3>後衛</h3>
+                <div class="row">
+                  <div class="slot" data-type="後衛" data-slot="1"></div>
+                  <div class="slot" data-type="後衛" data-slot="2"></div>
+                  <div class="slot" data-type="後衛" data-slot="3"></div>
+                </div>
+              </div>
+            </div>            
+            
+          </div>
+          <div id="fame-content" class="tab-content">
+            <div id="guildTabContainer">
+              <div class="guildTabs">
+                <button id="guildInfoTab" class="guildTabButton" onclick="showGuildFomeInfo()">ギルド情報</button>
+                <button id="questsTab" class="guildTabButton" onclick="showQuests()">受注中</button>
+                <button id="completedQuestsTab" class="guildTabButton" onclick="showCompletedQuests()">クリア済</button>
+              </div>
+              <div id="ch">
+                <div id="guild-info-content" style="display: block;">ギルド情報がここに表示されます。</div>
+                <div id="quest-info-content" style="display: none;">受注中のクエスト情報がここに表示されます。</div>
+                <div id="completed-quests-content" style="display: none;">クリアしたクエスト情報がここに表示されます。</div>
+              </div>
+            </div>
+          </div>         
+          
+        </div>
+      </div>
+    </div>
+    <!-- 移動モーダル -->
+    <div id="move-modal" class="hidden">
+      <div class="modal-content">
+        <h3>移動先を選択してください</h3>
+        <ul id="move-options">
+          <!-- JavaScriptで動的に挿入 -->
+        </ul>
+        <button onclick="closeModal('move-modal')">閉じる</button>
+      </div>
+    </div>
+    <!-- ショップモーダル -->
+    <div id="shop-modal" class="hidden">
+      <div class="modal-content">
+        <h3 id="shop-name">ショップ</h3>
+        <!-- タブナビゲーション -->
+        <div id="shop-tabs">
+          <button onclick="switchShopTab('purchase')">購入</button>
+          <button onclick="switchShopTab('sell')">売却</button>
+        </div>
+        <div id="shop-table-container">
+          <!-- スクロール可能なコンテナ -->
+          <div id="purchase-tab" class="shop-tab-content active">
+            <table id="shop-table">
+              <thead>
+                <tr>
+                  <th>商品名</th>
+                  <!-- 武器、道具 -->
+                  <th>種別</th>
+                  <th>近/射</th>
+                  <th>守/減</th>
+                  <th>価格</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- 商品リストを動的に挿入 -->
+              </tbody>
+            </table>
+          </div>
+          <div id="sell-tab" class="shop-tab-content hidden">
+            <table id="shop-inventory-table" border="1">
+              <thead>
+                <tr>
+                  <th>商品名</th>
+                  <!-- 武器、道具 -->
+                  <th>種別</th>
+                  <th>近/射</th>
+                  <th>守/減</th>
+                  <th>価格</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- 商品リストを動的に挿入 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <button onclick="closeModal('shop-modal')">閉じる</button>
+      </div>
+    </div>
+
+    <!-- 商品詳細モーダル -->
+    <div id="item-detail-modal" class="hidden">
+      <div class="modal-content">
+        <div id="item-detail-modal-tab">
+          <!-- 商品名 -->
+          <div id="item-header">
+            <h3 id="item-name">商品詳細</h3>
+            <h3 id="item-price">金額</h3>
+          </div>
+
+          <!-- タブ（動的に生成） -->
+          <div id="item-tabs" class="item-tabs-detail">
+            <!-- JavaScriptで生成 -->
+          </div>
+
+          <!-- コンテンツ（スクロール可能） -->
+          <div id="item-contents" class="item-tabs-detail">
+            <!-- JavaScriptで生成 -->
+          </div>
+        </div>
+        <!-- ボタン群 -->
+        <div class="button-group">
+          <!-- <button id="prev-item" onclick="showPreviousItem()">前へ</button>
+        <button id="next-item" onclick="showNextItem()">次へ</button> -->
+          <button id="prev-item">前へ</button>
+          <button id="next-item">次へ</button>
+          <button id="buy-item" onclick="buySelectedItem()">購入</button>
+          <button id="sell-item" onclick="confirmSellItem()">売却</button>
+          <button onclick="closeItemDetailModal()">閉じる</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- インベントリ詳細モーダル -->
+    <div id="inventory-item-detail-modal" class="hidden">
+      <div class="modal-content">
+        <div id="item-detail-modal-tab">
+          <h3 id="inventory-item-name">アイテム詳細</h3>
+
+          <div id="inventory-item-tabs"></div>
+
+          <div id="inventory-item-contents"></div>
+        </div>
+        <div class="button-group">
+          <button onclick="showPreviousInventory('inventory')">前へ</button>
+          <button onclick="showNextInventory('inventory')">次へ</button>
+          <button class="storage-item-button" onclick="moveItemToStorage()">
+            倉庫に送る
+          </button>
+          <button class="use-item-button" onclick="useSelectedItem()">
+            使用
+          </button>
+          <button onclick="closeInventoryItemModal()">閉じる</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 倉庫モーダル -->
+    <div id="storage-modal" class="hidden">
+      <div class="modal-content">
+        <h3>倉庫 <span id="storage-count"></span></h3>
+        <table id="storage-table" border="1">
+          <thead>
+            <tr>
+              <th>名前</th>
+              <th>種別</th>
+              <th>近/射</th>
+              <th>守/軽</th>
+              <th>属性</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 倉庫のアイテムリストを動的に追加 -->
+          </tbody>
+        </table>
+        <div class="button-group">
+          <button onclick="closeStorageModal()">閉じる</button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- 戦闘モーダル -->
+    <div id="battle-modal" class="hidden">
+      
+
+      <div id="battle-display">
+        <!-- バトルフィールド -->
+        <div id="battle-field">
+          <!-- 敵の後衛 -->
+          <div id="enemy-rear" class="battle-row">
+            <div class="card-container" data-id="1"></div>
+            <div class="card-container" data-id="2"></div>
+            <div class="card-container" data-id="3"></div>
+          </div>
+
+          <!-- 敵の前衛 -->
+          <div id="enemy-front" class="battle-row">
+            <div class="card-container" data-id="1"></div>
+            <div class="card-container" data-id="2"></div>
+            <div class="card-container" data-id="3"></div>
+          </div>
+          <!-- 戦闘ログセクション -->
+          <div id="battle-log-container">
+            <div id="log-messages"></div>         
+          </div>
+          <!-- 味方の前衛 -->
+          <div id="ally-front" class="battle-row">
+            <div class="card-container" data-id="1"></div>
+            <div class="card-container" data-id="2"></div>
+            <div class="card-container" data-id="3"></div>
+          </div>
+
+          <!-- 味方の後衛 -->
+          <div id="ally-rear" class="battle-row">
+            <div class="card-container" data-id="1"></div>
+            <div class="card-container" data-id="2"></div>
+            <div class="card-container" data-id="3"></div>
+          </div>
+        </div>
+      </div>
+
+      
+        <!-- スキル選択エリア -->
+<!-- スキル選択エリア -->
+<div id="battle-Technique-selection" class="Technique-selection-area">
+  <div id="combo" class="tab-container">
+    <span class="combo-Technique-type">A</span>: 
+    <span class="combo-Technique-name">-</span>
+    <span class="combo-Technique-type">S</span>: 
+    <span class="combo-Technique-name">-</span>
+    <span class="combo-Technique-type">Q</span>: 
+    <span class="combo-Technique-name">-</span>    
+  </div>
+  <!-- タブを上部に移動 -->
+  <div id="Technique-tabs" class="tab-container">
+    <button class="tab" data-tab="A" onclick="switchBattleTab('A')">A</button>
+    <button class="tab" data-tab="S" onclick="switchBattleTab('S')">S</button>
+    <button class="tab" data-tab="Q" onclick="switchBattleTab('Q')">Q</button>
+    <button class="tab" data-tab="P" onclick="switchBattleTab('P')">P</button>
+    <button class="tab" id="nextAction" onclick="onCharacterCardClick()">次の行動</button>
+  </div>
+  <!-- スキル一覧と詳細エリアを左右に配置 -->
+  <div class="Technique-content">
+    <!-- 左側: スキル一覧 -->
+    <div id="Technique-list" class="Technique-list-area">
+      <div class="Technique-items">
+        <div class="Technique-item" data-tooltip="簡易説明1" onclick="showTechniqueDetail('スキル名1')">
+          スキル名1
+        </div>
+        <div class="Technique-item" data-tooltip="簡易説明2" onclick="showTechniqueDetail('スキル名2')">
+          スキル名2
+        </div>
+        <!-- 他のスキルも追加 -->
+      </div>
+    </div>
+
+    <!-- 右側: 詳細表示エリア -->
+    <div id="Technique-details" class="Technique-details-area">
+      <button id="add-Technique-to-combo" class="action-button" onclick="addToCombo('スキル名')">組み合わせに追加</button>
+      <div id="Technique-detail">
+        <p id="Technique-name">スキル名: -</p>
+        <p id="Technique-consumption">消費: -</p>
+        <p id="Technique-attributes">攻撃手段: - 系統: -</p>
+        <p id="Technique-condition">条件: -</p>
+        <p id="Technique-power">威力: -</p>
+        <p id="Technique-status-rate">状態率: -</p>
+        <p id="Technique-range">射程: -</p>
+        <p id="Technique-attack-count">攻撃回数: -</p>
+        <p id="Technique-data">詳細: -</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+      <div id="action-ui"></div>
+
+      
+    </div>
+
+    <!-- 戦闘モーダル -->
+    <!-- <div id="battle-modal" class="hidden">
+      <button class="close-button" onclick="closeBattleModal()">×</button>
+
+      <div id="battle-display">
+        <div id="battle-field">
+          <div id="enemy-rear" class="battle-row">
+            <div class="card-container"></div>
+          </div>
+          <div id="enemy-front" class="battle-row">
+            <div class="card-container"></div>
+          </div>
+          <div id="ally-front" class="battle-row">
+            <div class="card-container"></div>
+          </div>
+          <div id="ally-rear" class="battle-row">
+            <div class="card-container"></div>
+          </div>
+        </div>
+        
+      </div>
+       -->
+      <!-- 戦闘ログセクション -->
+      <!-- <div id="battle-log-container">
+        <div id="log-messages"></div>
+      </div>      
+    </div> -->
+
+
+
+    <!-- 汎用 モーダル -->
+    <div id="universal-modal" class="u-modal">
+      <div class="u-modal__content">
+        <div class="u-modal__header">
+          <span id="modal-icon" class="u-modal__icon">🪄</span>
+          <h2 id="modal-title" class="u-modal__title">冒険者のステータス</h2>
+          <span class="u-modal__close" onclick="closeUniversalModal()">&times;</span>
+        </div>
+        <div id="modal-body" class="u-modal__body">
+          <p>冒険者たちの一覧を確認してください。</p>
+          <div class="u-modal__table-container">
+            <table class="u-modal__table">
+              <thead>
+                <tr>
+                  <th>名前</th>
+                  <th>職業</th>
+                  <th>レベル</th>
+                  <th>HP</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>勇者</td>
+                  <td>戦士</td>
+                  <td>10</td>
+                  <td>150</td>
+                </tr>
+                <!-- ここに他の項目を追加 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div id="modal-footer" class="u-modal__footer">
+          <button class="u-modal__button" onclick="closeUniversalModal()">閉じる</button>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    <!-- オーバーレイ -->
+    <div id="modal-overlay" class="hidden"></div>
+
+    <script src="js/game.js"></script>
+  </body>
+</html>

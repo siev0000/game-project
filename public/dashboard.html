@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン後の画面</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>ようこそ、<span id="username"></span> さん！</h1>
+        <p>次のアクションを選択してください。</p>
+        <div class="actions">
+            <button id="selectCharacter">キャラクターを選択</button>
+            <button id="createCharacter">キャラクターを作成</button>
+        </div>
+    </div>
+
+    <script>
+        // ローカルストレージからユーザー名を取得
+        const username = localStorage.getItem('username');
+        const userId = localStorage.getItem('userId');
+        const token = localStorage.getItem('authToken');
+        console.log(userId, token)
+        // 
+        // if (!token) {
+        //     alert('ログインが必要です');
+        //     window.location.href = '/login.html';
+        // }
+
+        if (!username) {
+            window.location.href = '/login.html'; // 未ログインならログイン画面へ
+        } else {
+            document.getElementById('username').textContent = username;
+        }
+
+        // キャラクター選択画面への遷移
+        document.getElementById('selectCharacter').addEventListener('click', () => {
+            window.location.href = '/character-select.html';
+        });
+
+        // キャラクター作成画面への遷移
+        document.getElementById('createCharacter').addEventListener('click', () => {
+            window.location.href = '/character-create.html';
+        });
+    </script>
+</body>
+</html>

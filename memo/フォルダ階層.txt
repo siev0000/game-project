@@ -1,0 +1,63 @@
+GAME-PROJECT
+├── .vscode/
+├── config/
+├── data/
+│   ├── db/
+│   └── excel/
+├── middleware/
+├── node_modules/
+├── public/
+│   ├── css/
+│   ├── images/
+│   └── js/
+│       ├── effect/
+│       ├── battles.js
+│       ├── characterCreate.js
+│       ├── characterData copy.js
+│       ├── dungeon.js
+│       ├── game.js
+│       ├── guird.js
+│       ├── locations.js
+│       ├── log.js
+│       ├── mainDisplay.js
+│       ├── map.js
+│       ├── modal.js
+│       ├── outo.js
+│       ├── script.js
+│       ├── shop.js
+│       └── textarea.js
+├── scripts/
+├── sound/
+├── character-create.html
+├── character-select.html
+├── church.html
+├── dashboard.html
+├── explore.html
+├── game copy.html
+├── game.html
+├── login.html
+├── map.html
+├── register.html
+├── start-game.html
+├── styles.html
+├── エフェクト.html
+├── エフェクト2.html
+├── src/
+│   ├── assets/                    ← Vue用の画像（import方式を使う場合）
+│   ├── components/                ← Vueの再利用部品（CharacterCreateなど）
+│   ├── views/                     ← ページビュー（ルーティング用）
+│   ├── phaser/                    ← Phaser 3関連コード（例: MainScene.js）
+│   ├── router/                    ← vue-router設定
+│   ├── store/                     ← 状態管理（pinia or vuex）
+│   └── App.vue / main.js         ← エントリファイル
+├── routes/
+│   ├── api copy/
+│   ├── api.js
+│   ├── characters.js
+│   ├── excel.js
+│   └── repair.js
+├── .env
+├── package-lock.json
+├── server.js                     ← サーバー
+├── package.json
+└── vite.config.js                ← Vite設定

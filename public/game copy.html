@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ゲーム画面</title>
+    <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- ヘッダー -->
+        <header class="game-header">
+            <h1>冒険の旅へようこそ</h1>
+        </header>
+
+        <!-- 選択肢 -->
+        <section class="menu-options">
+            <h2>行動を選択してください</h2>
+            <div class="options">
+                <button onclick="navigateTo('/shop.html')">ショップ</button>
+                <button onclick="navigateTo('/explore.html')">探索</button>
+                <button onclick="navigateTo('/guild.html')">ギルド</button>
+                <button onclick="navigateTo('/church.html')">教会</button>
+            </div>
+        </section>
+
+        <!-- ログ -->
+        <main class="game-main">
+            <div id="gameLog" class="game-log"></div>
+        </main>
+
+        <!-- フッター -->
+        <footer class="game-footer">
+            <button onclick="window.location.href='/character-select.html'">キャラクター選択に戻る</button>
+        </footer>
+    </div>
+
+    <script>
+        // 選択されたキャラクター情報を取得
+        const selectedCharacter = JSON.parse(localStorage.getItem('selectedCharacter'));
+
+        console.log("選択されたキャラクター情報を取得 :",selectedCharacter)
+        
+        // ページ遷移関数
+        function navigateTo(path) {
+            window.location.href = path;
+        }
+
+        // ゲームログの更新
+        function updateGameLog(message) {
+            const log = document.getElementById('gameLog');
+            const newEntry = document.createElement('div');
+            newEntry.textContent = message;
+            log.appendChild(newEntry);
+            log.scrollTop = log.scrollHeight; // スクロールを最下部に
+        }
+
+        // 初期ログを追加
+        document.addEventListener('DOMContentLoaded', () => {
+            updateGameLog('冒険が始まります...');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>ログイン</h1>
+        <form id="loginForm">
+            <label for="username">ユーザー名</label>
+            <input type="text" id="username" required />
+            <label for="password">パスワード</label>
+            <input type="password" id="password" required />
+            <button type="submit">ログイン</button>
+        </form>
+        <div id="message"></div>
+        <p class="register-link">
+            アカウントをお持ちでない場合は、<br />
+            <a href="register.html">こちらで登録</a>
+        </p>
+    </div>
+</body>
+</html>
+<script>
+    const form = document.getElementById('loginForm');
+    const messageDiv = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                localStorage.setItem('authToken', result.token); // トークンを保存
+                localStorage.setItem('username', result.username); // ユーザー名を保存
+                localStorage.setItem('userId', result.userId); // ユーザーIDを保存
+
+
+                window.location.href = '/dashboard.html'; // ダッシュボードにリダイレクト
+            } else {
+                messageDiv.textContent = `ログイン失敗: ${result.error}`;
+            }
+
+        } catch (err) {
+            messageDiv.textContent = `エラー: サーバーと通信できません`;
+        }
+    });
+</script>

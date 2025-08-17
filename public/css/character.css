@@ -1,0 +1,617 @@
+/* 全体の設定 */
+body {
+  font-family: "Georgia", serif;
+  background-image: url('../images/background.png'); /* 画像のパス */
+  background-position: top center; /* 中央揃え */
+  background-repeat: no-repeat; /* 繰り返しを防止 */
+  margin: 0;
+  padding: 0;
+  background-color: #f9f9f9;
+  color: #ffffff;
+  font-weight: bold;
+  text-shadow: 2px 2px 5px #000, -2px -2px 5px #383838;
+  max-width: 400px;
+  max-height: 900px;
+}
+
+body.modal-open {
+  overflow: hidden; /* 背景スクロールを禁止 */
+}
+
+/* コンテナ */
+.container {
+  max-width: 500px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* ヘッダー */
+h1 {
+  font-size: 1.8rem;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #dddddd;
+}
+
+/* フォーム */
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-size: 1rem;
+  margin-bottom: 5px;
+}
+
+input[type="text"],
+input[type="number"],
+button {
+  font-size: 1rem;
+  padding: 1.0vh;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+
+button {
+  background: #50370af1;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background: #3d2f00;
+}
+
+/* 選択ボタン */
+.selection button {
+  font-size: 1rem;
+  padding: 10px;
+  background: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.selection button:hover {
+  background: #ddd;
+}
+
+/* モーダル */
+.modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 400px;
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  z-index: 1000;
+  overflow-y: auto;
+  max-height: 90%;
+}
+
+.modal-content {
+  padding: 3%;
+}
+
+.modal-content h2 {
+  font-size: 1.5rem;
+  text-align: center;
+  margin-bottom: 2%;
+}
+
+.modal-content p {
+  font-size: 1.4vh;
+  margin: 3% 0;
+}
+
+.modal-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.modal-content ul li {
+  padding: 0.4vh;
+  border-bottom: 1px solid #ccc;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.modal-buttons button {
+  flex: 1;
+  margin: 0 5px;
+}
+
+
+/* 入力フィールド */
+.allocation-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column; /* 縦に並べる */
+}
+
+.allocation-group label {
+  font-size: 1rem;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.allocation-group input {
+  font-size: 1rem;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%; /* 入力項目を全幅に */
+  box-sizing: border-box;
+}
+
+
+.tabs button.active {
+  background: #007bff;
+  color: #fff;
+  font-weight: bold;
+}
+
+.tabs button:last-child {
+  margin-right: 0;
+}
+
+/* タブコンテンツ */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.tab-content h3 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.tab-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tab-content ul li {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.tab-content ul li:last-child {
+  border-bottom: none;
+}
+
+/* 合計値 */
+#totalStatus,
+#totalTechniques {
+  font-weight: bold;
+  color: #007bff;
+}
+
+/* ボタン */
+#confirmLevels,
+#confirmLevels2 {
+  font-size: 1rem;
+  padding: 10px;
+  margin-top: 20px;
+  margin-right: 5px;
+  width: calc(50% - 5px); /* 横並びで半分ずつ */
+  border: none;
+  background: #007bff;
+  color: #fff;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+}
+
+#confirmLevels2 {
+  background: #6c757d;
+}
+
+#confirmLevels:hover,
+#confirmLevels2:hover {
+  opacity: 0.9;
+}
+
+
+
+/* 入力グループを横並びで改行しないようにする */
+.allocation-group {
+  display: inline-block; /* 横並びに */
+  flex-wrap: nowrap; /* 子要素が改行しないように */
+  align-items: center; /* 垂直方向を中央揃えに */
+  gap: 10px; /* 要素間に余白を追加 */
+  margin-bottom: 15px; /* 各グループの間に余白 */
+}
+
+/* ラベルのスタイル */
+.allocation-group label {
+  font-size: 1rem;
+  white-space: nowrap; /* ラベルのテキストが改行しないようにする */
+  flex: 0 0 120px; /* 固定幅にする（調整可能） */
+  text-align: right; /* ラベルを右揃えに */
+}
+
+/* 入力フィールドのスタイル */
+.allocation-group input {
+  width: 30%;
+  flex: 1; /* 入力欄が残りの幅を埋める */
+  font-size: 1rem;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  min-width: 0; /* 入力欄が縮小されすぎるのを防止 */
+}
+
+.special {
+  display: flex; /* フレックスボックスの影響を取り除く */
+  width: 100%; /* 必要に応じて幅を調整 */
+}
+
+/* 選択情報のスタイル */
+.selection-info {
+  font-size: 0.9rem;
+  white-space: nowrap; /* 選択情報が改行しないようにする */
+  color: #555;
+}
+
+
+/* タブボタン */
+.tabs {
+  display: flex; /* 修正：横並びにする */
+  justify-content: space-between; /* ボタンを均等配置 */
+  margin-bottom: 15px;
+}
+
+.tabs button {
+  flex: 1;
+  font-size: 1rem;
+  padding: 1%;
+  background: #f0f0f0;
+  border: none;
+  color: #333;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-right: 5px;
+  text-align: center;
+  transition: background 0.3s ease;
+}
+
+.tabs button.active {
+  background: #007bff;
+  color: #fff;
+}
+
+.tabs button:last-child {
+  margin-right: 0;
+}
+
+/* タブコンテンツ */
+.tab-content {
+  display: none; /* 初期状態で非表示 */
+}
+
+.tab-content.active {
+  display: block; /* アクティブなタブのみ表示 */
+}
+
+.tab-content h3 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.tab-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tab-content ul li {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.tab-content ul li:last-child {
+  border-bottom: none;
+}
+
+/* 合計値 */
+#totalStatus,
+#totalTechniques {
+  font-weight: bold;
+  color: #007bff;
+}
+
+/* ボタン配置 */
+#confirmLevels,
+#confirmLevels2 {
+  font-size: 1rem;
+  padding: 10px;
+  margin-top: 20px;
+  margin-right: 5px;
+  width: calc(50% - 5px); /* 横並びで半分ずつ */
+  border: none;
+  background: #007bff;
+  color: #fff;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+}
+
+#confirmLevels2 {
+  background: #6c757d;
+}
+
+#confirmLevels:hover,
+#confirmLevels2:hover {
+  opacity: 0.9;
+}
+
+/* アイコンコンテナ */
+.icon-container {
+  display: flex;
+  /* gap: 5vw; */
+  justify-content: center; /* 水平方向中央配置 */
+  align-items: center; /* 垂直方向中央配置 */
+  width: 90%; /* 固定幅を設定 */
+  min-height: 5%; /* 高さを固定して整える */
+  /* margin-bottom: -25%; */
+}
+
+/* アイコン画像 */
+.icon-container img {
+  width: 20%;
+  height: 20%;
+  border-radius: 50%; /* 丸いアイコン */
+  border: 3px solid rgba(255, 255, 255, 0.5); /* 白い境界線 */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  object-fit: cover; /* 画像を枠内に収める */
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* キャラクター名 */
+#modalTitle {
+  margin-top: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  width: 75%; /* 親要素の幅に合わせる */
+  white-space: nowrap; /* テキストを折り返さない */
+  overflow: hidden; /* 溢れるテキストを非表示に */
+  text-overflow: ellipsis; /* 溢れるテキストを「...」で省略 */
+  max-width: 75%; /* 表示する最大幅を指定 */
+  box-sizing: border-box; /* ボックスサイズを正確に計算 */
+}
+#characterCreate {
+  background-image: url('../images/入力ホーム.jpg'); /* 画像のパス */
+  background-size: cover; /* 画像をコンテナ全体に拡大/縮小 */
+  background-position: center; /* 中央揃え */
+  background-repeat: no-repeat; /* 繰り返しを防止 */
+}
+
+#selectedRaceDisplay, #selectedClassDisplay {
+  color: #fff;
+}
+#traitList {
+ height: 200px;
+ overflow-y: auto;
+}
+/* モーダル全体 */
+#modal-levelAndStatus {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  color: #fff;
+
+  display: flex; /* 修正：flexを使用して縦方向に配置 */
+  flex-direction: column; /* 子要素を縦方向に整列 */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 400px;
+  /* background: #fff; */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  z-index: 1000;
+  overflow-y: auto; /* 修正：縦スクロールを許可 */
+  max-height: 90%; /* 高さを画面の90%に制限 */
+  padding: 20px;
+  box-sizing: border-box;
+
+}
+
+/* タイトル */
+#modal-levelAndStatus h2 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  text-align: center;
+  color: #fff;
+}
+
+/* モーダルの背景 */
+#modal-select {
+  position: fixed;
+  z-index: 1000; /* 他の要素の上に表示 */
+  /* top: 50%;
+  left: 50%; */
+  width: 100%;
+  height: 100%;
+  overflow-y: hidden;
+  background-color: rgba(0, 0, 0, 0.8); /* 半透明の黒背景 */
+  display: flex;
+  justify-content: center; /* 水平方向に中央 */
+  align-items: center; /* 垂直方向に中央 */
+}
+
+/* モーダルのコンテンツ */
+.modal-content {
+  background: linear-gradient(135deg, #1a1a2e, #16213e); /* ファンタジー風グラデーション */
+  color: #fff;
+  border-radius: 10px;
+  width: 80%;
+  max-width: 500px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+  animation: fadeIn 0.3s ease-in-out; /* モーダル表示時のアニメーション */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* 中央に配置 */
+}
+
+/* ======== テーブル  ================================================================================ */
+/* ステータスとスキルのテーブル全体のスタイル */
+table {
+  width: 100%; /* テーブル全体の幅 */
+  border-collapse: collapse; /* 境界線を重ならないようにする */
+  margin-bottom: 20px; /* 下に余白を追加 */
+  table-layout: fixed; /* 列幅を固定 */
+}
+
+/* テーブルの列幅を設定 */
+table th:first-child, table td:first-child {
+  width: 35%; /* 1列目: 25% */
+}
+
+table th:nth-child(2), table td:nth-child(2) {
+  width: 15%; /* 2列目: 10% */
+}
+
+table th:nth-child(3), table td:nth-child(3) {
+  width: 23%; /* 3列目: 10% */
+}
+
+table th:last-child, table td:last-child {
+  width: 25%; /* 4列目: 30% */
+}
+
+/* ヘッダーのスタイル */
+table th {
+  text-align: left; /* 左揃え */
+  padding: 8px; /* 内側の余白 */
+  font-weight: bold; /* 太字 */
+}
+
+/* テーブルのセル */
+table td {
+  padding: 8px; /* 内側の余白 */
+  border: 1px solid #ddd; /* セルの境界線 */
+  text-align: left; /* 左揃え */
+  overflow: hidden; /* 内容が溢れる場合は隠す */
+  text-overflow: ellipsis; /* 溢れた部分を「...」で表示 */
+  white-space: nowrap; /* 改行しない */
+}
+
+/* 偶数行の背景を変更 */
+/* table tr:nth-child(even) {
+  background-color: #20006b;
+} */
+
+
+/* 強調用のスタイル（赤やオレンジのスコアに適用） */
+table td strong {
+  color: inherit; /* デフォルトで親の色を継承 */
+  font-weight: bold; /* 太字 */
+}
+
+/* ===================================================================== */
+
+/* テーブル全体のスタイル */
+#SkillTable {
+  width: 100%; /* テーブル全体の幅 */
+  border-collapse: collapse; /* セルの境界線を重ねる */
+  table-layout: fixed; /* 列幅を固定 */
+}
+
+/* 列の幅を指定 */
+#SkillTable th:first-child, #SkillTable td:first-child {
+  width: 30%; /* 技名: 30% */
+}
+
+#SkillTable th:nth-child(2), #SkillTable td:nth-child(2) {
+  width: 10%; /* 系統: 10% */
+}
+
+#SkillTable th:nth-child(3), #SkillTable td:nth-child(3) {
+  width: 10%; /* 属性: 10% */
+}
+
+#SkillTable th:last-child, #SkillTable td:last-child {
+  width: 50%; /* 説明: 50% */
+}
+
+
+/* ヘッダーのスタイル */
+#SkillTable th {
+  text-align: left; /* 左揃え */
+  padding: 8px; /* 内側の余白 */
+  font-weight: bold; /* 太字 */
+  border: 1px solid #ddd; /* 境界線 */
+}
+
+/* セルのスタイル */
+#SkillTable td {
+  padding: 8px; /* 内側の余白 */
+  border: 1px solid #ddd; /* 境界線 */
+  text-align: left; /* 左揃え */
+  overflow: hidden; /* 内容が溢れた場合は隠す */
+  text-overflow: ellipsis; /* 溢れた部分を「...」で省略 */
+  white-space: nowrap; /* 改行しない */
+}
+
+#SkillTable {
+  width: 100%; /* テーブル全体の幅 */
+  border-collapse: collapse; /* セルの境界線を重ねる */
+  table-layout: auto; /* 列幅を内容に合わせて調整 */
+  font-size: 14px; /* 全体の文字サイズ */
+}
+
+#SkillTable th {
+  font-size: 14px; /* ヘッダーの文字サイズ */
+  font-weight: bold;
+  text-align: left; /* 左揃え */
+  padding: 8px;
+  border: 1px solid #ddd;
+}
+
+#SkillTable td {
+  font-size: 13px; /* セルの文字サイズ */
+  padding: 8px;
+  border: 1px solid #ddd;
+  text-align: left; /* 左揃え */
+  white-space: normal; /* 改行を許可 */
+  word-wrap: break-word; /* 長い単語を折り返し */
+  overflow: hidden; /* 溢れる内容を隠す */
+}
+
+#SkillTable td:last-child {
+  font-size: 12px; /* 説明列の文字サイズをさらに小さく */
+}
+

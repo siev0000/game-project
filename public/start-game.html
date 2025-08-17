@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ゲームダッシュボード</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>ゲームダッシュボード</h1>
+      <div id="characterInfo">
+        <h2 id="characterName"></h2>
+        <p id="characterRace"></p>
+        <p id="characterClass"></p>
+        <p id="characterStats"></p>
+      </div>
+      <button id="startGameButton">ゲームを始める</button>
+      <button onclick="window.location.href='/character-select.html'">
+        戻る
+      </button>
+    </div>
+
+    <script>
+      // 選択されたキャラクター情報を取得
+      const selectedCharacter = JSON.parse(
+        localStorage.getItem("selectedCharacter")
+      );
+
+      console.log("選択されたキャラクター情報を取得 :", selectedCharacter);
+
+      if (!selectedCharacter) {
+        alert("キャラクターが選択されていません。");
+        window.location.href = "/character-select.html";
+      } else {
+        // `party`内の一番上のキャラクターを取得
+        const partyEntries = Object.entries(selectedCharacter.party);
+        const [firstKey, firstPartyMember] = partyEntries[0]; // 最初のキャラクターを取得
+
+        console.log("取得された最初のキャラクター情報:", firstPartyMember);
+
+        // キャラクター情報を表示
+        document.getElementById(
+          "characterName"
+        ).textContent = `名前: ${firstPartyMember.name}`;
+        document.getElementById("characterRace").textContent = `種族: ${
+          firstPartyMember.Role[0]?.roleName || "未設定"
+        }`;
+        document.getElementById("characterClass").textContent = `クラス: ${
+          firstPartyMember.Role[1]?.roleName || "未設定"
+        }`;
+        document.getElementById("characterStats").textContent = `Lv: ${
+          firstPartyMember.stats?.baseStats?.Lv || "不明"
+        } / Ef: ${firstPartyMember.stats?.baseStats?.Ef || 0}`;
+      }
+
+      // ゲームを始めるボタンのイベント
+      document
+        .getElementById("startGameButton")
+        .addEventListener("click", () => {
+          console.log("querySelector :", selectedCharacter);
+          // データ削除
+          localStorage.removeItem("selectedCharacter");
+
+          // 削除確認
+          if (!localStorage.getItem("selectedCharacter")) {
+            console.log("selectedCharacterは削除されました");
+          }
+          const selectedCharacterData = {
+            id: selectedCharacter._id,
+            userId: selectedCharacter.userId,
+          };
+
+          localStorage.setItem(
+            "selectedId",
+            JSON.stringify(selectedCharacterData)
+          );
+          window.location.href = "/game.html"; // ゲーム画面へ遷移
+        });
+    </script>
+  </body>
+</html>

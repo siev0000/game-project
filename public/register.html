@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新規登録</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>新規登録</h1>
+        <form id="registerForm">
+            <label for="username">ユーザー名</label>
+            <input type="text" id="username" required placeholder="ユーザー名を入力" />
+            
+            <label for="password">パスワード</label>
+            <input type="password" id="password" required placeholder="パスワードを入力" />
+            
+            <label for="confirmPassword">パスワード（確認）</label>
+            <input type="password" id="confirmPassword" required placeholder="もう一度パスワードを入力" />
+            
+            <button type="submit">登録</button>
+        </form>
+        <div id="message"></div>
+        <p class="login-link">
+            すでにアカウントをお持ちの場合は、<br />
+            <a href="login.html">こちらでログイン</a>
+        </p>
+    </div>
+</body>
+</html>
+    
+<script>
+    const form = document.getElementById('registerForm');
+    const messageDiv = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            // サーバーにPOSTリクエストを送信
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // 登録成功
+                messageDiv.textContent = `登録成功！ ログインページにリダイレクトします...`;
+                setTimeout(() => {
+                    window.location.href = '/login.html'; // ログインページにリダイレクト
+                }, 2000);
+            } else {
+                // 登録失敗
+                messageDiv.textContent = `登録失敗: ${result.error}`;
+            }
+        } catch (err) {
+            messageDiv.textContent = `エラー: サーバーと通信できません`;
+        }
+    });
+</script>

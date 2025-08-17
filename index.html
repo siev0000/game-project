@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Game Project</title>
+    <link rel="stylesheet" href="/src/css/useScale.css">
+    <style>
+      body {
+        overscroll-behavior: none; /* モバイルの引っ張り更新防止 */
+        touch-action: manipulation; /* ジェスチャーの制限 */
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+    <script>
+      // モバイルでのピンチズーム・2本指タップ無効
+      document.addEventListener('gesturestart', (e) => e.preventDefault());
+
+      // ダブルクリックによるズーム・選択を無効
+      document.addEventListener('dblclick', (e) => e.preventDefault());
+
+      // モバイルSafariの引っ張り更新防止
+      document.addEventListener('touchmove', function (e) {
+        if (e.touches.length > 1) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+    </script>
+  </body>
+</html>

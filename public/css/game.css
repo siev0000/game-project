@@ -1,0 +1,1664 @@
+/* グローバル設定 */
+body {
+  margin: 0;
+  font-family: "Georgia", serif; /* ファンタジーっぽいフォント */
+  background: linear-gradient(to bottom, #2b2b3b, #1e1e2e); /* ファンタジーなグラデーション背景 */
+  color: #cfcfcf; /* アンティーク調の文字色 */
+  display: flex;
+  justify-content: center; /* 中央揃え */
+  align-items: center; /* 中央揃え */
+  height: 92vh; /* ビューポート全体の高さ */
+  width: 100vw; /* ビューポート全体の幅 */
+  max-width: 500px;
+  max-height: 900px;
+}
+
+/* スマホでの表示改善: 動的なビューポートの高さ */
+#app {
+  width: 100vw;
+  height: calc(92dvh); /* デバイスの動的な高さを使用 */
+  max-width: 500px;
+  max-height: 900px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* はみ出しを防ぐ */
+  border-radius: 10px;
+}
+
+/* スマホの1画面対応 */
+@media screen and (max-width: 500px) {
+  #app {
+    width: 100vw;
+    height: 92vh;
+    max-width: none; /* スマホでは最大幅制限を解除 */
+    max-height: none; /* スマホでは最大高さ制限を解除 */
+  }
+}
+
+.hidden {
+  display: none;
+}
+/* ヘッダー */
+header {
+  background: linear-gradient(to bottom, #45322e, #2b1e1b); /* 古風な木製調 */
+  color: #f1e4c5; /* パーチメント風の文字色 */
+  text-align: center;
+  padding: 1%;
+  border-radius: 3%;
+  font-size: 100%;
+  font-weight: bold;
+}
+
+#header-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 45%;
+  margin: 1%;
+}
+
+/* メインエリア */
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2%;
+}
+
+#story-area {
+  text-align: center;
+  margin-bottom: 10px;
+  background: rgba(60, 40, 30, 0.8); /* 古びた巻物のような背景 */
+  padding: 0px;
+  border-radius: 8px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3); /* 内側の影 */
+  position: relative;
+  width: 100%;
+  height: 100%; /* 高さを調整してください */
+  background-size: cover; /* 画像をエリア全体に拡大 */
+  background-position: center; /* 画像を中央に配置 */
+  background-repeat: no-repeat; /* 画像を繰り返さない */
+  display: flex;
+  align-items: center; /* 縦方向の中央揃え */
+  justify-content: center; /* 横方向の中央揃え */
+  color: white; /* テキストの色を白に設定 */
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8); /* テキストの見やすさを向上 */
+  font-size: 15%;
+  font-weight: bold;
+  padding: 0px;
+  box-sizing: border-box; /* パディングを含めたサイズ設定 */
+  border: 2px solid #ccc; /* 枠線（オプション） */
+  border-radius: 8px; /* 角を丸める（オプション） */
+  transition: opacity 0.5s ease;
+}
+
+#transition-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  font-weight: bold;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4%;
+  border-radius: 3%;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+#transition-text.show {
+  opacity: 1;
+}
+button.disabled {
+  opacity: 0.5;
+  pointer-events: none; /* ボタンをクリック不能に */
+  cursor: not-allowed;
+}
+#story-text {
+  width: 100%;
+  height: 10%;
+  max-height: 30%;
+  position: absolute;
+  bottom: 0%; /* 背景下部からの距離 */
+  left: 50%;
+  transform: translateX(-50%); /* 水平中央揃え */
+  background: rgba(0, 0, 0, 0.6); /* 透けた黒背景 */
+  color: white; /* テキスト色を白に設定 */
+  font-size: 600%; /* テキストサイズ */
+  font-weight: bold;
+  padding: 10px 20px; /* 内側余白 */
+  border-radius: 12px; /* 角を丸める */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5); /* オプション: 影 */
+  max-width: 90%; /* 横幅の最大値 */
+  /* text-align: center; */
+  text-align: left; /* テキストを左寄せ */
+}
+
+/* フッター */
+footer {
+  background: linear-gradient(to top, #45322e, #2b1e1b); /* ヘッダーと統一感 */
+  padding: 10px;
+  display: flex;
+  justify-content: space-around;
+  border-radius: 8px;
+}
+
+footer button {
+  flex: 1;
+  margin: 0 5px;
+  padding: 5px 10px; /* 上下5px、左右10px */
+  background: rgba(60, 40, 30, 0.8);
+  color: #f1e4c5;
+  border: 1px solid #8b5e3c;
+  border-radius: 8px;
+  font-size: 1.0em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+
+  /* 2行に固定するための追加スタイル */
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  /* ボタン全体のサイズを固定 */
+  min-height: calc(2em * 1.5 + 10px);
+  max-height: calc(2em * 1.5 + 10px);
+  line-height: 1.5em;
+}
+
+
+
+footer button:hover {
+  background: #604838; /* 木調の濃い色 */
+  transform: translateY(-2px); /* 浮き上がるような効果 */
+}
+
+/* ================================================= */
+
+/* ＝＝＝＝ 倉庫モーダル ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝ */
+/* モーダルの全体スタイル */
+/* background-color: #4d4d4d;
+  background: 
+        linear-gradient(rgba(221, 221, 221, 0.8), rgba(170, 170, 170, 0.8)),
+        url('../images/ストレージ.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 1; */
+/* モーダルの全体スタイル */
+#storage-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #4d4d4d;
+  background: linear-gradient(
+      rgba(221, 221, 221, 0.8),
+      rgba(170, 170, 170, 0.8)
+    ),
+    /* 半透明の黒色 */ url("../images/ストレージ.webp"); /* 背景画像 */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 1; /* 画像の透明度を設定 */
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  width: 80%;
+  max-width: 600px;
+  max-height: 80%;
+  color: #000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  display: none; /* 初期状態では非表示 */
+  flex-direction: column;
+}
+
+/* モーダルが表示されるときのスタイル */
+#storage-modal.active {
+  display: flex; /* 表示時にフレックスボックスを使用 */
+}
+
+/* モーダルのタイトル */
+#storage-modal h3 {
+  font-size: 1.5rem;
+  text-align: center;
+  margin: 16px 0;
+}
+
+/* モーダル内のコンテンツ */
+#storage-modal .modal-content {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  overflow: hidden;
+}
+
+/* テーブルのスタイル */
+#storage-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+#storage-table th,
+#storage-table td {
+  text-align: left;
+  padding: 8px;
+  border: 1px solid #ccc;
+}
+
+#storage-table th {
+  /* background-color: #f0f0f0; */
+  font-weight: bold;
+}
+
+#storage-table td button {
+  padding: 4px 8px;
+  font-size: 0.9rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#storage-table td button:hover {
+  background-color: #0056b3;
+}
+
+/* スクロール対応 */
+#storage-table tbody {
+  display: block;
+  max-height: 300px; /* スクロール可能な高さを設定 */
+  overflow-y: auto;
+  width: 100%;
+}
+
+#storage-table thead,
+#storage-table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* ボタングループ */
+#storage-modal .button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+#storage-modal .button-group button {
+  padding: 8px 16px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+#storage-modal .button-group button:hover {
+  background-color: #ddd;
+}
+
+#storage-modal .button-group button:first-child {
+  background-color: #45322e;
+  color: white;
+}
+
+#storage-modal .button-group button:first-child:hover {
+  background-color: #2b1e1b;
+}
+
+/* ＝＝＝＝ モーダル ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝ */
+/* モーダル全体 */
+/* 背景オーバーレイ */
+.u-modal-overlay {
+  display: none; /* 初期状態では非表示 */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8); /* 背景の透明度 (デフォルト: 0.8) */
+  z-index: 1000; /* 背景をモーダルの下に設定 */
+}
+
+.u-modal {
+  display: none;
+  position: fixed;
+  z-index: 2000;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8); /* 半透明の黒背景 */
+  font-family: "Georgia", serif; /* ファンタジー感のあるフォント */
+}
+
+/* モーダルのコンテンツ */
+.u-modal__content {
+  color: #5a3e2b; /* 古書風の文字色 */
+  border: 0.5em solid #6b4226; /* 木製フレーム風の枠線 */
+  border-radius: 1em;
+  box-shadow: 0 0 2em rgba(0, 0, 0, 0.5); /* 光沢を出す影 */
+  width: 90%;
+  max-width: 40em;
+  max-height: 85%; /* モーダル全体の高さを制限 */
+  top: 35%; /* 縦方向の中央 */
+  left: 50%; /* 横方向の中央 */
+  transform: translate(-50%, -35%); /* 中央位置への調整 */
+  overflow: hidden; /* 全体のスクロールを防ぐ */
+  margin: 10% auto; /* 中央配置 */
+  padding: 1em;
+  position: relative; /* 内部スクロール用 */
+  backdrop-filter: blur(5px); /* 背景のぼかし効果 (オプション) */
+  background: rgba(
+    253,
+    241,
+    220,
+    1
+  ); /* パーチメント紙風の背景 (デフォルトは不透明) */
+}
+
+/* モーダルヘッダー */
+.u-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 0.1em solid #5a3e2b; /* ヘッダーの飾り線 */
+  margin-bottom: 1em;
+  /* padding-bottom: 0.5em; */
+}
+
+.u-modal__icon {
+  font-size: 1.5em;
+  color: #d4a373; /* 金色風の色 */
+  margin-right: 0.5em;
+}
+
+.u-modal__title {
+  font-size: 1.8em;
+  font-weight: bold;
+  margin: 0%;
+  text-shadow: 0.1em 0.1em 0.2em rgba(0, 0, 0, 0.8); /* タイトルに光沢 */
+}
+
+/* モーダル本文 */
+.u-modal__body {
+  font-size: 1.2em;
+  line-height: 1.8;
+  margin-bottom: 2em;
+}
+
+/* テーブルをスクロール可能にするコンテナ */
+.u-modal__table-container {
+  max-height: 15em; /* テーブル全体の高さを制限 */
+  overflow: hidden; /* 全体の余分なスクロールを防ぐ */
+  border: 0.1em solid #6b4226; /* テーブル枠線 */
+  border-radius: 0.5em; /* 枠線を丸める */
+  margin-top: 1em;
+  padding: 0.5em; /* 内側の余白 */
+}
+
+/* テーブル全体 */
+.u-modal__table {
+  width: 100%; /* テーブル全体の幅を100%に固定 */
+  border-collapse: collapse;
+  table-layout: fixed; /* 各列の幅を固定 */
+  background: rgba(255, 255, 255, 0.9);
+}
+
+/* テーブルヘッダー */
+.u-modal__table th {
+  background: #dbc097; /* ヘッダー背景色 */
+  color: #5a3e2b; /* ヘッダー文字色 */
+  font-weight: bold;
+  text-align: center;
+  border: 0.2em solid #6b4226; /* ヘッダー枠線 */
+  position: sticky; /* ヘッダーを固定 */
+  top: 0; /* 固定する位置 */
+  z-index: 1; /* 他の要素より上に表示 */
+}
+
+/* テーブルデータ部分（スクロール可能） */
+.u-modal__table tbody {
+  display: block; /* 独立したブロックとして扱う */
+  max-height: 12em; /* データ部分の高さ制限 */
+  overflow-y: auto; /* 縦スクロールを有効化 */
+  overflow-x: hidden; /* 縦スクロールを有効化 */
+  width: 100%; /* 幅を固定 */
+}
+
+.u-modal__table td {
+  border: 0.1em solid #6b4226; /* テーブルセルの枠線 */
+  padding: 0.5em;
+  text-align: center;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+/* テーブル列幅を固定 */
+.u-modal__table thead tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed; /* 列幅を固定 */
+}
+
+.u-modal__table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed; /* 列幅を固定 */
+}
+
+/* スクロールバーのカスタマイズ */
+.u-modal__table tbody::-webkit-scrollbar {
+  width: 0.4em;
+}
+
+.u-modal__table tbody::-webkit-scrollbar-thumb {
+  background-color: #6b4226; /* スクロールバーの色 */
+  border-radius: 0.4em; /* 丸みを追加 */
+}
+
+.u-modal__table tbody::-webkit-scrollbar-track {
+  background-color: #dbc097; /* スクロールバーの背景 */
+}
+
+/* モーダルフッター */
+.u-modal__footer {
+  display: flex;
+  justify-content: center;
+  gap: 1em; /* ボタン間の余白 */
+}
+
+.u-modal__button {
+  background: linear-gradient(to bottom, #e9cba7, #b08d6e); /* ボタンの立体感 */
+  border: 0.2em solid #6b4226;
+  border-radius: 0.5em;
+  color: #5a3e2b;
+  font-size: 1.1em;
+  padding: 0.8em 1.5em;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.3s;
+}
+
+.u-modal__button:hover {
+  background: linear-gradient(
+    to bottom,
+    #b08d6e,
+    #e9cba7
+  ); /* 逆方向のグラデーション */
+  transform: translateY(-0.2em); /* ボタンが浮き上がる */
+}
+
+.u-modal__close {
+  font-size: 1.5em;
+  color: #5a3e2b;
+  cursor: pointer;
+}
+
+.u-modal__close:hover {
+  color: #d4a373;
+}
+
+.u-modal__table thead,
+.u-modal__table tbody {
+  display: block; /* 独立したブロックとして扱う */
+}
+
+.u-modal__table thead {
+  width: calc(100% - 0.8em); /* スクロールバーの幅分だけ調整 */
+}
+
+.u-modal__table tbody {
+  overflow-y: auto; /* 縦スクロールを有効化 */
+  max-height: 35em; /* スクロール部分の高さ制限 */
+  width: 100%; /* 幅をヘッダーに合わせる */
+}
+
+/* モーダルのコンテンツが非表示の場合でもボタンを維持 */
+.u-modal__footer {
+  margin-top: 1em;
+  display: flex;
+  justify-content: center;
+  gap: 1em;
+}
+
+.u-modal__button {
+  background: linear-gradient(to bottom, #e9cba7, #b08d6e);
+  border: 0.2em solid #6b4226;
+  border-radius: 0.5em;
+  color: #5a3e2b;
+  font-size: 1.1em;
+  padding: 0.5em 0.5em;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.3s;
+}
+
+.u-modal__button:hover {
+  background: linear-gradient(to bottom, #b08d6e, #e9cba7);
+  transform: translateY(-0.2em);
+}
+/* テーブルの行内コンテンツ */
+.table-row-content {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* 画像とテキストの間隔 */
+}
+
+/* テーブル内の画像 */
+.table-location-image {
+  width: 30px; /* 画像の幅 */
+  height: 30px; /* 画像の高さ */
+  object-fit: contain; /* 画像を枠内に収める */
+  border: 1px solid #ccc; /* 枠線 */
+  border-radius: 4px; /* 角丸 */
+}
+/* ===================== モーダル全体 =========================================================================*/
+
+#character-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+#character-modal.hidden {
+  display: none;
+}
+
+#character-modal-content {
+  background: #ffffff;
+  color: #000000;
+  padding: 5px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 750px;
+  height: 60%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+/* 閉じるボタン */
+#character-close-modal {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* タブボタン */
+#character-modal-tabs {
+  width: 95%;
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 10px;
+}
+
+#character-modal-tabs button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: #e0e0e0;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#character-modal-tabs button.active {
+  background: #8b5e3c;
+  color: #fffbe8;
+  font-weight: bold;
+}
+
+#character-modal-tabs button:hover {
+  background: #c0a080;
+}
+
+/* モーダルボディ */
+#character-modal-body {
+  height: 80%;
+  padding: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* メインタブ */
+#character-modal-tabs {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 10px;
+}
+
+#character-modal-tabs button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: #e0e0e0;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+#character-modal-tabs button.active {
+  background: #8b5e3c;
+  color: #fffbe8;
+  font-weight: bold;
+}
+
+#character-modal-tabs button:hover {
+  background: #c0a080;
+}
+
+/* テーブルコンテナ（スクロール設定） */
+.abilities-table {
+  max-height: 78%; /* 必要に応じて高さを調整 */
+  overflow-y: auto;
+  border: 1px solid #ddd;
+}
+
+/* テーブルスタイル */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0px;
+  background-color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+th,
+td {
+  border: 1px solid #ddd;
+  background-color: rgb(255, 255, 255, 0.436);
+  padding: 4px;
+  text-align: left;
+}
+
+th {
+  background-color: #e0e0e0;
+  background-color: rgba(255, 255, 255, 1);
+  font-weight: bold;
+  position: sticky;
+  top: -11px; /* ヘッダーを固定する位置 */
+  z-index: 1; /* ヘッダーを上に表示 */
+}
+
+tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+tr:hover {
+  background-color: rgb(255, 255, 255, 0.4);
+  cursor: pointer;
+}
+
+/* モーダルの中にテーブルを収める */
+#character-modal-body {
+  max-height: 78%;
+  overflow-y: auto;
+}
+
+/* タブコンテンツ */
+.tab-content {
+  display: none;
+  padding: 0px;
+  border: 1px solid #ccc;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* アイコンナビゲーション */
+.icon-navigation {
+  display: flex;
+  justify-content: space-around;
+  background-color: #2e2e3e;
+  padding: 10px 0;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.icon-navigation button {
+  font-size: 18px;
+  color: #fffbe8;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  transition: transform 0.2s, color 0.2s;
+}
+
+.icon-navigation button:hover {
+  color: #ffcc00;
+  transform: translateY(-2px);
+}
+
+.icon-navigation button.active {
+  color: #ffcc00;
+  font-weight: bold;
+}
+
+/* コンテンツエリア */
+.category-content {
+  display: none;
+  background: #f4f4f4;
+  /* margin-top: 20px;
+    padding-left: 20px;
+    padding-right: 20px; */
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.category-content.active {
+  display: block;
+  opacity: 1;
+}
+
+h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+#character-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+#change-equipment-modal {
+  position: absolute;
+  width: 95%;
+  height: 100%;
+  top: 0%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  z-index: 1000; /* サブモーダルを前面に表示 */
+}
+
+#change-equipment-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#change-equipment-table th,
+#change-equipment-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+#change-equipment-table th {
+  background: #f4f4f4;
+}
+
+#change-equipment-table a {
+  color: #007bff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#change-equipment-table a:hover {
+  text-decoration: underline;
+}
+.equipped-mark {
+  color: green;
+  font-size: 12px;
+  margin-left: 5px;
+  font-weight: bold;
+}
+
+/* 移動モーダル */
+#move-modal {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  z-index: 1100;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+#move-options {
+  list-style: none;
+  padding: 0;
+}
+
+#move-options li {
+  margin: 10px 0;
+}
+
+#move-options button {
+  padding: 10px;
+  width: 100%;
+  background: #8b5e3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#move-options button:hover {
+  background: #a76f50;
+}
+
+/* ショップモーダル ====================================================*/
+/* モーダル全体のスタイル */
+
+/* モーダルが表示されているとき */
+#shop-modal {
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  z-index: 1100; /* モーダルが最前面 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  height: 75vh;
+  max-width: 600px;
+  color: #000000;
+}
+
+a {
+  color: #0056b3; /* 現在の文字色を使用 */
+  text-decoration: none; /* 必要に応じて下線を削除 */
+  font-weight: bold;
+}
+
+a:visited {
+  color: #0056b3;
+}
+
+/* 背景のオーバーレイ（モーダル外クリック防止用） */
+#modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5); /* 半透明の黒背景 */
+  z-index: 1000; /* モーダルの背面に配置 */
+  display: none; /* モーダルが閉じられているときは非表示 */
+}
+/* テーブルのコンテナ */
+#shop-table-container {
+  flex: 1; /* モーダル内で余った高さを利用 */
+  overflow-y: auto; /* 縦方向にスクロールを許可 */
+  max-height: 55vh; /* 必要に応じて調整 */
+  border: 1px solid #ddd;
+  /* padding: 10px; */
+  margin-top: 1vh;
+  background: #f9f9f9;
+  /* height: 50vh; */
+}
+/* オーバーレイが有効な場合 */
+.modal-open #modal-overlay {
+  display: block; /* モーダルが開かれている場合にのみ表示 */
+}
+
+#item-detail-modal {
+  position: fixed;
+  top: 15vw;
+  left: 0;
+  background: #ffffff;
+  color: #000000;
+  padding: 5px;
+  border-radius: 8px;
+  width: 100vw;
+  max-width: 98vw;
+  height: 74vh;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  z-index: 1100;
+}
+#character-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+#character-modal-content {
+  background: #ffffff;
+  color: #000000;
+  padding: 5px;
+  border-radius: 8px;
+  width: 100%;
+  /* max-width: 750px; */
+  /* height: 60%; */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+#item-detail-modal-tab {
+  height: 90%;
+}
+
+/* モーダル内のヘッダー部分 */
+.modal-content h3 {
+  margin: 0 0 10px 0;
+}
+
+/* タブとコンテンツ領域 */
+#item-header {
+  display: flex; /* 子要素を横並びにする */
+  justify-content: space-between; /* 左端と右端に配置 */
+  align-items: center; /* 縦方向に中央揃え */
+  padding: 0 3vw; /* 左右に余白を追加（任意） */
+  background-color: #f5f5f5; /* 背景色（任意） */
+  border: 1px solid #ddd; /* 枠線（任意） */
+  border-radius: 4px; /* 角を丸く（任意） */
+  height: 6vh; /* 行の高さを固定（任意） */
+}
+
+#item-contents {
+  overflow-y: auto; /* 縦スクロールを有効にする */
+  border: 1px solid #ddd;
+  padding: 1vh;
+  background: #f9f9f9;
+  width: 92vw;
+  height: 52vh; /* 固定高さ */
+  max-height: 52vh;
+  display: block; /* テーブルが親要素に依存しないよう設定 */
+}
+
+#item-contents table {
+  width: 100%; /* テーブルを親要素の幅に合わせる */
+  border-collapse: collapse; /* セル間の隙間をなくす */
+  table-layout: auto; /* 自然なレイアウト */
+}
+
+#item-contents table td,
+#item-contents table th {
+  padding: 5px; /* セル内の余白を調整 */
+  line-height: 1.2; /* 行間を調整 */
+  white-space: nowrap; /* テキスト折り返しを防ぐ */
+  overflow: hidden; /* 溢れた内容を非表示 */
+  text-overflow: ellipsis; /* 長いテキストを省略表示 */
+  vertical-align: middle; /* 中央揃え */
+  height: auto; /* 自動調整 */
+  word-wrap: break-word; /* 単語を折り返す */
+  word-break: break-word; /* 単語の途中でも改行する */
+  white-space: normal; /* テキストを折り返して表示 */
+}
+
+.button-group button {
+  padding: 5px 15px;
+  font-size: 1.4vh;
+  border: 1px solid #ddd; /* 枠線 */
+  background-color: #f0f0f0; /* 背景色 */
+  color: #333; /* テキスト色 */
+  border-radius: 5px; /* ボタンの角を丸める */
+  cursor: pointer; /* マウスオーバー時にポインタ表示 */
+  transition: background-color 0.3s ease; /* 背景色の変化にアニメーションを追加 */
+}
+
+.button-group button:hover {
+  background-color: #e0e0e0; /* ホバー時の背景色 */
+}
+
+.button-group button:active {
+  background-color: #ccc; /* 押下時の背景色 */
+}
+.item-tabs-detail {
+  display: flex; /* タブを横並びに配置 */
+  margin-top: 1vh;
+  gap: 2vw; /* ボタン間の隙間 */
+  justify-content: center; /* タブを中央揃え */
+  margin-bottom: 2%; /* 下部に余白を追加 */
+  flex-wrap: wrap; /* 多くのタブがあれば折り返し */
+}
+
+.item-tabs-detail button {
+  padding: 2vw 4vw; /* ボタン内の余白 */
+  font-size: 100%; /* フォントサイズ */
+  background-color: #f0f0f0; /* 背景色 */
+  border: 1px solid #ddd; /* ボーダー */
+  border-radius: 5px; /* 角を丸める */
+  cursor: pointer; /* マウスオーバー時のカーソル */
+  transition: background-color 0.3s ease; /* ホバー時のアニメーション */
+}
+
+.item-tabs-detail button:hover {
+  background-color: #e0e0e0; /* ホバー時の色 */
+}
+
+.item-tabs-detail button.active {
+  background-color: #333; /* アクティブタブの背景色 */
+  color: #fff; /* アクティブタブの文字色 */
+}
+
+/* ======= インベントリ =================================== */
+#inventory-item-detail-modal {
+  position: fixed;
+  top: 15%;
+  left: 0;
+  /* background-color: #4d4d4d; */
+  background: linear-gradient(
+      rgba(221, 221, 221, 0.8),
+      rgba(170, 170, 170, 0.8)
+    ),
+    url("../images/インベントリ.webp");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 1;
+
+  color: #000000;
+  padding: 5px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 98%;
+  height: 66%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  z-index: 1100;
+}
+
+#inventory-item-detail-modal-tab {
+  height: 90%;
+}
+
+/* モーダル内のヘッダー部分 */
+.modal-content h3 {
+  margin: 0 0 10px 0;
+}
+
+/* タブとコンテンツ領域 */
+
+#inventory-item-contents {
+  overflow-y: auto; /* 縦スクロールを有効にする */
+  border: 1px solid rgba(255, 255, 255, 0.938);
+  padding: 1%;
+  /* background: #f9f9f9; */
+  width: 92vw;
+  height: 70%; /* 固定高さ */
+  display: block; /* テーブルが親要素に依存しないよう設定 */
+}
+
+#inventory-item-contents table {
+  width: 100%; /* テーブルを親要素の幅に合わせる */
+  border-collapse: collapse; /* セル間の隙間をなくす */
+  table-layout: auto; /* 自然なレイアウト */
+}
+.inventory-item-detail-modal table {
+  background-color: transparent; /* 背景を透明に設定 */
+  border-collapse: collapse; /* セルの隙間をなくす（任意） */
+}
+
+.inventory-item-detail-modal table th,
+.inventory-item-detail-modal table td {
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.5
+  ); /* セルに半透明の背景を設定（任意） */
+  border: 1px solid #ddd; /* セルに境界線を追加（任意） */
+  padding: 8px; /* セルの内側の余白を設定（任意） */
+}
+#inventory-item-contents table td,
+#inventory-item-contents table th {
+  padding: 5px; /* セル内の余白を調整 */
+  line-height: 1.2; /* 行間を調整 */
+  white-space: nowrap; /* テキスト折り返しを防ぐ */
+  overflow: hidden; /* 溢れた内容を非表示 */
+  text-overflow: ellipsis; /* 長いテキストを省略表示 */
+  vertical-align: middle; /* 中央揃え */
+  height: auto; /* 自動調整 */
+  word-wrap: break-word; /* 単語を折り返す */
+  word-break: break-word; /* 単語の途中でも改行する */
+  white-space: normal; /* テキストを折り返して表示 */
+}
+.button-group {
+  display: flex; /* ボタンを横並びに配置 */
+  gap: 1.7vw; /* ボタン間の間隔 */
+  justify-content: center; /* ボタンを中央揃え */
+  margin-top: 0%;
+}
+
+.button-group button {
+  padding: 2%; /* ボタン内の余白 */
+  font-size: 100%; /* 文字サイズ */
+  border: 1px solid #ddd; /* 枠線 */
+  background-color: #f0f0f0; /* 背景色 */
+  color: #333; /* テキスト色 */
+  border-radius: 5px; /* ボタンの角を丸める */
+  cursor: pointer; /* マウスオーバー時にポインタ表示 */
+  transition: background-color 0.3s ease; /* 背景色の変化にアニメーションを追加 */
+}
+
+.button-group button:hover {
+  background-color: #e0e0e0; /* ホバー時の背景色 */
+}
+
+.button-group button:active {
+  background-color: #ccc; /* 押下時の背景色 */
+}
+.inventory-item-tabs-detail {
+  display: flex; /* タブを横並びに配置 */
+  gap: 10px; /* ボタン間の隙間 */
+  justify-content: center; /* タブを中央揃え */
+  margin-bottom: 10px; /* 下部に余白を追加 */
+  flex-wrap: wrap; /* 多くのタブがあれば折り返し */
+}
+
+.inventory-item-tabs-detail button {
+  padding: 8px 15px; /* ボタン内の余白 */
+  font-size: 14px; /* フォントサイズ */
+  background-color: #f0f0f0; /* 背景色 */
+  border: 1px solid #ddd; /* ボーダー */
+  border-radius: 5px; /* 角を丸める */
+  cursor: pointer; /* マウスオーバー時のカーソル */
+  transition: background-color 0.3s ease; /* ホバー時のアニメーション */
+}
+
+.inventory-item-tabs-detail button:hover {
+  background-color: #e0e0e0; /* ホバー時の色 */
+}
+
+.inventory-item-tabs-detail button.active {
+  background-color: #333; /* アクティブタブの背景色 */
+  color: #fff; /* アクティブタブの文字色 */
+}
+
+#inventory-inventory-item-detail-modal {
+  z-index: 1200;
+}
+/* ==== キャラクターデータ ★ギルド ================================================================================== */
+/* タブ全体のコンテナ */
+#guildTabContainer {
+  margin: 1%;
+  font-family: Arial, sans-serif;
+}
+
+/* タブボタンのスタイル */
+.guildTabs {
+  margin-bottom: 1%;
+}
+
+.guildTabButton {
+  margin-right: 1%;
+  padding: 1% 2%;
+  cursor: pointer;
+  background-color: #e6e6e6;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.guildTabButton:hover {
+  background-color: #dcdcdc;
+}
+
+.guildTabButton:active {
+  background-color: #cfcfcf;
+}
+
+/* コンテンツエリア */
+#guildContentArea {
+  border: 1px solid #ccc;
+  padding: 1.5%;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+#guildContentArea h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+#guildContentArea ul {
+  padding-left: 2%;
+}
+
+#guildContentArea li {
+  margin-bottom: 1%;
+  line-height: 1.5;
+}
+.guildTabButton {
+  padding: 1%;
+  margin: 5px;
+  border: none;
+  cursor: pointer;
+  background-color: #f0f0f0;
+  font-size: 14px;
+}
+
+.guildTabButton.active {
+  background-color: #ddd;
+  font-weight: bold;
+}
+
+/* ===   ギルド   ====================================================================== */
+
+/* === ギルド全体のスタイル === */
+#guild-area {
+  display: none; /* 初期状態は非表示 */
+  position: relative;
+  width: 100%;
+  height: 62vh;
+  max-height: 62vh;
+  background: linear-gradient(to bottom, #111, #444); /* ダークファンタジー風 */
+  color: #f0e6d2; /* クリーム色 */
+  padding: 0;
+  box-sizing: border-box;
+  overflow-y: auto; /* 縦スクロール可能 */
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+}
+
+/* タイトル */
+#guild-area h2 {
+  font-size: 4vw;
+  text-align: center;
+  margin-bottom: 0vh;
+  color: #ffd700;
+  border-bottom: 0.5vh solid #ffd700;
+  padding-bottom: 1vh;
+}
+
+/* アクションボタン */
+#guild-actions {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 1vh;
+  margin-bottom: 1vh;
+}
+#guild-actions button {
+  background-color: #333;
+  color: #fff;
+  padding: 1vh 1.5vw;
+  font-size: 3vw;
+  border: 0.2vw solid #555;
+  border-radius: 1vw;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+#guild-actions button:hover {
+  background-color: #555;
+  transform: scale(1.05);
+}
+#guild-actions button:active {
+  background-color: #777;
+}
+
+/* コンテンツエリア */
+#guild-content {
+  background-color: #2a2a2a;
+  border-radius: 1vw;
+  border: 0.2vw solid #444;
+  overflow-y: auto;
+  max-height: 70%;
+  box-shadow: 0 2vh 5vh rgba(0, 0, 0, 0.5);
+}
+#guild-content h3 {
+  font-size: 3vw;
+  color: #ffd700;
+  text-align: center;
+  margin-bottom: 3%;
+}
+#guild-content ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2%;
+  justify-content: center;
+}
+#guild-content ul li {
+  background: linear-gradient(145deg, #3b2e1e, #5a4428);
+  color: #f4e6c8;
+  width: 28%;
+  min-width: 83vw;
+  border-radius: 1vw;
+  border: 2px solid #ffd700;
+  box-shadow: 0 0.5vw 1vw rgba(0, 0, 0, 0.7);
+  padding: 1.5vw;
+  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+#guild-content ul li:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0.8vw 1.5vw rgba(255, 215, 0, 0.7);
+}
+
+/* ボタン */
+#guild-content ul li button {
+  background: linear-gradient(145deg, #4a2e18, #6c3f20);
+  color: #ffd700;
+  border: 2px solid #ffd700;
+  border-radius: 10px;
+  padding: 0.8vw 1.5vw;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+#guild-content ul li button:hover {
+  background: #ffd700;
+  color: #4a2e18;
+  transform: translateY(-0.1vw);
+  box-shadow: 0 0.4vw 1vw rgba(255, 223, 50, 0.8);
+}
+#guild-content ul li button:active {
+  transform: translateY(0);
+  box-shadow: 0 0.2vw 0.5vw rgba(255, 223, 50, 0.5);
+}
+
+/* スクロールバー */
+#guild-content::-webkit-scrollbar {
+  width: 1vw;
+}
+#guild-content::-webkit-scrollbar-track {
+  background: #1c1c1c;
+}
+#guild-content::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 0.5vw;
+}
+#guild-content::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+/* クエスト報告 */
+/* #reportQuests {
+  background-color: #333;
+  color: #fff;
+  padding: 1vh 1.5vw;
+  font-size: 3vw;
+  border: 0.2vw solid #555;
+  border-radius: 1vw;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+} */
+/* クエスト詳細 */
+#quest-details {
+  margin-top: 0vh;
+  padding: 1vh 2vw;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 10px;
+  text-align: center;
+  height: 48vh;
+  max-height: 48vh;
+}
+.quest-image {
+  position: absolute;
+  bottom: 10vh; /* 下端から10px */
+  right: 10px; /* 右端から10px */
+  width: 25vw; /* 小さい画像サイズ */
+  height: 20vh; /* 縦横比を固定 */
+  overflow: hidden; /* 画像が枠を超えないようにする */
+  z-index: 1; /* テキストより下に配置 */
+}
+
+.quest-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 比率を維持して枠に収める */
+  border-radius: 8px; /* 角を丸くする */
+  opacity: 0.4; /* 半透明にする */
+}
+#quest-title,
+#quest-description,
+#quest-rewards,
+#quest-location,
+#quest-npc,
+#quest-condition-message {
+  position: relative; /* 画像の上に配置 */
+  z-index: 2; /* 画像より上に表示 */
+  /* 背景を半透明にして文字を見やすくする */
+  /* background: rgba(255, 255, 255, 0.8); */
+  /* padding: 1vh; */
+  margin: 1.7vh;
+  border-radius: 4px; /* 背景を少し丸める */
+  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.2); /* 影を追加して視認性を向上 */
+}
+
+#quest-title {
+  margin-top: 0px;
+  font-size: 1.5rem;
+  color: #ffd700;
+  margin-bottom: 1vh;
+}
+#quest-progress {
+  margin-top: 0px;
+  font-size: 1.2rem;
+  color: #fff;
+  background: #333;
+  padding: 0.5vh 1vw;
+  border-radius: 5px;
+  display: inline-block;
+}
+#quest-progress {
+  position: absolute; /* 親要素に対して絶対位置 */
+  left: 1%; /* 左端から5%の位置に配置 */
+  background-color: rgba(0, 0, 0, 0.7); /* 背景色を黒っぽく半透明に */
+  color: #fff; /* 文字色を白に */
+  padding: 5px 10px; /* パディングを追加して余白を確保 */
+  border-radius: 5px; /* 角を丸める */
+  font-size: 1.2em; /* 文字サイズを調整 */
+  z-index: 100; /* 他の要素より前面に表示 */
+}
+
+#quest-detail {
+  height: 36vh;
+  overflow-y: auto;
+}
+
+.quest-button-group {
+  display: flex; /* ボタンを横並びに配置 */
+  justify-content: space-between; /* ボタン間のスペースを均等に配置 */
+  align-items: center; /* ボタンを縦方向で中央揃え */
+  margin-top: 1vh; /* ボタン群の上部に余白を追加 */
+  padding: 0.7vh; /* 内側の余白を設定 */
+  background-color: rgba(50, 50, 50, 0.8); /* 背景色を設定（半透明） */
+  border-radius: 10px; /* 角を丸める */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3); /* ボックスシャドウで立体感を追加 */
+}
+
+/* ボタンの個別スタイル */
+.quest-button-group button {
+  background-color: #333; /* ボタン背景色 */
+  color: #fff; /* ボタン文字色 */
+  border: 1px solid #555; /* ボーダー */
+  padding: 1vh 5vw; /* ボタンのパディング */
+  border-radius: 5px; /* 角を丸める */
+  cursor: pointer; /* ホバー時のカーソル変更 */
+  font-size: 1em; /* ボタンの文字サイズ */
+  transition: background-color 0.3s ease, transform 0.2s ease; /* ホバー時のアニメーション */
+}
+
+/* ボタンホバー時のスタイル */
+.quest-button-group button:hover {
+  background-color: #555; /* 背景色を明るく */
+  transform: scale(1.05); /* 少し大きくしてアニメーション */
+}
+
+/* ボタン無効時のスタイル */
+.quest-button-group button:disabled {
+  background-color: #777; /* 背景色を暗く */
+  color: #ccc; /* 文字色を淡く */
+  cursor: not-allowed; /* 無効時のカーソル */
+  transform: none; /* 拡大アニメーションを無効 */
+}
+/* #rank-buttons コンテナのスタイル */
+#rank-buttons {
+  display: flex; /* ボタンを横並びに */
+  justify-content: center; /* 中央揃え */
+  gap: 2%; /* ボタン間のスペースをパーセントで調整 */
+  padding: 1.2vh; /* 内側に余白を追加 */
+  background: linear-gradient(
+    45deg,
+    #2c2f33,
+    #23272a
+  ); /* ファンタジー風の背景色 */
+  border: 0.2vh solid #444; /* 枠線 */
+  border-radius: 2vh; /* 角を丸める */
+  box-shadow: 0 1vh 2vh rgba(0, 0, 0, 0.4); /* 立体感を追加 */
+  margin: 5vh auto; /* コンテナ全体の余白を上下5vh */
+  width: 90%; /* コンテナ幅を90%に設定 */
+  max-width: 1200px; /* 最大幅を設定 */
+}
+
+/* ボタンのスタイル */
+#rank-buttons button {
+  background-color: #555; /* ボタン背景色 */
+  color: #fff; /* 文字色 */
+  border: 0.2vh solid #777; /* 枠線 */
+  padding: 1.5vh 3vw; /* ボタンの余白 */
+  border-radius: 1vh; /* ボタンの角を丸める */
+  font-size: 1.5vh; /* 文字サイズを相対的に設定 */
+  font-weight: bold; /* 太字 */
+  text-shadow: 0.2vh 0.2vh 0.3vh rgba(0, 0, 0, 0.5); /* テキストの影 */
+  cursor: pointer; /* ホバー時のカーソル変更 */
+  transition: background-color 0.3s, transform 0.2s; /* アニメーション */
+}
+
+/* ボタンホバー時のスタイル */
+#rank-buttons button:hover {
+  background-color: #6b8e23; /* 少し明るい緑色に変更 */
+  transform: scale(1.1); /* 少し拡大 */
+  box-shadow: 0 0.5vh 1vh rgba(0, 255, 0, 0.4); /* 明るい影を追加 */
+}
+
+/* アクティブなボタンのスタイル */
+#rank-buttons button.active {
+  background-color: #228b22; /* 深い緑色 */
+  color: #fff; /* 白色文字 */
+  border-color: #32cd32; /* 明るい緑色の枠線 */
+  box-shadow: 0 0.8vh 1.5vh rgba(0, 255, 0, 0.5); /* 光沢感のある影 */
+  transform: scale(1.15); /* わずかに拡大 */
+}
+
+/* ボタン無効化時のスタイル */
+#rank-buttons button:disabled {
+  background-color: #777; /* 暗めの灰色 */
+  color: #ccc; /* 淡い文字色 */
+  border-color: #999; /* 枠線も淡く */
+  cursor: not-allowed; /* ホバー時にカーソルを変更 */
+  box-shadow: none; /* シャドウを無効化 */
+  transform: none; /* 拡大を無効化 */
+}
+
+/* テキストログ  ============================= */
+#log-container p {
+  margin: 0;
+  padding: 5px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: left; /* テキストを左寄せ */
+}
+
+/* ログ画面のスタイル */
+#log-container {
+  display: none;
+  position: fixed; /* 固定表示で画面中央に表示 */
+  top: 10%;
+  left: 0%;
+  width: 90%;
+  height: 60%;
+  max-height: 60%;
+  font-size: 600%;
+  background-color: rgb(0 0 0 / 95%);
+  color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  overflow-y: auto; /* スクロール対応 */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  z-index: 1000; /* 他の要素より前面に表示 */
+  text-align: left; /* テキスト全体を左寄せ */
+}
+
+/* ログ画面の閉じるボタン */
+#close-log {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #3d3d3d;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 3px;
+}
+
+#close-log:hover {
+  background-color: darkred; /* ボタンホバー時の色変更 */
+}
+/* 背景オーバーレイ */
+#overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* 半透明の黒背景 */
+  z-index: 999; /* 他の要素の上に表示 */
+}
+
+
+
+/* ====================================================================================== */
+.tooltip {
+  position: absolute; /* 必須: ツールチップの位置を絶対座標で指定 */
+  background: #333; /* 背景色 */
+  color: #fff; /* 文字色 */
+  padding: 8px 12px; /* 内側の余白 */
+  border-radius: 5px; /* 角を丸める */
+  font-size: 12px; /* 文字サイズ */
+  white-space: normal; /* 折り返しを有効化 */
+  max-width: 220px; /* 最大幅を設定 */
+  pointer-events: none; /* ツールチップをクリックできないようにする */
+  opacity: 1; /* 表示状態にする */
+  z-index: 1000; /* 他の要素より前面に表示 */
+  display: none; /* 初期状態で非表示 */
+}
+
+.tooltip[style*="display: block"] {
+  opacity: 1; /* 表示時の透明度 */
+}

@@ -1,0 +1,32 @@
+html{
+  width: 100vw;
+  height: 100vh;
+  transform-origin: center center;
+  background-image: url('/src/assets/images/background-image.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  font-size: 20px;
+}
+
+#scalable-root {
+  width: 720px;
+  height: 1280px;
+  font-size: 20px;
+  border: 1px solid rgba(20, 20, 20, 0.6);
+  
+  transform-origin: center center;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}

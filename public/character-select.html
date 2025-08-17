@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>キャラクター選択</title>
+    <link rel="stylesheet" href="css/select.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>キャラクター選択</h1>
+      <div id="characterList" class="character-grid"></div>
+      <button onclick="window.location.href='/login.html'">戻る</button>
+    </div>
+
+    <script>
+      async function loadCharacters() {
+        try {
+          const token = localStorage.getItem("authToken");
+          // キャラクターデータを取得
+          const response = await fetch("/api/characters", {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+          const characters = await response.json();
+          console.log("取得したキャラクターデータ:", characters);
+
+          // クラスデータを取得
+          const classResponse = await fetch("/api/excel/classes");
+          const classData = await classResponse.json();
+          console.log("取得したクラスデータ:", classData);
+
+          const characterList = document.getElementById("characterList");
+          characterList.innerHTML = ""; // 一旦リストをクリア
+
+          if (characters.length === 0) {
+            characterList.textContent = "キャラクターが登録されていません。";
+            console.warn("登録されたキャラクターが存在しません。");
+            return;
+          }
+
+          characters.forEach((character) => {
+            // `party`の一番上のキャラクターを取得
+            const partyEntries = Object.entries(character.party); // partyをキーと値のペアで取得
+            const [firstKey, firstPartyMember] = partyEntries[0]; // 最初のキャラクターを取得
+
+            const card = document.createElement("div");
+            card.className = "character-card";
+
+            // 種族とクラスの画像をクラスデータから取得
+            const raceClass = classData.find(
+              (cls) => cls["名前"] === firstPartyMember.Role[0]?.roleName
+            );
+            const jobClass = classData.find(
+              (cls) => cls["名前"] === firstPartyMember.Role[1]?.roleName
+            );
+
+            const raceImage = `/images/${raceClass?.画像url || "default.png"}`;
+            const classImage = `/images/${jobClass?.画像url || "default.png"}`;
+            const level = firstPartyMember.stats?.allLv || "不明"; // Lv（レベル）
+            const effort = firstPartyMember.stats?.allEf || 0; // Ef（努力値）
+
+            console.log(
+              `キャラクター ${firstPartyMember.name}: 種族画像: ${raceImage}, クラス画像: ${classImage}, レベル: ${level}, 努力値: ${effort}`
+            );
+
+            // 種族に応じた背景画像
+            let backgroundImage = "default-background.webp"; // デフォルト背景
+            if (raceClass?.分類 === "人族") {
+              backgroundImage = "人族背景.webp";
+            } else if (raceClass?.分類 === "亜人") {
+              backgroundImage = "亜人背景.webp";
+            } else if (raceClass?.分類 === "魔族") {
+              backgroundImage = "魔族背景.webp";
+            }
+
+            // カード内容
+            card.innerHTML = `
+                <div class="content">
+                    <div class="character-images">
+                        <img src="${raceImage}" alt="${
+              raceClass?.分類
+            }" class="race-image" />
+                        <img src="${classImage}" alt="${
+              jobClass?.分類
+            }" class="class-image" />
+                    </div>
+                    <h3>${firstPartyMember.name}</h3>
+                    <p><strong>種族:</strong> ${raceClass?.分類 || "未設定"}</p>
+                    <p><strong>クラス:</strong> ${
+                      jobClass?.名前 || "未設定"
+                    }</p>
+                    <p><strong>Lv:</strong> ${level}</p>
+                    <p><strong>Ef:</strong> ${effort}</p>
+                    <button class="select-button">選択</button>
+                </div>
+            `;
+
+            // 背景画像を設定
+            card.style.backgroundImage = `url('/images/${backgroundImage}')`;
+            card.style.backgroundSize = "cover"; // 背景画像のサイズ調整
+            card.style.backgroundPosition = "center"; // 背景画像の位置調整
+
+            // 選択ボタンのクリックイベント
+            card
+              .querySelector(".select-button")
+              .addEventListener("click", () => {
+                try {
+                  localStorage.setItem(
+                    "selectedCharacter",
+                    JSON.stringify(character)
+                  );
+                  console.log(" selectedCharacter :", character);
+
+                  alert(`${firstPartyMember.name} を選択しました！`);
+                  window.location.href = "/start-game.html";
+                } catch (error) {
+                  console.error(
+                    "Error saving character to localStorage:",
+                    error
+                  );
+                  alert("キャラクター選択中にエラーが発生しました。");
+                }
+              });
+
+            characterList.appendChild(card);
+          });
+        } catch (error) {
+          console.error(
+            "キャラクターデータの取得中にエラーが発生しました:",
+            error
+          );
+          const characterList = document.getElementById("characterList");
+          characterList.textContent =
+            "キャラクターデータを取得できませんでした。";
+        }
+      }
+
+      loadCharacters();
+
+      card.querySelector(".select-button").addEventListener("click", () => {
+        try {
+          localStorage.setItem("selectedCharacter", JSON.stringify(character));
+
+          alert(`${character.name} を選択しました！`);
+          window.location.href = "/start-game.html"; // ダッシュボード画面へ移動
+        } catch (error) {
+          console.error("Error saving character to localStorage:", error);
+          alert("キャラクター選択中にエラーが発生しました。");
+        }
+      });
+    </script>
+  </body>
+</html>

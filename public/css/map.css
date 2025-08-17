@@ -1,0 +1,180 @@
+/* 基本設定 */
+body {
+    margin: 0;
+    font-family: "Georgia", serif; /* ファンタジーっぽいフォント */
+    background: linear-gradient(
+      to bottom,
+      #2b2b3b,
+      #1e1e2e
+    ); /* ファンタジーなグラデーション背景 */
+    color: #cfcfcf; /* アンティーク調の文字色 #e2d1b4 */
+    height: 90vh; /* スマホで1画面に収まる高さ */
+    width: 95vw; /* スマホで1画面に収まる高さ */
+    max-width: 400px;
+    max-height: 900px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* ヘッダーのスタイル */
+  #header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* ヘッダーのタイトル */
+  #header h1 {
+    margin: 0;
+    font-size: 18px;
+  }
+  
+  /* リセットボタンのスタイル */
+  #reset-all {
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+  }
+  
+  #reset-all:hover {
+    background-color: darkred;
+  }
+  
+  /* マップコンテナのスタイル */
+  #map-container {
+    position: relative;
+    margin-top: 60px; /* ヘッダーの高さ分をマージンで調整 */
+    width: 100%;
+    height: calc(100vh - 120px); /* ヘッダーとフッターの高さを差し引く */
+    overflow: hidden; /* スクロールバーを非表示 */
+  }
+  
+  /* ズームラッパーのスタイル */
+  #zoom-wrapper {
+    position: relative;
+    width: 800px; /* マップ画像の幅 */
+    height: 600px; /* マップ画像の高さ */
+    transform-origin: 0 0; /* 左上を基準にズームとパン */
+    transition: transform 0.1s ease; /* ズーム時の滑らかなアニメーション */
+  }
+  
+  /* マップ画像のスタイル */
+  #map-image {
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* エリアラッパー（クリック範囲）のスタイル */
+  .area-wrapper {
+    position: absolute;
+    width: 10px; /* クリック範囲の幅 */
+    height: 10px; /* クリック範囲の高さ */
+    transform: translate(-50%, -50%); /* 中心基準に調整 */
+    cursor: pointer; /* クリック可能 */
+  
+    /* テスト用の緑色範囲（テスト後はコメントアウト可能） */
+    /* background: rgba(0, 255, 0, 0.3); */
+    /* border: 1px dashed #00ff00; */
+  }
+  
+  /* 登録ポイント（エリアポイント）のスタイル */
+  .area-point {
+    position: absolute;
+    top: 50%; /* 親要素の中央に配置 */
+    left: 50%; /* 親要素の中央に配置 */
+    width: 2px; /* マーカーの幅 */
+    height: 3px; /* マーカーの高さ */
+    background: rgba(255, 0, 0, 0.7); /* 半透明の赤色 */
+    clip-path: polygon(50% 0%, 94% 37%, 50% 100%, 6% 37%); /* マーカー形状 */
+    transform: translate(-50%, -50%); /* 基準をマーカーの中央に調整 */
+    pointer-events: none; /* マーカー自体はクリックイベントを通過 */
+  }
+  
+  /* 登録ポイントのホバー時アニメーション */
+  .area-wrapper:hover .area-point {
+    transform: translate(-50%, -50%) scale(1.2); /* ホバー時にマーカーを拡大 */
+    animation: bounce 1s infinite, blink 1s infinite; /* 点滅とバウンスアニメーション */
+  }
+  
+  /* 仮ポイントのスタイル */
+  .temp-point {
+    position: absolute;
+    width: 2px; /* 仮ポイントの幅 */
+    height: 3px; /* 仮ポイントの高さ */
+    background: rgba(0, 255, 255, 0.7); /* 青緑色で目立たせる */
+    clip-path: polygon(50% 0%, 94% 37%, 50% 100%, 6% 37%); /* マーカー形状 */
+    transform: translate(-50%, -50%); /* 中心基準に調整 */
+    pointer-events: none; /* 仮ポイントはクリック不可 */
+  }
+  
+  /* フッター情報のスタイル */
+  #info {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%; /* 全幅 */
+    height: 60px; /* 情報エリアの高さ */
+    background: #222; /* 背景色 */
+    color: white; /* 文字色 */
+    display: flex;
+    justify-content: center; /* 中央揃え（水平） */
+    align-items: center; /* 中央揃え（垂直） */
+    font-size: 16px;
+  }
+  
+  /* アニメーション: バウンス */
+  @keyframes bounce {
+    0%,
+    100% {
+      transform: translate(-50%, -50%); /* 元の位置 */
+    }
+    50% {
+      transform: translate(-50%, calc(-50% - 2px)); /* 少し上に移動 */
+    }
+  }
+  
+  /* アニメーション: 点滅 */
+  @keyframes blink {
+    0%,
+    100% {
+      opacity: 1; /* 完全表示 */
+    }
+    50% {
+      opacity: 0.4; /* 半透明 */
+    }
+  }
+  
+  /* レスポンシブ対応 */
+  @media (max-width: 768px) {
+    #header h1 {
+      font-size: 16px;
+    }
+  
+    #reset-all {
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+  
+    #info {
+      font-size: 14px;
+    }
+  
+    .area-point {
+      width: 2px;
+      height: 3px; /* モバイルでの視認性を向上 */
+    }
+  }
+  

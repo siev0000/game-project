@@ -1,0 +1,126 @@
+/* モーダル全体のスタイル */
+#battle-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+/* バトルモーダルの全体設定 */
+#battle-modal {
+    display: flex;
+    flex-wrap: wrap; /* 横方向にカードを並べ、幅が足りない場合は折り返す */
+    justify-content: center; /* 中央揃え */
+    gap: 2%; /* カード間のスペース */
+    padding: 10px;
+  }
+  
+  /* カード全体 */
+  #battle-modal .card {
+    flex: 1 1 calc(33.33% - 4%); /* 横幅を3等分し、ギャップを考慮 */
+    max-width: calc(33.33% - 4%); /* 最大幅を同様に設定 */
+    background-color: #f4f4f4;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5%;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* アイコンと名前のコンテナ */
+  #battle-modal .icon-name-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+  
+  /* アイコンコンテナ */
+  #battle-modal .icon-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  #battle-modal .race-icon,
+  #battle-modal .class-icon {
+    width: 40%;
+    aspect-ratio: 1; /* アイコンを正方形にする */
+    border-radius: 50%;
+    background-color: #ddd;
+    object-fit: cover;
+  }
+  
+  /* キャラクター名 */
+  #battle-modal .character-name {
+    font-size: 1.2rem; /* フォントサイズを相対的に設定 */
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+  }
+  
+  /* ステータスバー全体 */
+  #battle-modal .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+    font-size: 1rem;
+    margin-bottom: 5px;
+  }
+  
+  #battle-modal .status-bar .status-label {
+    width: 20%; /* ラベルの幅を相対的に設定 */
+    text-align: right;
+    font-weight: bold;
+  }
+  
+  #battle-modal .status-bar .status-bar-container {
+    flex: 1;
+    height: 10px;
+    background-color: #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  #battle-modal .status-bar .status-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  
+  #battle-modal .status-bar .status-value {
+    flex-shrink: 0;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+  }
+  
+  /* ステータスバーの色（HP, MP, ST） */
+  #battle-modal .status-bar-fill.hp-bar-fill {
+    background-color: #27ae60; /* 緑 */
+  }
+  
+  #battle-modal .status-bar-fill.mp-bar-fill {
+    background-color: #2980b9; /* 青 */
+  }
+  
+  #battle-modal .status-bar-fill.st-bar-fill {
+    background-color: #f39c12; /* オレンジ */
+  }
+  

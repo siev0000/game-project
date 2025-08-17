@@ -1,0 +1,79 @@
+
+【画面スケーリング導入メモ（1280×720基準）】
+
+■ 目的
+- 解像度に依存せず、UI・文字・画像などを一括スケーリングする
+- 1280×720を基準とし、全体の表示をスケーラブルに保つ
+
+■ HTML構成
+<body>
+  <div id="scalable-root">
+    <!-- UI / Phaser Canvas / Vue Appなど -->
+  </div>
+</body>
+
+■ CSS設定
+html{
+  width: 100vw;
+  height: 100vh;
+  transform-origin: center center;
+  background-image: url('/src/assets/images/background-image.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+#scalable-root {
+  width: 720px;
+  height: 1280px;
+  border: 20px solid rgba(20, 20, 20, 0.192);
+  transform-origin: center center;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+■ JavaScriptスケーリング処理
+export function applyGlobalScale(targetId = 'scalable-root') {
+  const baseWidth = 720;
+  const baseHeight = 1280;
+  const baseRatio = baseWidth / baseHeight; // 9 / 16
+
+  const resize = () => {
+    const screenW = window.innerWidth;
+    const screenH = window.innerHeight;
+    const currentRatio = screenW / screenH;
+
+    const scale = currentRatio > baseRatio
+      ? screenH / baseHeight  // 横に余裕 → 高さ基準
+      : screenW / baseWidth;  // 縦に余裕 → 幅基準
+
+    const target = document.getElementById(targetId);
+    if (target) {
+      target.style.transform = `scale(${scale})`;
+    }
+  };
+
+  window.addEventListener('resize', resize);
+  resize();
+}
+
+■ 特徴まとめ
+- transform: scale() を使って全UIを一括スケーリング
+- 内部CSSは1280×720ベースでpx指定のままでOK
+- PhaserやVueにも対応可能
+- フォントが縮小されすぎないよう注意（min-font-size検討）
+
+■ 適用例
+- index.html
+- App.vue
+- character-create.html など

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>選択肢ゲーム</title>
+</head>
+<body>
+  <div id="game">
+    <h2 id="sceneTitle">あなたの冒険が始まります</h2>
+    <p id="sceneDescription">森の奥に行きますか？ それとも川沿いを歩きますか？</p>
+    <button onclick="chooseOption('forest')">森へ進む</button>
+    <button onclick="chooseOption('river')">川沿いを進む</button>
+  </div>
+
+  <script>
+    const scenes = {
+      start: {
+        title: "あなたの冒険が始まります",
+        description: "森の奥に行きますか？ それとも川沿いを歩きますか？",
+        options: [
+          { text: "森へ進む", next: "forest" },
+          { text: "川沿いを進む", next: "river" }
+        ]
+      },
+      forest: {
+        title: "森の中",
+        description: "森の中は暗く、静かです。先へ進みますか、それとも戻りますか？",
+        options: [
+          { text: "先へ進む", next: "deepForest" },
+          { text: "戻る", next: "start" }
+        ]
+      },
+      river: {
+        title: "川沿い",
+        description: "川の音が心地よいです。釣りをしますか、それとも休憩しますか？",
+        options: [
+          { text: "釣りをする", next: "fishing" },
+          { text: "休憩する", next: "start" }
+        ]
+      },
+      deepForest: {
+        title: "深い森",
+        description: "森の奥で宝箱を見つけました！しかし、モンスターが現れます。",
+        options: [
+          { text: "戦う", next: "battle" },
+          { text: "逃げる", next: "start" }
+        ]
+      }
+    };
+
+    function chooseOption(sceneKey) {
+      const scene = scenes[sceneKey];
+      document.getElementById("sceneTitle").textContent = scene.title;
+      document.getElementById("sceneDescription").textContent = scene.description;
+
+      const buttonsContainer = document.getElementById("game");
+      buttonsContainer.innerHTML = `<h2>${scene.title}</h2><p>${scene.description}</p>`;
+      scene.options.forEach(option => {
+        const button = document.createElement("button");
+        button.textContent = option.text;
+        button.onclick = () => chooseOption(option.next);
+        buttonsContainer.appendChild(button);
+      });
+    }
+  </script>
+  <h1>ゲーム管理</h1>
+  <div id="questList"></div>
+  <script type="module" src="./js/script.js"></script>
+</body>
+</html>

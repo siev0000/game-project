@@ -1,0 +1,53 @@
+characterData2
+├─ name: キャラクター名
+├─ race: 種族名（例：人族）
+├─ Role: クラス情報（最大20件）
+│  └─ roleName: クラス名または種族
+│     ├─ Lv: クラスレベル
+│     ├─ Ef: 努力値
+│     ├─ stats: ステータス（クラスごと）
+│     └─ abilities: アビリティ（習得）
+├─ stats: ステータス
+│  ├─ allLv: 総合レベル
+│  ├─ allEf: 総努力値
+│  ├─ baseStats: 基礎ステータス（HP, MP, 攻撃など）
+│  ├─ TechniqueValues: 技能値（隠密、感知など）
+│  ├─ resistances: 耐性（炎耐性など）
+│  ├─ bodyAttributes: 身体属性（例：角、牙、尾など）
+│  ├─ weaknesses: 弱点リスト
+│  └─ bodyType: 肉体種別（0=人型など）
+├─ experience: 現在経験値
+├─ nextLevelExp: 次のレベルに必要経験値
+├─ statusEffects: 状態異常
+├─ combatData: 戦闘データ
+│  ├─ actionPoints: 行動ポイント
+│  ├─ initiative: 行動順（イニシアチブ）
+│  └─ cooldowns: スキルクールタイム情報
+├─ temporaryBonuses: 一時的なボーナス
+├─ questProgress: クエスト進捗
+│  └─ [{ questId: クエストID, progress: "進行中" }]
+├─ storyFlags: ストーリーフラグ（イベント進行）
+├─ equipmentSlot: 装備スロット
+│  └─ スロット名（右手、頭など）: アイテム名 or null
+├─ availableSlots: ['右手', '左手', '頭', '体', '足']
+├─ inventory: インベントリ（アイテムリスト）
+├─ maxInventory: 最大インベントリ数
+├─ storage: 倉庫内アイテム
+├─ money: 所持金
+├─ appearance: 外見情報
+│  ├─ hairColor: 髪色
+│  ├─ eyeColor: 目の色
+│  ├─ height: 身長
+│  └─ weight: 体重
+├─ party: パーティーメンバー
+│  └─ [{ name: 名前, role: 役職 }]
+├─ guild: ギルド情報
+│  ├─ name: ギルド名
+│  ├─ rank: ギルドランク
+│  └─ contributionPoints: 貢献ポイント
+├─ memoryStreet: 転移可能な記憶都市
+├─ currentLocation: 現在地
+├─ notes: メモ欄
+├─ ultimateTechnique: 必殺技
+├─ savePoint: セーブ地点
+└─ userId: 所有ユーザーID

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ズームとスクロール可能なマップ</title>
+  <link rel="stylesheet" href="css/map.css">
+</head>
+<body>
+  <!-- ヘッダー -->
+  <header id="header">
+    <button id="reset-all" onclick="resetAllPoints()">ポイントをリセットする</button>
+  </header>
+
+  <!-- マップコンテナ -->
+  <div id="map-container">
+    <div id="zoom-wrapper">
+      <img id="map-image" src="images/全体マップ.jpg" alt="マップ">
+      <!-- <img id="map-image" src="images/ダークランド.jpg" alt="マップ"> -->
+    </div>
+  </div>
+
+  <!-- フッター情報 -->
+  <div id="info">エリア情報がここに表示されます</div>
+
+  <script src="js/map.js"></script>
+</body>
+</html>

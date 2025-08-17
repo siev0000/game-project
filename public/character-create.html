@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>キャラクター作成</title>
+    <link rel="stylesheet" href="css/character.css">
+</head>
+<body>
+    <div id="characterCreate" class="container">
+        <h1>キャラクター作成</h1>
+        <form id="characterForm">
+            <!-- キャラクター名入力 -->
+            <form autocomplete="off">
+                <input type="text" name="fakefield" style="display:none;">
+                <label for="name">キャラクター名</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="characterName"
+                  placeholder="名前を入力"
+                  required
+                  autocomplete="off"
+                />
+                <button type="button" id="confirmName">名前を確定</button>
+              </form>
+
+            <!-- 種族選択 -->
+            <div id="raceSelection" class="selection" style="display: none;">
+                <h2>種族を選択してください</h2>
+                <button type="button" id="showRaceModal">種族を見る</button>
+                <p id="selectedRace" style="display: none;">選択された種族: <span id="selectedRaceName"></span></p>
+            </div>
+
+            <!-- クラス選択 -->
+            <div id="classSelection" class="selection" style="display: none;">
+                <h2>クラスを選択してください</h2>
+                <button type="button" id="showClassModal">クラスを見る</button>
+                <p id="selectedClass" style="display: none;">選択されたクラス: <span id="selectedClassName"></span></p>
+            </div>
+
+            <!-- 作成ボタン -->
+            <button type="submit" id="createCharacter" >レベルを割り振る</button>
+        </form>
+        <div id="message"></div>
+    </div>
+    <div id="modal-levelAndStatus" class="modal" style="display: none;">
+        <h2>レベル設定</h2>
+        <div class="allocation-group">
+            <span id="selectedRaceDisplay" class="selection-info"></span>
+            <input type="number" id="raceLevel" min="0" max="10" value="1" />
+        </div>
+        <div class="allocation-group">
+            <span id="selectedClassDisplay" class="selection-info"></span>
+            <input type="number" id="classLevel" min="0" max="10" value="9" />
+        </div>
+    
+        <div id="tabContainer">
+            <div class="tabs">
+                <button type="button" id="showStatsTab" class="active">ステータス</button>
+                <button type="button" id="showTechniquesTab">技能</button>
+                <button type="button" id="showSkillTab">アビリティ</button>
+            </div>
+            <div id="statsView" class="tab-content active">
+                <table id="statusTable" border="1">
+                    <thead>
+                        <tr>
+                            <th>ステータス</th>
+                            <th>種族</th>
+                            <th>クラス</th>
+                            <th>合計</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <!-- 合計ステータス -->
+                <p>合計ステータス: <span id="totalStatusElement">0</span></p>
+            </div>
+            <div id="TechniquesView" class="tab-content">
+                <table id="TechniquesTable" border="1">
+                    <thead>
+                        <tr>
+                            <th>技能</th>
+                            <th>種族</th>
+                            <th>クラス</th>
+                            <th>合計</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>                
+            </div>
+            <div id="SkillView" class="tab-content">
+                <table id="SkillTable" border="1">
+                    <thead>
+                        <tr>
+                            <th>技名</th>
+                            <th>系統</th>
+                            <th>分類</th>
+                            <th>説明</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>                
+            </div>
+        </div>
+        <div class="special">
+            <button type="button" id="confirmLevels">作成する</button>
+            <button type="button" id="confirmLevels2">戻る</button>
+        </div>  
+    
+        
+    </div>
+    
+    <!-- モーダル -->
+    <div id="modal-select" class="modal" style="display: none;">
+        <div class="modal-content">
+            <!-- 画像アイコン -->
+            <div class="icon-container">
+                <img id="modalIcon" src="" alt="アイコン" />
+                <h2 id="modalTitle"></h2>
+            </div>
+            <ul id="statsList"></ul>
+            <div id="traitList">
+                <p><strong>特徴:</strong> <span id="trait"></span></p>
+                <p><strong>主な役割:</strong> <span id="role"></span></p>
+                <p><strong>短所:</strong> <span id="weakness"></span></p>
+            </div>
+            <div class="modal-buttons">
+                <button id="prevButton">前へ</button>
+                <button id="nextButton">次へ</button>
+                <button id="confirmButton">決定</button>
+                <button id="closeButton">閉じる</button>
+            </div>
+        </div>
+        <!-- キャラクター作成確認用モーダル -->
+        <div id="confirmationModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h2>キャラクター作成の確認</h2>
+                <p id="confirmationMessage"></p>
+                <div class="modal-buttons">
+                    <button id="confirmCreateButton">作成する</button>
+                    <button id="cancelCreateButton">キャンセル</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+<script src="scripts/main.js"></script>
+
+</body>
+</html>
