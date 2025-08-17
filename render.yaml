@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: game-api
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: npm ci
+    startCommand: node server.js
+    autoDeploy: true
