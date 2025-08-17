@@ -84,6 +84,20 @@ console.log('ルーティングの設定が完了しました');
 //     console.log('Server is running on http://192.168.0.110:3000');
 // });
 
+//=======================================================================
+// --- ここから：本番でフロント(ビルド済みdist)を配信 ---
+if (process.env.NODE_ENV === 'production') {
+  const distPath = path.join(__dirname, 'dist');
+  app.use(express.static(distPath));
+  // SPA のルーティング対応（/api 以外は index.html へ）
+  app.get('*', (req, res) => {
+    if (req.path.startsWith('/api')) return res.status(404).end();
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
+// --- ここまで ---
+//=======================================================================
+
 // Mongo 接続が成功してからサーバー起動
 initMongo().then(() => {
   app.listen(PORT, '0.0.0.0', () => {
