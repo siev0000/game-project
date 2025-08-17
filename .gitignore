@@ -1,0 +1,19 @@
+# 環境変数
+.env
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# ビルド生成物
+dist/
+build/
+.vite/
+.cache/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
