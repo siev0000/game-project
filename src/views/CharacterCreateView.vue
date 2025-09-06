@@ -1,5 +1,4 @@
 <template>
-  <div id="scalable-root">
     <div class="container">
       <h1>キャラクター作成</h1>
 
@@ -145,12 +144,12 @@
             />
             <span class="skill-keito__label">{{ selectedSkillDetail?.攻撃手段 }}</span>
           </span>
-          <ruby class="skill-name-detail-box" :class="typeClass(selectedSkillDetail.分類)">
+          <ruby class="skill-name-detail-box" :class="typeClass(selectedSkillDetail.行動)">
             {{ selectedSkillDetail.名前 }}
             <rt>{{ selectedSkillDetail.ルビ }}</rt>
           </ruby>
           <span class="skill-keito">{{ selectedSkillDetail.系統 }}</span>
-          <span class="skill-type"  :class="typeClass(selectedSkillDetail.分類)">{{ selectedSkillDetail.分類 }}</span>
+          <span class="skill-type"  :class="typeClass(selectedSkillDetail.行動)">{{ selectedSkillDetail.行動 }}</span>
         </div>
         <hr />
 
@@ -190,7 +189,6 @@
       <AttributeModal v-if="showAttributeModal" :attributes="availableAttributes" @close="showAttributeModal = false" @select="selectAttribute" />
 
     </div>
-  </div>
 </template>
 
 <script setup>
@@ -201,8 +199,7 @@ import ClassModal from '@/components/modals/ClassModal.vue'
 import AttributeModal from '@/components/modals/AttributeModal.vue'
 // 必ず使う
 import { loadGameData, statMap, statDescriptions, allData, attributeList, race_attributes, Skill_List } from '@/constants/statData.js';
-import { applyGlobalScale } from '@/components/useScale.js'
-import { characterDataTemplate } from '@/scripts/characterData.js'
+import { playerGlobalData } from '@/scripts/characterData.js'
 
 const router = useRouter()
 
@@ -230,12 +227,12 @@ const selectedSkillDetail = ref(null);
 const raceLv = ref(1)   // 初期値1
 const classLv = ref(9)  // 初期値1
 
-// 分類色判定（A/S/Q 以外は無色）
+// 行動色判定（A/S/Q 以外は無色）
 const getSkillType = (name) => {
   if (!name) return null;
   const hit = Skill_List?.value?.find?.(s => s.名前 === name);
   // 期待値: 'A' | 'S' | 'Q'
-  return hit?.分類 ?? null;
+  return hit?.行動 ?? null;
 };
 
 const typeClass = (t) => ({
@@ -248,7 +245,6 @@ const typeClass = (t) => ({
 onMounted(async () => {
   await loadGameData();
   console.log(allData.value, attributeList.value, Skill_List.value);
-  applyGlobalScale('scalable-root')
 })
 
 const imageMap = import.meta.glob('@/assets/images/**/*', { eager: true, import: 'default' })
@@ -383,7 +379,7 @@ const recalcStats = () => {
       // SIZ合計は大きい方を採用
       newTotalStats[key] = Math.max(newRaceStats[key] || 0, newClassStats[key] || 0);
     } else {
-      newRaceStats[key] = Math.floor((raceData[key] || 0) / 10 * (raceLv.value + 5));
+      newRaceStats[key] = Math.floor((raceData[key] || 0) / 10 * (raceLv.value + 10)); //種族の0Lvのステータス配分
       newClassStats[key] = Math.floor((classData[key] || 0) / 10 * classLv.value);
       // 合計
       newTotalStats[key] = (newRaceStats[key] || 0 ) + ( newClassStats[key] || 0);
@@ -533,7 +529,7 @@ function getDisplayValue(value, key) {
   const bonusPercent = getSizeBonus(siz);
 
   const bonusKeysPlus = ["HP", "攻撃", "威圧"];
-  const bonusKeysMinus = ["速度", "隠密", "軽業"];
+  const bonusKeysMinus = ["回避", "隠密", "軽業"];
 
   if (bonusKeysPlus.includes(key)) {
     if (key === "威圧") {
@@ -592,6 +588,7 @@ const onSkillSelect = (skillName) => {
     名前: skill.名前 || '',
     系統: skill.系統 || '',
     分類: skill.分類 || '',
+    行動: skill.行動 || '',
     攻撃手段: skill.攻撃手段 || '',
     追加威力: skill.追加威力 || '',
     判定: skill.判定 || '',
@@ -631,36 +628,94 @@ const isCharacterValid = computed(() => {
   );
 });
 
+// ユニークIDをランダム生成（16桁ランダム英数字）
+function generateId(length = 16) {
+  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
 
-const confirmCharacter = () => {
+
+const confirmCharacter = async () => {
   if (!isCharacterValid.value) return; // 念のため防御
 
   // テンプレートをコピー
-  const characterData = structuredClone(characterDataTemplate);
+  const characterData = structuredClone(playerGlobalData);
+
+  console.log("テンプレートをコピー:", characterData);
+
+  // 主人公データを party[0] に格納する想定で処理
+  const mainChar = characterData.party[0];
 
   // 入力内容を反映
-  characterData.name = characterName.value;
-  characterData.party.name = characterName.value;
-  characterData.party.race = selectedRace.value.名前;
+  characterData.name = characterName.value; // グローバル側の名前
+  mainChar.name = characterName.value;      // 主人公キャラの名前
+  mainChar.race = selectedRace.value.名前;
 
-  characterData.party.Role[0] = {
+  // クラス情報
+  mainChar.Role[0] = {
     roleName: selectedClass.value.名前,
     Lv: classLv.value,
     Ef: 0,
   };
-  characterData.party.Role[1] = {
+  mainChar.Role[1] = {
     roleName: selectedRace.value.名前,
     Lv: raceLv.value,
     Ef: 0,
   };
 
-  characterData.party.stats.allLv = raceLv.value + classLv.value;
-  characterData.party.stats.baseStats = totalStats.value;
-  characterData.party.stats.abilities = {}; // スキルは後で処理
+  // ステータス
+  mainChar.stats.allLv = raceLv.value + classLv.value;
+  mainChar.stats.baseStats = totalStats.value;
+  mainChar.stats.abilities = {}; // スキルは後で処理
+
+  characterData.id = generateId(); // ランダムID
+  characterData.name = characterName.value;
+  characterData.race = selectedRace.value.名前;
+  characterData.class = selectedClass.value.名前;
+
 
   console.log("作成キャラクター:", characterData);
   alert("キャラクター作成が完了しました！");
+  // 🔽 最後にDBへ保存
+  await saveCharacterToDB(characterData);
 };
+
+// キャラ登録処理
+async function saveCharacterToDB(characterData) {
+  const token = localStorage.getItem("authToken");
+  if (!token) {
+    alert("ログインしてください");
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/characters", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(characterData),
+    });
+
+    const result = await res.json();
+    if (res.ok) {
+      console.log("キャラクター登録成功:", result);
+      alert("キャラクター登録が完了しました！");
+      router.push('/Dashboard')
+
+    } else {
+      alert("登録失敗: " + result.error);
+    }
+  } catch (err) {
+    console.error("キャラクター登録エラー:", err);
+    alert("通信エラーでキャラクター登録できませんでした。");
+  }
+}
 
 </script>
 
@@ -696,7 +751,6 @@ const confirmCharacter = () => {
 #scalable-root {
   display: flex;
   justify-content: center;
-  padding: 20px;
   /* background: radial-gradient(circle at center, #fdf6e3 0%, #e4d2a0 100%); */
   font-family: 'Cinzel', serif;
 }
@@ -830,6 +884,7 @@ th {
   background: radial-gradient(circle at center, #5e5b54 0%, #423d2f 100%);
   border: 5px solid #b58b4c;
   overflow-y: auto;
+  font-size: 21.6px;
 }
 
 .table-wrapper table {
@@ -911,7 +966,7 @@ th {
   border-radius: 6px;
 }
 
-/* 分類ごとの色 */
+/* 行動ごとの色 */
 .type-a { background-color: rgba(255, 0, 0, 0.2); }   /* 赤系 */
 .type-s { background-color: rgba(255, 255, 0, 0.2); } /* 黄系 */
 .type-q { background-color: rgba(0, 255, 0, 0.2); }   /* 緑系 */
@@ -950,7 +1005,7 @@ th {
 .skill-header {
   height: 45px;
   display: grid;
-  grid-template-columns: 2fr 5.5fr 1.5fr 1fr; /* ルビ:名前:系統:分類 */
+  grid-template-columns: 2fr 5.5fr 1.5fr 1fr; /* ルビ:名前:系統:行動 */
   align-items: center;
   gap: 4px;
   text-align: center;

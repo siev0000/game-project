@@ -12,6 +12,9 @@ const { getDb, ObjectId } = require('../data/db/mongo.cjs'); // Mongo接続ヘ�
 const SALT_ROUNDS = 10;
 const JWT_SECRET = process.env.JWT_SECRET || 'default-secret-key';
 
+
+
+
 // ========== ログイン ==========
 router.post('/login', async (req, res) => {
   const { username, password } = req.body || {};
@@ -37,9 +40,29 @@ router.post('/login', async (req, res) => {
     const payload = { _id: String(user._id), username: user.username };
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1d' });
 
-    res.status(200).json({ userId: String(user._id), username: user.username, token });
+    // 🎯 キャラクター一覧も返す
+    const responseData = {
+      userId: String(user._id),
+      username: user.username,
+      token,
+      characters: user.characters || [],
+    };
+
+    // 🔍 デバッグ用ログ
+    console.log("✅ ログイン成功:", {
+      userId: responseData.userId,
+      username: responseData.username,
+      charactersCount: responseData.characters.length,
+      characters: responseData.characters.map(c => ({
+        name: c.name,
+        lv: c.party?.[0]?.stats?.allLv || 0
+      }))
+    });
+
+    res.status(200).json(responseData);
+
   } catch (err) {
-    console.error('データベースエラー:', err);
+    console.error('❌ データベースエラー:', err);
     res.status(500).json({ error: 'サーバーエラー' });
   }
 });
@@ -114,5 +137,42 @@ router.post('/register', async (req, res) => {
     return res.status(500).json({ error: 'ユーザー登録に失敗しました' });
   }
 });
+
+// キャラクター取得
+router.post('/characters', authenticateUser, async (req, res) => {
+  const userId = req.user._id;      // JWTから来るIDは文字列
+  const characterData = req.body;
+
+  try {
+    const db = getDb();
+    const users = db.collection('users');
+
+    const result = await users.updateOne(
+      { _id: ObjectId.createFromHexString(userId) },   // ← ここ
+      { $push: { characters: characterData } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ error: 'ユーザーが見つかりません' });
+    }
+
+    res.status(201).json({ message: 'キャラクター登録成功', character: characterData });
+  } catch (err) {
+    console.error('キャラクター登録エラー:', err);
+    res.status(500).json({ error: 'キャラクター登録に失敗しました' });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
 
 module.exports = router;

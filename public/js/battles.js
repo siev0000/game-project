@@ -385,7 +385,7 @@ function calculateReadyCharacters(playerParty, enemyParty) {
       const speedB = a.totalStats?.速度 || 0;
 
       if (b.AP === a.AP) {
-        return speedA - speedB; // 速度順
+        return speedA - speedB; // 回避順
       }
       return b.AP - a.AP; // AP順
     });

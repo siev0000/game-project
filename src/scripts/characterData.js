@@ -1,28 +1,30 @@
-export const characterDataTemplate  = {
-  // --- 基本 ---
-  id: "", // ユニークID（セーブデータ識別用）
-  createdAt: "", // 作成日時
-  updatedAt: "", // 最終更新日時
-  name: "", // キャラクター名
-  gender: null, // 性別（"male", "female", "other" など）
-  age: null, // 年齢
-  height: null, // 身長（cm）
-  weight: null, // 体重（kg）
-  appearance: {
-    hairColor: "",
-    eyeColor: "",
-    skinColor: "",
-    extra: "", // 傷跡や特徴など
+// キャラクター1人分のテンプレート
+export const characterDataTemplate = {
+  id: "",       // キャラ固有ID
+  name: "",     // 名前
+  race: "",     // 種族
+
+  // --- クラス・成長 ---
+  Role: Array.from({ length: 20 }, () => ({
+    roleName: null,
+    Lv: 0,
+    Ef: 0,
+  })),
+
+  // --- 基礎ステータス ---
+  stats: {
+    allLv: 0,
+    allEf: 0,
+    baseStats: {},        // HP, 攻撃, 防御などの基本値
+    temporaryBonuses: {}, // 一時補正
+    abilities: {},        // 習得スキル
+    cooldowns: {},        // クールタイム
+    statusEffects: [],    // 状態異常
+    experience: 0,        // 経験値
+    nextLevelExp: 100,    // 次レベル必要経験値
   },
-  attribute: null, // 属性ID（炎、氷など）
 
-  // --- ストーリー進行 ---
-  questProgress: [], // { questId, progress } の配列
-  storyFlags: {}, // イベント進行フラグ
-  flags: {}, // その他の条件分岐フラグ
-  achievements: [], // 獲得実績・称号リスト
-
-  // --- 装備・所持品 ---
+  // --- 装備 ---
   equipmentSlot: {
     武器: null,
     武器2: null,
@@ -32,64 +34,60 @@ export const characterDataTemplate  = {
     装飾1: null,
     装飾2: null,
   },
-  inventory: [], // 所持アイテム
-  maxInventory: 15, // 所持上限
-  storage: [], // 倉庫
-  money: 0, // 所持金
 
-  // --- パーティー情報 ---
-  party: {
-    name: "", // パーティー名
-    race: "", // 種族名
-    selectedRaceId: null, // 選択種族のID
-    selectedClassId: null, // 選択クラスのID
-    Role: Array.from({ length: 20 }, () => ({
-      roleName: null,
-      Lv: null,
-      Ef: null,
-    })),
-    stats: {
-      allLv: 0,
-      allEf: 0,
-      baseStats: {}, // HP, MP, 攻撃などの初期値
-      weaknesses: [], // 弱点（炎、氷など）
-      bodyType: 0, // 0=人型, 1=獣型など
-      temporaryBonuses: {}, // 一時補正
-      cooldowns: {}, // スキル使用間隔
-      statusEffects: [], // 毒、麻痺など
-      experience: 0,
-      nextLevelExp: 100,
-    },
-    skills: [], // 習得スキル
-    passiveSkills: [], // 常時効果スキル
-    unlockedClasses: [], // 開放済みクラス
-    battleRecords: { totalBattles: 0, wins: 0, losses: 0, flee: 0 },
+  // --- スキル・属性 ---
+  skills: [],
+  magic: [],
+  attribute: null,
+
+  // --- 配置 ---
+  position: "前衛_1",
+
+  // --- NPCフラグ ---
+  isNPC: true,
+  aiType: "support",
+
+  // --- 細部追加 ---
+  gender: null,     // 性別
+  age: null,        // 年齢
+  appearance: {     // 外見的特徴
+    hairColor: "",
+    eyeColor: "",
+    skinColor: "",
+    extra: "",      // 傷跡や特徴
   },
+  achievements: [], // 称号や実績
+  relationships: {},// NPCや勢力との関係値
+};
 
-  // --- ギルド ---
+// プレイヤーごとのセーブデータ（主人公＋仲間全体をまとめて管理する）
+// 主人公自身の基本情報＋進行状況＋仲間パーティの配列を持つ
+export const playerGlobalData = {
+  id: "",            // 主人公キャラクターの固有ID（セーブスロットやDB識別用）
+  name: "",          // 主人公キャラクター名
+  race: "",          // 主人公の種族（例: ヒューマン、エルフなど）
+  class: "",
+  
+  // ==== 所持・進行系（プレイヤー全体で共有する資産や進行状況）====
+  money: 0,          // 所持金
+  inventory: [],     // 主人公が持っているアイテムリスト
+  maxInventory: 15,  // インベントリの上限
+  storage: [],       // 倉庫に預けているアイテム
+  location: "",      // 現在地（街やダンジョンなど）
+  savePoint: null,   // 最後にセーブした場所
+  memoryStreet: [],  // 転移で移動できる街の一覧（解放済みの街）
+  questProgress: [], // クエスト進行状況（例: {id: "Q001", state: "進行中"}）
+  storyFlags: {},    // ストーリーフラグ（イベント発生条件などの制御用）
+
+  // ==== ギルド関連 ====
   guild: {
-    name: "",
-    rank: 0,
-    contributionPoints: 0,
+    name: "",               // 所属ギルド名
+    rank: 0,                // ギルドランク
+    contributionPoints: 0,  // 貢献ポイント（ギルド内評価）
   },
 
-  // --- 評判・関係値 ---
-  reputation: {
-    factions: {}, // 勢力ごとの友好度
-    towns: {}, // 街ごとの評判
-  },
-  relationships: {}, // NPCとの関係値
-
-  // --- ワールド ---
-  memoryStreet: [], // 転移可能な街
-  location: "", // 現在地
-  savePoint: null, // 最後のセーブ地点
-
-  // --- 設定 ---
-  settings: {
-    autoBattle: false, // オート戦闘
-    messageSpeed: "normal", // メッセージ速度
-    bgmVolume: 80,
-    seVolume: 80,
-  }
+  // ==== パーティデータ ====
+  // 主人公以外の仲間キャラを配列として管理する
+  // 各要素が「キャラクター単位のセーブデータ」と同等の情報を持つ
+  party: [ structuredClone(characterDataTemplate) ],  // ← ここに characterDataTemplate を複数格納
 };

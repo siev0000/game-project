@@ -99,7 +99,7 @@ function applySlashEffect(size, speed, color) {
     return;
   }
 
-  console.log(`斬撃エフェクトを再生: サイズ ${size}, 速度 ${speed}, 色 ${color}`);
+  console.log(`斬撃エフェクトを再生: サイズ ${size}, 回避 ${speed}, 色 ${color}`);
 
   let effectHandle = effekseerContext.play(effect, 0, 0, 0);
   effectHandle.setScale(size, size, size);
@@ -114,7 +114,7 @@ function applyPierceEffect(size, speed, color) {
     return;
   }
 
-  console.log(`刺突エフェクトを再生: サイズ ${size}, 速度 ${speed}, 色 ${color}`);
+  console.log(`刺突エフェクトを再生: サイズ ${size}, 回避 ${speed}, 色 ${color}`);
 
   let effectHandle = effekseerContext.play(effect, 0, 0, 0);
   effectHandle.setScale(size, size, size);
@@ -129,7 +129,7 @@ function applyExplosionEffect(size, speed, color) {
     return;
   }
 
-  console.log(`爆発エフェクトを再生: サイズ ${size}, 速度 ${speed}, 色 ${color}`);
+  console.log(`爆発エフェクトを再生: サイズ ${size}, 回避 ${speed}, 色 ${color}`);
 
   let effectHandle = effekseerContext.play(effect, 0, 0, 0);
   effectHandle.setScale(size, size, size);

@@ -39,7 +39,7 @@ const statKeys = [
   "防御",
   "魔力",
   "精神",
-  "速度",
+  "回避",
   "命中",
   "APP",
   "隠密",
@@ -316,17 +316,17 @@ function displayModalData(data) {
   const modifier = calculateSizeModifier(sizValue);
 
   // ステータスリストに基づき補正を適用またはそのまま表示
-  ["HP", "MP", "ST", "攻撃", "防御", "魔力", "精神", "速度", "命中"].forEach(
+  ["HP", "MP", "ST", "攻撃", "防御", "魔力", "精神", "回避", "命中"].forEach(
     (stat) => {
       let baseValue = data[stat] || 0;
       let adjustedValue = baseValue;
       let modifierDisplay = ""; // 補正の表示用
 
-      if (["HP", "攻撃", "速度"].includes(stat)) {
+      if (["HP", "攻撃", "回避"].includes(stat)) {
         if (sizValue !== 0) {
           // SIZが0の場合は補正をスキップ
-          if (stat === "速度") {
-            // 速度は補正値の正負を反転させて適用
+          if (stat === "回避") {
+            // 回避は補正値の正負を反転させて適用
             adjustedValue = Math.round(
               baseValue - (baseValue * modifier) / 100
             );
@@ -434,7 +434,7 @@ function calculateAndDisplayStatus() {
     "防御",
     "魔力",
     "精神",
-    "速度",
+    "回避",
     "命中",
   ];
   const statResults = [];
@@ -465,9 +465,9 @@ function calculateAndDisplayStatus() {
     let totalStat = raceStat + classStat;
 
     // SIZ補正の適用
-    if (["HP", "攻撃", "速度"].includes(key)) {
-      if (key === "速度") {
-        // 速度はSIZ補正が正のとき減少、負のとき増加
+    if (["HP", "攻撃", "回避"].includes(key)) {
+      if (key === "回避") {
+        // 回避はSIZ補正が正のとき減少、負のとき増加
         totalStat = Math.round(totalStat - (totalStat * sizModifier) / 100);
       } else {
         // HPや攻撃はSIZ補正値をそのまま加算

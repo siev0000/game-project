@@ -1,20 +1,18 @@
 <template>
-  <div id="scalable-root">
-    <div class="container">
-      <h2>ログイン</h2>
-      <form @submit.prevent="handleLogin">
-        <label for="username">ユーザーID</label>
-        <input v-model="username" type="text" id="username" required />
+  <div class="container">
+    <h2>ログイン</h2>
+    <form @submit.prevent="handleLogin">
+      <label for="username">ユーザーID</label>
+      <input v-model="username" type="text" id="username" required />
 
-        <label for="password">パスワード</label>
-        <input v-model="password" type="password" id="password" required />
+      <label for="password">パスワード</label>
+      <input v-model="password" type="password" id="password" required />
 
-        <button type="submit">ログイン</button>
-      </form>
+      <button type="submit">ログイン</button>
+    </form>
 
-      <div class="register-link">
-        アカウントをお持ちでない方は <a href="/Register">こちら</a>
-      </div>
+    <div class="register-link">
+      アカウントをお持ちでない方は <a href="/Register">こちら</a>
     </div>
   </div>
 </template>
@@ -45,8 +43,10 @@ const handleLogin = async () => {
 
     if (response.ok) {
       localStorage.setItem('authToken', result.token)
-      localStorage.setItem('username', result.username)
-      localStorage.setItem('userId', result.userId)
+      localStorage.setItem('user', JSON.stringify(result));
+      console.log("result")
+      console.log(result)
+
       window.location.href = '/Dashboard'
     } else {
       message.value = `ログイン失敗: ${result.error}`
@@ -60,7 +60,7 @@ const handleLogin = async () => {
 <style>
 .container {
   /* これだけあれば中央配置される */
-  max-width: 400px;
+  max-width: 650px;
   width: 100%;
   box-sizing: border-box;
 
@@ -74,7 +74,16 @@ const handleLogin = async () => {
   background-repeat: no-repeat;
   color: white;
   text-align: center;
+  font-size: 25px;
 }
+#scalable-root {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  /* background: radial-gradient(circle at center, #fdf6e3 0%, #e4d2a0 100%); */
+  font-family: 'Cinzel', serif;
+}
+
 /* ラベル */
 label {
   display: block;

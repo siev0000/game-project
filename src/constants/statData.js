@@ -1,29 +1,61 @@
 // statData.js
 import { ref } from 'vue';
+import { playerGlobalData, characterDataTemplate } from "../scripts/characterData";
 
-export const allData = ref([]);
-export const attributeList = ref([]);
-export const race_attributes = ref([]);
-export const Skill_List = ref([]);
+export const allData = ref([]);          // クラス・種族
+export const attributeList = ref([]);    // 属性
+export const race_attributes = ref([]);  // 種族ごとの初期ステータス補正
+export const Skill_List = ref([]);       // スキル
+export const weaponList = ref([]);       // 武器・攻撃手段
+export const itemList = ref([]);         // アイテム（消耗品・素材）
+export const equipmentList = ref([]);    // 装備品（武器・防具・アクセ）
+export const enemyList = ref([]);        // 敵データ
+export const dungeonList = ref([]);      // ダンジョン構造（部屋・遭遇テーブル）
+export const questList = ref([]);        // クエスト一覧
+export const locationList = ref([]);     // 拠点・街・エリア
 
 export async function loadGameData() {
-  if (allData.value.length) return; // 既に読み込み済みならスキップ
+  if (allData.value.length) return;
 
-  const res1 = await fetch('/api/excel/classes');
-  allData.value = await res1.json();
+  // ===== 基本データ =====
+  const res1 = await fetch("/api/excel/classes");
+  allData.value = await res1.json();          // クラス・種族
 
-  const res2 = await fetch('/api/excel/attributes');
-  attributeList.value = await res2.json();
+  const res2 = await fetch("/api/excel/attributes");
+  attributeList.value = await res2.json();   // 属性
 
-  const res3 = await fetch('/api/excel/race_attributes');
-  race_attributes.value = await res3.json();
+  const res3 = await fetch("/api/excel/race_attributes");
+  race_attributes.value = await res3.json(); // 種族ステータス補正
 
-  const res4 = await fetch('/api/excel/Skills');
-  Skill_List.value = await res4.json();
+  const res4 = await fetch("/api/excel/Skills");
+  Skill_List.value = await res4.json();      // スキル
+
+  // ===== 戦闘関連 =====
+  const res5 = await fetch("/api/excel/weapons");
+  weaponList.value = await res5.json();      // 武器・攻撃手段（素手/爪/剣など）
+
+  const res7 = await fetch("/api/excel/equipments");
+  equipmentList.value = await res7.json();   // 装備品（武器/防具/アクセ）
+
+  const res8 = await fetch("/api/excel/enemy");
+  enemyList.value = await res8.json();       // 敵データ
+
+  // ===== 冒険関連 =====
+  const res6 = await fetch("/api/excel/items");
+  itemList.value = await res6.json();        // アイテム（消耗品・素材）
+
+  const res9 = await fetch("/api/excel/dungeon");
+  dungeonList.value = await res9.json();     // ダンジョン（部屋構造・遭遇）
+
+  const res10 = await fetch("/api/excel/quests");
+  questList.value = await res10.json();      // クエスト一覧
+
+  const res11 = await fetch("/api/excel/locations");
+  locationList.value = await res11.json();   // 拠点・街・エリア
 }
 
 export const statMap = {
-  ステータス: ['HP', 'MP', 'ST', '攻撃', '防御', '魔力', '精神', '速度', '命中', 'SIZ', 'APP'],
+  ステータス: ['HP', 'MP', 'ST', '攻撃', '防御', '魔力', '精神', '回避', '命中', 'SIZ', 'APP'],
   技能: ['隠密', '感知', '威圧', '軽業', '技術', '早業', '看破', '騙す', '知識', '鑑定', '装置', '変装', '制作', '精神接続', '魔法技術', '指揮'],
   耐性: ['切断耐性', '貫通耐性', '打撃耐性', '炎耐性', '氷耐性', '雷耐性', '酸耐性', '音耐性', '光耐性', '闇耐性', '善耐性', '悪耐性', '正耐性', '負耐性',
          '精神耐性', '毒耐性', '盲目耐性', '幻覚耐性', '石化耐性', '怯み耐性', '拘束耐性', '呪い耐性', '即死耐性', '時間耐性', '出血耐性', '疲労耐性', '体幹耐性',
@@ -39,7 +71,7 @@ export const statDescriptions = {
   '防御': '物理防御の高さ、防御の上手さ。防御スキルを使うときに判定する',
   '魔力': '魔法攻撃の威力',
   '精神': '精神的耐久力や魔防に関係',
-  '速度': '行動順・回避に影響',
+  '回避': '行動順・回避に影響',
   '命中': '命中率。攻撃の当たりやすさ',
   'SIZ': '体格。影響するスキルもある',
   'APP': '魅力。交渉や一部行動に影響',
@@ -91,7 +123,425 @@ export const statDescriptions = {
   '魔法技術': '魔法の緻密さや制御',
   '指揮': '味方の行動制御や士気操作'
 };
+/**
+ * パーティのみを構築 (キャラクター配列を返す)
+ */
+export function buildPartyStats(partyRaw, context = {}) {
+  return partyRaw.map(member => {
+    const char = structuredClone(characterDataTemplate);
+
+    char.id   = member.id   ?? char.id;
+    char.name = member.name ?? char.name;
+    char.Role = structuredClone(member.Role ?? char.Role);
+
+    
+    // --- 種族分類の取得 ---
+    const raceName = member.Role?.[1]?.roleName;  // Role[1] が種族
+    const raceData = findRace(raceName);
+    console.log(raceName, raceData)
+    char.race = raceData?.分類 ?? ""; 
+
+    // ステータス・スキル反映
+    applyRoleData({ party: [member] });
+
+    char.stats.baseStats = member.stats?.baseStats ?? {};
+    char.stats.totalStats = calcTotalStats({ party: [member] }, context);
+    char.stats.abilities  = member.stats?.abilities ?? {};
+    char.stats.activePassives = member.stats?.activePassives ?? [];
+
+    char.skills = member.skills ?? [];
+    char.magic  = member.magic  ?? [];
+
+    char.equipmentSlot = member.equipmentSlot ?? structuredClone(char.equipmentSlot);
+    char.attribute = member.attribute ?? null;
+    char.position  = member.position  ?? "前衛_1";
+
+    char.isNPC = member.isNPC ?? char.isNPC;
+    char.aiType = member.aiType ?? char.aiType;
+    char.skills = collectSkillsFromRoles(member) || [];
+    // ★ 合計Lvの計算を追加
+    char.stats.allLv = char.Role.reduce((sum, r) => sum + (r?.Lv || 0), 0);
+    return char;
+  });
+}
+
+/**
+ * party全員のキャラデータを構築
+ * @param {object} rawData - DBやAPIから取得した生データ
+ * @param {object} context - 行動情報など
+ * @returns {object} playerGlobalData 形式のデータ
+ */
+export function buildCharacterStats(rawData, context = {}) {
+  // playerGlobalData をベースにコピー
+  const built = structuredClone(playerGlobalData);
+
+  // 主人公情報
+  // --- トップレベル（渡された値があれば優先） ---
+  built.id   = rawData.id   ?? built.id;
+  built.name = rawData.name ?? built.name;
+  built.race = rawData.race ?? built.race;
+  built.class = rawData.class ?? built.class;
+
+  built.money = rawData.money ?? built.money;
+  built.inventory = rawData.inventory ?? built.inventory;
+  built.storage   = rawData.storage   ?? built.storage;
+  built.location  = rawData.location  ?? built.location;
+  built.savePoint = rawData.savePoint ?? built.savePoint;
+  built.questProgress = rawData.questProgress ?? built.questProgress;
+  built.storyFlags    = rawData.storyFlags    ?? built.storyFlags;
+
+  // ギルド情報
+  built.guild = {
+    ...built.guild,
+    ...(rawData.guild || {})
+  };
+
+  // --- パーティ（各キャラを characterDataTemplate で補完） ---
+  built.party = buildPartyStats(rawData.party || [], context);
+  console.log("built",built)
+
+  return built;
+}
+
+// ===== アイコン・イラストの一括読み込み =====
+
+// 属性アイコン
+const attrIconMods = import.meta.glob(
+  "/src/assets/images/属性アイコン/100/*.webp",
+  { eager: true, as: "url" }
+);
+export const ATTR_ICONS = mapIcons(attrIconMods);
+
+// 攻撃手段アイコン
+const attackIconMods = import.meta.glob(
+  "/src/assets/images/攻撃手段/*.webp",
+  { eager: true, as: "url" }
+);
+export const ATTACK_ICONS = mapIcons(attackIconMods);
+
+// キャラクターイラスト
+const charIllustMods = import.meta.glob(
+  "/src/assets/images/illust/*.webp",
+  { eager: true, as: "url" }
+);
+export const CHAR_ILLUSTS = mapIcons(charIllustMods);
+
+// 共通マッピング関数
+function mapIcons(mods) {
+  const icons = {};
+  for (const [path, url] of Object.entries(mods)) {
+    const filename = path.split("/").pop().replace(/\.webp$/i, "");
+    icons[filename] = url;
+  }
+  return icons;
+}
+
+/* =====================================
+   取得ヘルパー
+===================================== */
+// 属性
+export function getAttrIcon(name) {
+  return name && ATTR_ICONS[name] ? ATTR_ICONS[name] : "";
+}
+
+// 攻撃手段
+export function getAttackIcon(name) {
+  return name && ATTACK_ICONS[name] ? ATTACK_ICONS[name] : "";
+}
+// キャラクター
+export function getCharIllust(name) {
+  return name && CHAR_ILLUSTS[name] ? CHAR_ILLUSTS[name] : "";
+}
+
+// 種族/クラスアイコン (Excelの画像url利用)
+export function getRollIcon(name) {
+  if (!name || !allData.value.length) return "";
+  const entry = allData.value.find(c => c.名前 === name);
+  return entry?.画像url
+    ? `/src/assets/images/${entry.画像url}`
+    : "";
+}
+/**
+ * 武器データを名前で取得
+ * @param {string} name - 攻撃手段名（例: "素手", "爪", "牙"）
+ */
+export function findWeapon(name) {
+  return weaponList.value.find(w => w.名前 === name) || null;
+}
+
+/**
+ * 攻撃手段の威力を算出
+ * @param {string} name - 攻撃手段名（例: "素手", "爪"）
+ * @param {number} charValue - キャラ固有値 (playerGlobalData.stats["爪"] など)
+ * @returns {object|null} 威力結果
+ */
+export function calcWeaponPower(name, charValue = 0) {
+  const weapon = findWeapon(name);
+  if (!weapon) return null;
+
+  const value = Number(charValue) || 0;
+
+  return {
+    名前: weapon.名前,
+    種別: weapon.種別,
+    全力: weapon.全力,
+
+    // 威力（キャラ値 × 割合）
+    切断: value * (parseFloat(weapon.切断 || 0) / 100),
+    貫通: value * (parseFloat(weapon.貫通 || 0) / 100),
+    打撃: value * (parseFloat(weapon.打撃 || 0) / 100),
+
+    // 追加情報
+    ガード: value * (parseFloat(weapon.ガード || 0) / 100),
+    射撃: value * (parseFloat(weapon.射撃 || 0) / 100),
+    最低ダメージ: weapon.最低ダメージ,
+
+    // クリティカル
+    Cr率: weapon.Cr率 || "10%",
+    Cr威力: weapon.Cr威力 || "125%",
+
+    // 命中・回避補正
+    回避率: weapon.回避率,
+    命中率: weapon.命中率
+  };
+}
 
 
+/**
+ * クラスを検索
+ */
+export function findClass(name) {
+  return allData.value.find(c => c.名前 === name && c.分類 === "クラス") || null;
+}
 
+/**
+ * 種族名からレコードを検索
+ * @param {string} name - 種族名 (例: ヒューマン, エルフ, ドワーフ)
+ * @returns {object|null} 種族データ（分類: 人族/亜人/魔族 を含む）
+ */
+export function findRace(name) {
+  return allData.value.find(c => c.名前 === name) || null;
+}
+//★=== キャラクターステータス ==============================================================================
+/**
+ * characterData にステータスとスキルを付与する
+ * @param {object} characterData - キャラ作成時のデータ
+ * @returns {object} 更新済みキャラデータ
+ */
+export function applyRoleData(characterData) {
+  if (!characterData?.party?.[0]) return characterData;
 
+  const mainChar = characterData.party[0];
+
+  // ステータスが存在しないなら初期化
+  if (!mainChar.stats) {
+    mainChar.stats = { baseStats: {}, abilities: {} };
+  }
+  if (!mainChar.stats.baseStats) mainChar.stats.baseStats = {};
+  if (!mainChar.stats.abilities) mainChar.stats.abilities = {};
+
+  // ===== 種族処理 =====
+  const raceName = mainChar.Role?.[1]?.roleName;
+  const race = findRace(raceName);
+  if (race) {
+    // ステータス補正
+    for (const key in race) {
+      if (mainChar.stats.baseStats[key] !== undefined) {
+        mainChar.stats.baseStats[key] += Number(race[key]) || 0;
+      }
+    }
+    // 初期スキル
+    if (race.初期スキル) {
+      const skills = race.初期スキル.split(",").map(s => s.trim());
+      mainChar.stats.abilities[race.名前] =
+        Skill_List.value.filter(s => skills.includes(s.名前));
+    }
+  }
+
+  // ===== クラス処理 =====
+  const className = mainChar.Role?.[0]?.roleName;
+  const role = findClass(className);
+  if (role) {
+    for (const key in role) {
+      if (mainChar.stats.baseStats[key] !== undefined) {
+        mainChar.stats.baseStats[key] += Number(role[key]) || 0;
+      }
+    }
+    if (role.初期スキル) {
+      const skills = role.初期スキル.split(",").map(s => s.trim());
+      mainChar.stats.abilities[role.名前] =
+        Skill_List.value.filter(s => skills.includes(s.名前));
+    }
+  }
+
+  return characterData;
+}
+
+/**
+ * SIZボーナスを計算する
+ * @param {number} siz - キャラのSIZ値（基準100）
+ * @returns {number} ボーナス（%）
+ */
+export function getSizeBonus(siz) {
+  // SIZ100を基準に ±で補正を算出
+  // 例: SIZ120 → +20%、SIZ80 → -20%
+  if (!siz || isNaN(siz)) return 0;
+  return (siz - 100); // 基準100との差をそのまま％にする想定
+}
+/**
+ * SIZ補正を適用して最終値を返す
+ * @param {number} value - 元の値
+ * @param {string} key   - ステータス名
+ * @param {number} siz   - キャラのSIZ値
+ */
+export function applySizeBonus(value, key, siz = 100) {
+  const baseValue = typeof value === "number" ? value : parseFloat(value) || 0;
+  const bonusPercent = getSizeBonus(siz);
+
+  // プラス補正対象
+  const bonusKeysPlus = ["HP", "攻撃", "威圧"];
+  // マイナス補正対象
+  const bonusKeysMinus = ["回避", "隠密", "軽業"];
+
+  if (bonusKeysPlus.includes(key)) {
+    if (key === "威圧") {
+      // 威圧だけは直接加算
+      return baseValue + Math.round(bonusPercent);
+    } else {
+      // HPや攻撃は倍率補正
+      const multiplier = 1 + bonusPercent / 100;
+      return Math.round(baseValue * multiplier);
+    }
+  } else if (bonusKeysMinus.includes(key)) {
+    if (key === "隠密" || key === "軽業") {
+      // 隠密/軽業は直接マイナス
+      return baseValue - Math.round(bonusPercent);
+    } else {
+      // 回避は逆倍率
+      const multiplier = 1 + bonusPercent / 100;
+      return Math.round(baseValue * (1 / multiplier));
+    }
+  }
+
+  // 補正なし
+  return baseValue;
+}
+
+/**
+ * パッシブスキルの条件チェック（AND条件）
+ * @param {object} skill - スキルデータ
+ * @param {object} context - 行動情報 { 攻撃手段, 使用スキル, 使用系統 }
+ * @returns {boolean} 発動するかどうか
+ */
+function checkPassiveCondition(skill, context) {
+  if (skill.攻撃手段 && skill.攻撃手段 !== context.攻撃手段) return false;
+  if (skill.条件 && skill.条件 !== context.使用スキル) return false;
+  if (skill.条件系統 && skill.条件系統 !== context.使用系統) return false;
+  return true;
+}
+
+/**
+ * パッシブスキルを総合ステータスに反映
+ * @param {object} characterData - キャラデータ
+ * @param {object} context - 行動情報 { 攻撃手段, 使用スキル, 使用系統 }
+ * @returns {object} totalStats - 最終ステータス（パッシブ込み）
+ */
+export function calcTotalStats(characterData, context = {}) {
+  const base = structuredClone(characterData.party[0].stats.baseStats || {});
+  const abilities = characterData.party[0].stats.abilities || {};
+  const activeSkills = [];
+
+  for (const source in abilities) {
+    for (const skill of abilities[source]) {
+      if (skill.行動 === "P") {
+        if (checkPassiveCondition(skill, context)) {
+          activeSkills.push(skill);
+
+          // スキル効果を加算
+          for (const key in skill) {
+            if (
+              key !== "名前" &&
+              key !== "行動" &&
+              key !== "攻撃手段" &&
+              key !== "条件" &&
+              key !== "条件系統" &&
+              typeof skill[key] === "number"
+            ) {
+              base[key] = (base[key] || 0) + skill[key];
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // 発動中パッシブスキルを保持
+  characterData.party[0].stats.activePassives = activeSkills;
+
+  return base;
+}
+
+/**
+ * ロール行（種族/クラス）から、Lvに応じて Skill1..Skill10 を抽出し、
+ * Skill_List で詳細に解決して配列を返す。
+ * @param {Object} entry - allData の1行（{ 名前, Skill1..Skill10, ... }）
+ * @param {number} uptoLv - 取得上限Lv（例：5なら Skill1..Skill5）
+ * @returns {Array<Object>} - Skill_List の行オブジェクト配列
+ */
+function getSkillsByLevelFromEntry(entry, uptoLv) {
+  if (!entry || !Skill_List.value?.length) return [];
+  const max = Math.max(0, Math.min(10, Number(uptoLv) || 0));
+  const names = [];
+  for (let i = 1; i <= max; i++) {
+    const cell = entry[`Skill${i}`];
+    if (!cell) continue;
+    // カンマ区切り複数にも対応
+    String(cell)
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean)
+      .forEach(n => names.push(n));
+  }
+  // Skill_List から詳細解決 & 重複除去（名前キー）
+  const seen = new Set();
+  const resolved = [];
+  for (const n of names) {
+    if (seen.has(n)) continue;
+    const s = Skill_List.value.find(x => x?.名前 === n);
+    if (s) {
+      resolved.push({ ...s });
+      seen.add(n);
+    }
+  }
+  return resolved;
+}
+
+/**
+ * Role 配列を走査して、各ロール(Lv>0)の Skill1..Skill10 をLv上限まで取得。
+ * allData からロール名（種族/クラス）一致の行を探して集約します。
+ * @param {Object} mainChar - characterData.party[0]
+ * @returns {Array<Object>} - 取得スキル配列（重複名は自動排除）
+ */
+function collectSkillsFromRoles(mainChar) {
+  if (!mainChar?.Role?.length || !allData.value?.length) return [];
+
+  const acquired = [];
+  for (const r of mainChar.Role) {
+    const name = r?.roleName;
+    const lv = Number(r?.Lv) || 0;
+    if (!name || lv <= 0) continue;
+
+    // allData は 種族/クラス 混在。名前一致で拾う
+    const entry = allData.value.find(row => row?.名前 === name);
+    if (!entry) continue;
+
+    acquired.push(...getSkillsByLevelFromEntry(entry, lv));
+  }
+
+  // 名前重複を最終的にも除去
+  const mapByName = new Map();
+  for (const s of acquired) {
+    if (!mapByName.has(s.名前)) mapByName.set(s.名前, s);
+  }
+  return Array.from(mapByName.values());
+}

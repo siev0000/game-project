@@ -326,7 +326,7 @@ function displayModalData(data) {
         if (sizValue !== 0) {
           // SIZが0の場合は補正をスキップ
           if (stat === "速度") {
-            // 速度は補正値の正負を反転させて適用
+            // 回避は補正値の正負を反転させて適用
             adjustedValue = Math.round(
               baseValue - (baseValue * modifier) / 100
             );
@@ -467,7 +467,7 @@ function calculateAndDisplayStatus() {
     // SIZ補正の適用
     if (["HP", "攻撃", "速度"].includes(key)) {
       if (key === "速度") {
-        // 速度はSIZ補正が正のとき減少、負のとき増加
+        // 回避はSIZ補正が正のとき減少、負のとき増加
         totalStat = Math.round(totalStat - (totalStat * sizModifier) / 100);
       } else {
         // HPや攻撃はSIZ補正値をそのまま加算

@@ -76,7 +76,7 @@ const handleRegister = async () => {
   border-radius: 8px;
   padding: 20px 30px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
+  max-width: 650px;
   width: 100%;
   box-sizing: border-box;
   text-align: center;

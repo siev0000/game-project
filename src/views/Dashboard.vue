@@ -1,13 +1,11 @@
 <template>
-  <div id="scalable-root">
-    <div class="container">
-        <h1>ようこそ、<span>{{ username }}</span> さん！</h1>
-        <p>次のアクションを選択してください。</p>
-        <div class="actions">
-        <button class="select" @click="goToSelect">キャラクターを選択</button>
-        <button @click="goToCreate">キャラクターを作成</button>
-        </div>
-    </div>
+  <div class="container">
+      <h1>ようこそ、<span>{{ username }}</span> さん！</h1>
+      <p>次のアクションを選択してください。</p>
+      <div class="actions">
+      <button class="select" @click="goToSelect">キャラクターを選択</button>
+      <button @click="goToCreate">キャラクターを作成</button>
+      </div>
   </div>
 </template>
 <style scoped>
@@ -17,14 +15,13 @@
 import { ref, onMounted } from 'vue'
 import { applyGlobalScale } from '@/components/useScale.js'
 import { useRouter } from 'vue-router'
+
 onMounted(() => {
   applyGlobalScale()
 })
 
-
 const router = useRouter()
 const username = ref('')
-const userId = localStorage.getItem('userId')
 const token = localStorage.getItem('authToken')
 
 onMounted(() => {
@@ -37,12 +34,13 @@ onMounted(() => {
 })
 
 const goToSelect = () => {
-  router.push('/character-select') // vue-router に合わせたルート
+  router.push('/CharacterSelectView') // vue-router に合わせたルート
 }
 
 const goToCreate = () => {
   router.push('/CharacterCreateView') // vue-router に合わせたルート
 }
+
 </script>
 
 <style scoped>
@@ -56,7 +54,6 @@ const goToCreate = () => {
 }
 
 button {
-  margin: 0 1rem;
   padding: 0.5rem 1rem;
   font-size: 1.2rem;
   margin-bottom: 15px;

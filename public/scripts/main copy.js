@@ -97,7 +97,7 @@ const characterData = {
     userId: null
 };
 
-const statKeys = ['HP', 'MP', 'ST', '攻撃', '防御', '魔力', '精神', '速度', '命中', 'APP',
+const statKeys = ['HP', 'MP', 'ST', '攻撃', '防御', '魔力', '精神', '回避', '命中', 'APP',
     '隠密', '感知', '威圧', '軽業', '技術', '早業',
     '看破', '騙す', '知識', '鑑定', '装置',
     '変装', '制作', '精神接続', '魔法技術', '指揮'];
@@ -324,15 +324,15 @@ function displayModalData(data) {
     const modifier = calculateSizeModifier(sizValue);
 
     // ステータスリストに基づき補正を適用またはそのまま表示
-    ['HP', 'MP', 'ST', '攻撃', '防御', '魔力', '精神', '速度', '命中'].forEach(stat => {
+    ['HP', 'MP', 'ST', '攻撃', '防御', '魔力', '精神', '回避', '命中'].forEach(stat => {
         let baseValue = data[stat] || 0;
         let adjustedValue = baseValue;
         let modifierDisplay = ''; // 補正の表示用
     
-        if (['HP', '攻撃', '速度'].includes(stat)) {
+        if (['HP', '攻撃', '回避'].includes(stat)) {
             if (sizValue !== 0) { // SIZが0の場合は補正をスキップ
-                if (stat === '速度') {
-                    // 速度は補正値の正負を反転させて適用
+                if (stat === '回避') {
+                    // 回避は補正値の正負を反転させて適用
                     adjustedValue = Math.round(baseValue - (baseValue * modifier / 100));
                     if (modifier !== 0) {
                         modifierDisplay = ` (${baseValue} ${modifier > 0 ? '-' : '+'}${Math.abs(Math.round(modifier))}%)`;
@@ -423,7 +423,7 @@ function calculateAndDisplayStatus() {
     const raceLevelEffective = isHuman ? 0 : currentRaceLevel;
 
     let totalStatus = 0;
-    const statKeys = ['HP', 'MP', 'ST', '攻撃', '防御', '魔力', '精神', '速度', '命中'];
+    const statKeys = ['HP', 'MP', 'ST', '攻撃', '防御', '魔力', '精神', '回避', '命中'];
     const statResults = [];
 
     // SIZ補正値を取得する関数
@@ -448,9 +448,9 @@ function calculateAndDisplayStatus() {
         let totalStat = raceStat + classStat;
 
         // SIZ補正の適用
-        if (['HP', '攻撃', '速度'].includes(key)) {
-            if (key === '速度') {
-                // 速度はSIZ補正が正のとき減少、負のとき増加
+        if (['HP', '攻撃', '回避'].includes(key)) {
+            if (key === '回避') {
+                // 回避はSIZ補正が正のとき減少、負のとき増加
                 totalStat = Math.round(totalStat - (totalStat * sizModifier / 100));
             } else {
                 // HPや攻撃はSIZ補正値をそのまま加算

@@ -24,8 +24,8 @@ function applySparkEffect(size, speed, color, direction) {
   const particles = Array.from({ length: size / 5 }, () => ({
     x: canvas.width / 2,
     y: canvas.height / 2,
-    vx: (Math.random() - 0.5) * 5 * (size / 100) * (speed * 6), // 速度を3倍
-    vy: (Math.random() - 0.5) * 5 * (size / 100) * (speed * 6), // 速度を3倍
+    vx: (Math.random() - 0.5) * 5 * (size / 100) * (speed * 6), // 回避を3倍
+    vy: (Math.random() - 0.5) * 5 * (size / 100) * (speed * 6), // 回避を3倍
     radius: Math.random() * (size / 13),
     alpha: 1,
     life: Math.random() * 50 + 50, // ライフタイム
@@ -1389,8 +1389,8 @@ function applyFragmentEffect2(size, speed, color, x, y) {
     x,
     y,
     radius: Math.random() * (size / 30) + size / 40,
-    vx: (Math.random() - 0.5) * size * speed, // 速度を反映
-    vy: (Math.random() - 0.5) * size * speed, // 速度を反映
+    vx: (Math.random() - 0.5) * size * speed, // 回避を反映
+    vy: (Math.random() - 0.5) * size * speed, // 回避を反映
     alpha: 1,
   }));
 
@@ -1539,8 +1539,8 @@ function applyFragmentEffect(size, speed, color, x, y) {
     x,
     y,
     radius: Math.random() * (size / 30) + size / 40,
-    vx: (Math.random() - 0.5) * size * speed, // 速度を反映
-    vy: (Math.random() - 0.5) * size * speed, // 速度を反映
+    vx: (Math.random() - 0.5) * size * speed, // 回避を反映
+    vy: (Math.random() - 0.5) * size * speed, // 回避を反映
     alpha: 1,
   }));
 
@@ -5164,7 +5164,7 @@ function applyZigzagBeamEffect(size, speed, color, duration) {
   
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   
-    // 速度に応じた残像記録間隔を計算
+    // 回避に応じた残像記録間隔を計算
     const recordInterval = Math.max(1, Math.floor(6 / speed)); // 最小間隔を1に設定
   
     // 残像を記録 (速度に応じてフレーム間隔を変化)

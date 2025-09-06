@@ -228,6 +228,29 @@ router.get("/equipments", (req, res) => {
   }
 });
 
+// 「武器」シートからデータを取得するAPI
+router.get("/weapons", (req, res) => {
+  try {
+    const weaponData = itemData["武器"]; // シート名「武器」を取得
+
+    if (!weaponData) {
+      console.error("武器シートが見つかりません");
+      return res.status(404).json({ error: "武器シートが見つかりません" });
+    }
+
+    // 名前が空白や未定義でないデータのみ返す
+    const filteredData = weaponData.filter(
+      (row) => row["名前"] && row["名前"].trim() !== ""
+    );
+
+    res.json(filteredData);
+  } catch (error) {
+    console.error("Error fetching weapon data:", error);
+    res.status(500).json({ error: "Failed to fetch weapon data" });
+  }
+});
+
+
 // 「エリア」シートからデータを取得するAPI 装備品 アイテム
 router.get("/locations", (req, res) => {
   try {
@@ -273,43 +296,65 @@ router.get("/shop", (req, res) => {
 });
 
 // ギルド名から特定のクエストデータを返すAPI
+// router.get("/quests", (req, res) => {
+//   const guildName = req.query.name; // クエリパラメータ `name` からギルド名を取得
+
+//   console.log("取得したギルドデータ:", guildName);
+
+//   // Excelデータをキャッシュから取得してフィルタリング
+//   const quests = areaData["クエスト"]
+//     .filter((row) => row["依頼場所"] === guildName) // ギルド名でフィルタリング
+//     .map((row) => ({
+//       questId: row["クエストID"],
+//       type: row["種別"],
+//       questName: row["クエスト名"],
+//       description: row["クエスト内容"],
+//       targets: parseTargets(row["対象"]), // 必要なら分割処理を追加
+//       conditions: {
+//         rank: row["条件ランク"],
+//         status: parseStatusConditions(row["条件ステータス"]),
+//         Skill: parseConditions(row["条件アビリティ"]),
+//         quest: parseConditions(row["条件クエスト"]),
+//       },
+//       rewards: row["報酬"].split(",").map((reward) => reward.trim()),
+//       exp: Number(row["経験値"]),
+//       relatedNpc: row["関連NPC"],
+//       location: row["場所"],
+//     }));
+
+//   // フィルタリング結果を返却
+//   if (quests.length > 0) {
+//     res.status(200).json({ success: true, quests });
+//   } else {
+//     res
+//       .status(404)
+//       .json({ success: false, message: "該当するクエストが見つかりません。" });
+//   }
+// });
+
+// 複数のクエストIDでクエストデータを取得するAPI
+// 「クエスト」シートから全データを返すAPI
 router.get("/quests", (req, res) => {
-  const guildName = req.query.name; // クエリパラメータ `name` からギルド名を取得
+  try {
+    const questData = areaData["クエスト"]; // シート名「クエスト」
 
-  console.log("取得したギルドデータ:", guildName);
+    if (!questData) {
+      return res.status(404).json({ error: "クエストシートが見つかりません" });
+    }
 
-  // Excelデータをキャッシュから取得してフィルタリング
-  const quests = areaData["クエスト"]
-    .filter((row) => row["依頼場所"] === guildName) // ギルド名でフィルタリング
-    .map((row) => ({
-      questId: row["クエストID"],
-      type: row["種別"],
-      questName: row["クエスト名"],
-      description: row["クエスト内容"],
-      targets: parseTargets(row["対象"]), // 必要なら分割処理を追加
-      conditions: {
-        rank: row["条件ランク"],
-        status: parseStatusConditions(row["条件ステータス"]),
-        Skill: parseConditions(row["条件アビリティ"]),
-        quest: parseConditions(row["条件クエスト"]),
-      },
-      rewards: row["報酬"].split(",").map((reward) => reward.trim()),
-      exp: Number(row["経験値"]),
-      relatedNpc: row["関連NPC"],
-      location: row["場所"],
-    }));
+    // 名前が空白や未定義でないデータのみフィルタリング
+    const filteredData = questData.filter(
+      (row) => row["クエスト名"] && row["クエスト名"].trim() !== ""
+    );
 
-  // フィルタリング結果を返却
-  if (quests.length > 0) {
-    res.status(200).json({ success: true, quests });
-  } else {
-    res
-      .status(404)
-      .json({ success: false, message: "該当するクエストが見つかりません。" });
+    res.json(filteredData);
+  } catch (error) {
+    console.error("Error fetching quest data:", error);
+    res.status(500).json({ error: "Failed to fetch quest data" });
   }
 });
 
-// 複数のクエストIDでクエストデータを取得するAPI
+
 router.post("/quests/by-ids", (req, res) => {
   const questIds = req.body.questIds; // クエストIDの配列をリクエストボディから取得
 
