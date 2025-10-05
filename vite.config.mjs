@@ -12,7 +12,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://192.168.0.110:3000', // ← ここをローカルIPに
+        target: 'http://localhost:3000', // ← ここをローカルIPに
         changeOrigin: true,
         secure: false
       }

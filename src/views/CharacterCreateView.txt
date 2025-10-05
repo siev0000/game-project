@@ -146,13 +146,9 @@
           </span>
           <ruby class="skill-name-detail-box" :class="typeClass(selectedSkillDetail.行動)">
             {{ selectedSkillDetail.名前 }}
-            <rt>{{ displayRuby(selectedSkillDetail?.ルビ) }}</rt>
+            <rt>{{ selectedSkillDetail.ルビ }}</rt>
           </ruby>
-          
-          <span class="skill-keito">
-            {{ selectedSkillDetail.系統 === 0 ? '' : selectedSkillDetail.系統 }}
-          </span>
-
+          <span class="skill-keito">{{ selectedSkillDetail.系統 }}</span>
           <span class="skill-type"  :class="typeClass(selectedSkillDetail.行動)">{{ selectedSkillDetail.行動 }}</span>
         </div>
         <hr />
@@ -244,10 +240,6 @@ const typeClass = (t) => ({
   'type-s': t === 'S',
   'type-q': t === 'Q',
 });
-const displayRuby = (val) => {
-  console.log("displayRuby called:", val, typeof val);
-  return val === 0 ? '' : val;
-};
 
   console.log("スキル選択")
 onMounted(async () => {
@@ -754,7 +746,6 @@ async function saveCharacterToDB(characterData) {
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-  font-size: 20px;
 }
 
 #scalable-root {
@@ -889,7 +880,7 @@ th {
 
 /* スクロール用ラッパー */
 .table-wrapper {
-  height: 651px; /* 表全体の高さ */
+  height: 640px; /* 表全体の高さ */
   background: radial-gradient(circle at center, #5e5b54 0%, #423d2f 100%);
   border: 5px solid #b58b4c;
   overflow-y: auto;

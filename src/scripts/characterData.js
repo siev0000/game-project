@@ -34,7 +34,8 @@ export const characterDataTemplate = {
     装飾1: null,
     装飾2: null,
   },
-
+  inventory: [],     // 主人公が持っているアイテムリスト
+  
   // --- スキル・属性 ---
   skills: [],
   magic: [],
@@ -56,6 +57,14 @@ export const characterDataTemplate = {
     skinColor: "",
     extra: "",      // 傷跡や特徴
   },
+
+  // ==== ギルド関連 ====
+  guild: {
+    name: "",               // 所属ギルド名
+    rank: 0,                // ギルドランク
+    contributionPoints: 0,  // 貢献ポイント（ギルド内評価）
+  },
+
   achievements: [], // 称号や実績
   relationships: {},// NPCや勢力との関係値
 };
@@ -70,7 +79,6 @@ export const playerGlobalData = {
   
   // ==== 所持・進行系（プレイヤー全体で共有する資産や進行状況）====
   money: 0,          // 所持金
-  inventory: [],     // 主人公が持っているアイテムリスト
   maxInventory: 15,  // インベントリの上限
   storage: [],       // 倉庫に預けているアイテム
   location: "",      // 現在地（街やダンジョンなど）
@@ -79,12 +87,6 @@ export const playerGlobalData = {
   questProgress: [], // クエスト進行状況（例: {id: "Q001", state: "進行中"}）
   storyFlags: {},    // ストーリーフラグ（イベント発生条件などの制御用）
 
-  // ==== ギルド関連 ====
-  guild: {
-    name: "",               // 所属ギルド名
-    rank: 0,                // ギルドランク
-    contributionPoints: 0,  // 貢献ポイント（ギルド内評価）
-  },
 
   // ==== パーティデータ ====
   // 主人公以外の仲間キャラを配列として管理する

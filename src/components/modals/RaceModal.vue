@@ -164,7 +164,7 @@ const getImageUrl = (relativePath) => {
   font-size: 20px;
 
   background: #222;
-  padding: 20px;
+  /* padding: 20px; */
   border-radius: 10px;
   /* max-width: 90%;
   max-height: 90%; */
@@ -208,7 +208,7 @@ const getImageUrl = (relativePath) => {
   grid-template-columns: repeat(2, 1fr);
   gap: 0.5rem;
   font-size: 20px;
-  max-height: 900px;
+  height: 55%;
   overflow-y: auto;
 
   /* 上寄せを強制 */
@@ -240,14 +240,14 @@ button {
 .race-description {
   position: absolute;
   margin-top: 8px;
-  height: 13%;
+  height: 18%;
   font-size: 30px;
   color: #ffeecc;
   background-color: rgba(0, 0, 0, 0.3);
   padding: 10px;
   border-radius: 6px;
-  bottom: 65px;
-  width: 605px;
+  bottom: 80px;
+  width: 665px;
 }
 .race-button {
   display: flex;

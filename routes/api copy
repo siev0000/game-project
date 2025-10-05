@@ -1,0 +1,153 @@
+const express = require('express');
+const router = express.Router();
+const Datastore = require('nedb');
+const path = require('path');
+const authenticateUser = require('../middleware/auth'); // 認証ミドルウェアの読み込み
+
+// データベース設定
+const characterDB = new Datastore({ filename: path.join(__dirname, '../data/db/characters.db'), autoload: true });
+// ユーザーデータベース
+const userDB = new Datastore({ filename: path.join(__dirname, '../data/db/users.db'), autoload: true });
+
+
+// ユーザー登録 (デバッグ用)
+// userDB.insert({ username: 'test', password: '1234' });
+
+// ログイン処理
+router.post('/login', (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ error: 'ユーザー名とパスワードは必須です' });
+    }
+
+    // データベースからユーザー名を検索
+    userDB.findOne({ username }, (err, user) => {
+        if (err) {
+            return res.status(500).json({ error: 'サーバーエラー' });
+        }
+        if (!user) {
+            return res.status(401).json({ error: 'ユーザー名またはパスワードが間違っています' });
+        }
+
+        // パスワードを比較
+        bcrypt.compare(password, user.password, (err, isMatch) => {
+            if (err) {
+                return res.status(500).json({ error: 'パスワード検証エラー' });
+            }
+            if (!isMatch) {
+                return res.status(401).json({ error: 'ユーザー名またはパスワードが間違っています' });
+            }
+
+            // 認証成功
+            res.status(200).json({ userId: user._id, username: user.username });
+        });
+    });
+});
+
+
+// 登録処理
+const bcrypt = require('bcrypt');
+const SALT_ROUNDS = 10;
+
+router.post('/register', (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ error: 'ユーザー名とパスワードは必須です' });
+    }
+
+    userDB.findOne({ username }, (err, existingUser) => {
+        if (err) {
+            return res.status(500).json({ error: 'データベースエラー' });
+        }
+        if (existingUser) {
+            return res.status(409).json({ error: 'このユーザー名は既に使用されています' });
+        }
+
+        // パスワードをハッシュ化
+        bcrypt.hash(password, SALT_ROUNDS, (err, hashedPassword) => {
+            if (err) {
+                return res.status(500).json({ error: 'パスワードのハッシュ化に失敗しました' });
+            }
+
+            const newUser = { username, password: hashedPassword };
+            userDB.insert(newUser, (err, createdUser) => {
+                if (err) {
+                    return res.status(500).json({ error: 'ユーザー登録に失敗しました' });
+                }
+                res.status(201).json({ message: 'ユーザー登録成功', userId: createdUser._id });
+            });
+        });
+    });
+});
+
+router.get('/api/user', authenticateUser, (req, res) => {
+    try {
+        const { _id, username } = req.user; // 認証ミドルウェアで設定されたユーザー情報
+        res.status(200).json({ id: _id, username });
+    } catch (error) {
+        console.error('ユーザー情報の取得中にエラー:', error);
+        res.status(500).json({ error: 'ユーザー情報の取得に失敗しました' });
+    }
+});
+
+// キャラクターの追加
+router.post('/characters', (req, res) => {
+    const newCharacter = req.body;
+    characterDB.insert(newCharacter, (err, newDoc) => {
+        if (err) {
+            res.status(500).json({ error: 'Error adding character' });
+        } else {
+            res.status(201).json(newDoc);
+        }
+    });
+});
+
+
+// キャラクター一覧の取得
+router.get('/characters', (req, res) => {
+    characterDB.find({}, (err, docs) => {
+        if (err) {
+            res.status(500).json({ error: 'Error fetching characters' });
+        } else {
+            res.status(200).json(docs);
+        }
+    });
+});
+
+
+
+// // キャラクター作成処理 (サーバー側)
+// app.post('/api/characters', async (req, res) => {
+//     const userId = req.user._id; // 認証済みユーザーのID
+//     const playerData = req.body; // クライアントから送信された playerData
+
+//     // userId を playerData に追加
+//     playerData.userId = userId;
+
+//     try {
+//         const result = await characterDB.insert(playerData); // データベースに保存
+//         res.status(201).json(result);
+//     } catch (error) {
+//         console.error('Error saving character:', error);
+//         res.status(500).json({ error: 'キャラクターの保存に失敗しました' });
+//     }
+// });
+
+// // キャラクター取得処理 (サーバー側)
+// app.get('/api/characters', async (req, res) => {
+//     const userId = req.user._id; // 認証済みユーザーのID
+
+//     try {
+//         // ログイン中のユーザーのキャラクターのみ取得
+//         const characters = await characterDB.find({ userId });
+//         res.status(200).json(characters);
+//     } catch (error) {
+//         console.error('Error fetching characters:', error);
+//         res.status(500).json({ error: 'キャラクターデータの取得に失敗しました' });
+//     }
+// });
+
+
+module.exports = router;

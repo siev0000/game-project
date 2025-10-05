@@ -54,6 +54,23 @@ export async function loadGameData() {
   locationList.value = await res11.json();   // 拠点・街・エリア
 }
 
+// ログの出し
+export async function logEquipment(equip, template) {
+  const ordered = {};
+  let i = 1;
+  Object.keys(template).forEach(key => {
+    const value = equip[key] ?? null;
+    if (value !== null && value !== 0 && value !== "") {
+      ordered[i.toString().padStart(3, "0")] = { key, value };
+    }
+    i++;
+  });
+  console.log(ordered);
+}
+
+
+
+
 export const statMap = {
   ステータス: ['HP', 'MP', 'ST', '攻撃', '防御', '魔力', '精神', '回避', '命中', 'SIZ', 'APP'],
   技能: ['隠密', '感知', '威圧', '軽業', '技術', '早業', '看破', '騙す', '知識', '鑑定', '装置', '変装', '制作', '精神接続', '魔法技術', '指揮'],
@@ -148,19 +165,26 @@ export function buildPartyStats(partyRaw, context = {}) {
     char.stats.totalStats = calcTotalStats({ party: [member] }, context);
     char.stats.abilities  = member.stats?.abilities ?? {};
     char.stats.activePassives = member.stats?.activePassives ?? [];
-
-    char.skills = member.skills ?? [];
+    
+    char.skills = collectSkillsFromRoles(member) || [];
     char.magic  = member.magic  ?? [];
 
     char.equipmentSlot = member.equipmentSlot ?? structuredClone(char.equipmentSlot);
     char.attribute = member.attribute ?? null;
     char.position  = member.position  ?? "前衛_1";
+    
+    char.inventory = member.inventory ?? member.inventory;
 
     char.isNPC = member.isNPC ?? char.isNPC;
     char.aiType = member.aiType ?? char.aiType;
-    char.skills = collectSkillsFromRoles(member) || [];
     // ★ 合計Lvの計算を追加
     char.stats.allLv = char.Role.reduce((sum, r) => sum + (r?.Lv || 0), 0);
+
+    // ギルド情報
+    char.guild = {
+      ...char.guild,
+      ...(member.guild || {})
+    };
     return char;
   });
 }
@@ -183,18 +207,12 @@ export function buildCharacterStats(rawData, context = {}) {
   built.class = rawData.class ?? built.class;
 
   built.money = rawData.money ?? built.money;
-  built.inventory = rawData.inventory ?? built.inventory;
   built.storage   = rawData.storage   ?? built.storage;
   built.location  = rawData.location  ?? built.location;
   built.savePoint = rawData.savePoint ?? built.savePoint;
   built.questProgress = rawData.questProgress ?? built.questProgress;
   built.storyFlags    = rawData.storyFlags    ?? built.storyFlags;
 
-  // ギルド情報
-  built.guild = {
-    ...built.guild,
-    ...(rawData.guild || {})
-  };
 
   // --- パーティ（各キャラを characterDataTemplate で補完） ---
   built.party = buildPartyStats(rawData.party || [], context);
@@ -544,4 +562,51 @@ function collectSkillsFromRoles(mainChar) {
     if (!mapByName.has(s.名前)) mapByName.set(s.名前, s);
   }
   return Array.from(mapByName.values());
+}
+
+// ==== ギルドランクスタイル ====
+export const rankStyles = {
+  7: { name: "赤鉄", color: "darkred", symbol: "❖", outline: "white" },
+  6: { name: "青鉄", color: "blue", symbol: "❖", outline: "white" },
+  5: { name: "銀鉄", color: "#82ffe6", symbol: "★", outline: "white" },
+  4: { name: "白金", color: "#c8f7ff", symbol: "✪", outline: "yellow" },
+  3: { name: "金", color: "gold", symbol: "✷", outline: "black" },
+  2: { name: "銀", color: "#C0C0C0", symbol: "✦", outline: "black" },
+  1: { name: "銅", color: "#c87209", symbol: "✧", outline: "black" },
+};
+
+// ==== ギルドランク検索 ====
+export function getRankStyleByName(name) {
+  return Object.values(rankStyles).find(r => r.name === name) || null;
+}
+
+
+
+/**
+ * 指定した要素に文字を収める
+ * @param {string} className - 対象要素のclass
+ * @param {number} maxWidth - 許容する最大幅(px)
+ * @param {string} text - 表示する文字列
+ */
+export function fitTextToWidth(className, maxWidth, text, fontSize = 30) {
+  const els = document.querySelectorAll(`.${className}`);
+  if (!els.length) return;
+
+  els.forEach((el) => {
+    // 文字数（nullや空白時は1文字として扱う）
+    const len = text ? text.length : 1;
+
+    // 1文字あたりの幅(px)
+    let charWidth = maxWidth / len;
+
+    // 最大値を30pxに制限
+    if (charWidth > fontSize) charWidth = fontSize;
+
+    // フォントサイズを設定
+    el.style.fontSize = `${charWidth}px`;
+
+    console.log(
+      `fitTextToWidth: '${text}' len=${len}, charWidth=${charWidth}px`
+    );
+  });
 }

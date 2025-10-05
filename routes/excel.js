@@ -46,16 +46,18 @@ function loadExcelData(filePath, type) {
       if (type === "game") {
         excelCache[sheetName] = data;
       } else if (type === "item") {
-        if (!data) return;
-        itemData[sheetName] = data;
-        if (sheetName === "ショップ") {
-          shopData = data.map((row) => ({
+        // data が null/undefined なら空配列にする
+        const safeData = data || [];
+        itemData[sheetName.trim()] = safeData;
+
+        if (sheetName.trim() === "ショップ") {
+          shopData = safeData.map((row) => ({
             店名: row["店名"],
             ルビ: row["ルビ"],
             商品: Object.keys(row)
-              .filter((key) => key.startsWith("商品")) // "商品1", "商品2", ... を取得
-              .map((key) => row[key]) // 商品名を取得
-              .filter((item) => item), // 空の商品を除外
+              .filter((key) => key.startsWith("商品"))
+              .map((key) => row[key])
+              .filter((item) => item),
           }));
 
           console.log("ショップデータ:", shopData);
@@ -202,10 +204,10 @@ router.get("/items", (req, res) => {
   }
 });
 
-// 「装備品」シートからデータを取得するAPI 装備品 アイテム
+// 「作製品」シートからデータを取得するAPI 作製品 アイテム
 router.get("/equipments", (req, res) => {
   try {
-    const equipmentData = itemData["装備品"]; // シート名「装備品」を取得
+    const equipmentData = itemData["作製品"]; // シート名「作製品」を取得
 
     if (!equipmentData) {
       console.error("装備シートが見つかりません");
@@ -228,14 +230,14 @@ router.get("/equipments", (req, res) => {
   }
 });
 
-// 「武器」シートからデータを取得するAPI
+// 「装備品」シートからデータを取得するAPI
 router.get("/weapons", (req, res) => {
   try {
-    const weaponData = itemData["武器"]; // シート名「武器」を取得
+    const weaponData = itemData["装備品"]; // シート名「装備品」を取得
 
     if (!weaponData) {
-      console.error("武器シートが見つかりません");
-      return res.status(404).json({ error: "武器シートが見つかりません" });
+      console.error("装備品シートが見つかりません");
+      return res.status(404).json({ error: "装備品シートが見つかりません" });
     }
 
     // 名前が空白や未定義でないデータのみ返す
@@ -250,11 +252,64 @@ router.get("/weapons", (req, res) => {
   }
 });
 
+// 「素材」シートからデータを取得するAPI
+router.get("/materials", (req, res) => {
+  try {
+    const materialData = itemData["素材"];
 
-// 「エリア」シートからデータを取得するAPI 装備品 アイテム
+    if (!materialData) {
+      console.error("素材シートが見つかりません");
+      return res.status(404).json({ error: "素材シートが見つかりません" });
+    }
+
+    const filteredData = materialData.filter(
+      (row) => row["名前"] && row["名前"].trim() !== ""
+    );
+
+    res.json(filteredData);
+  } catch (error) {
+    console.error("Error fetching material data:", error);
+    res.status(500).json({ error: "Failed to fetch material data" });
+  }
+});
+
+// 「付与」シートからデータを取得するAPI
+router.get("/equipment-enhancements", (req, res) => {
+  try {
+    const enhancementData = itemData["付与"];
+
+    if (!enhancementData) {
+      console.error("付与シートが見つかりません");
+      return res.status(404).json({ error: "付与シートが見つかりません" });
+    }
+
+    const filteredData = enhancementData
+      .filter((row) => row["名前"] && row["名前"].trim() !== "")
+      .map((row) => {
+        const newRow = { ...row };
+        if (typeof newRow["付与対象"] === "string") {
+          // カンマ区切りを配列に変換
+          newRow["付与対象"] = newRow["付与対象"]
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+        }
+        return newRow;
+      });
+
+    res.json(filteredData);
+  } catch (error) {
+    console.error("Error fetching enhancement data:", error);
+    res.status(500).json({ error: "Failed to fetch enhancement data" });
+  }
+});
+
+
+
+// 「エリア」シートからデータを取得するAPI 作製品 アイテム
 router.get("/locations", (req, res) => {
   try {
-    const locationData = areaData["エリア"]; // シート名「装備品」を取得
+    const locationData = areaData["エリア"]; // シート名「作製品」を取得
 
     if (!locationData) {
       console.error("エリアシートが見つかりません");

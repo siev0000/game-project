@@ -11,9 +11,21 @@ html{
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  font-size: 20px;
+  /* フォント設定 */
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  color: white;
+  /* text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+  -webkit-text-stroke: 0.2px black; */
+  line-height: 1.6;
 }
-
+html, body, #scalable-root, .modal-content {
+  -webkit-user-select: none; /* iOS Safari */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* IE10+ */
+  user-select: none;         /* 標準 */
+  overscroll-behavior: none; /* ← これでプルリロードや隣タブへのスワイプを抑制 */
+}
 #scalable-root {
   width: 720px;
   height: 1280px;
@@ -23,9 +35,12 @@ html{
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  padding: 40px;
 
   display: flex;
   justify-content: center;
   align-items: center;
+  align-items: flex-start;   /* ← 縦方向は上寄せに変更 */
   overflow: hidden;
 }
+

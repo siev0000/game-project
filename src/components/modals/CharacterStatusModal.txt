@@ -1,33 +1,103 @@
 <template>
   <div class="modal-overlay">
     <div class="modal-content">
-      <!-- ヘッダー -->
+
+      <!-- ヘッダー：キャラクター切替 -->
       <div class="character-header">
         <button @click="prevCharacter" class="arrow-btn">〈</button>
+
         <div class="character-info">
           <img :src="getRollIcon(currentRace)" alt="種族" class="icon" />
           <img :src="getRollIcon(currentClass)" alt="クラス" class="icon" />
           <span class="name">{{ currentCharacter.name }}</span>
           <span class="level-tag">Lv {{ currentCharacter.stats.allLv }}</span>
         </div>
+
         <button @click="nextCharacter" class="arrow-btn">〉</button>
       </div>
 
       <!-- タブバー -->
       <div class="tab-bar">
-        <div v-for="tab in tabs" :key="tab.name"
-             :class="['tab-btn', { active: currentTab === tab.name }]"
-             @click="currentTab = tab.name">
-          <div class="tab-icon">{{ tab.icon }}</div>
-          <div class="tab-label">{{ tab.label }}</div>
+        <div
+          v-for="tab in tabs"
+          :key="tab"
+          :class="['tab-btn', { active: currentTab === tab }]"
+          @click="currentTab = tab"
+        >
+          <div class="tab-icon">🜛</div>
+          <div class="tab-label">{{ tab }}</div>
         </div>
       </div>
 
       <!-- タブ内容 -->
       <div class="tab-content">
-        <component :is="currentTabComponent"
-                   :character="currentCharacter"
-                   :player="character" />
+        <!-- 基本 -->
+        <div v-if="currentTab === '基本'" class="tab-panel">
+          <p>名前: {{ currentCharacter.name }}</p>
+          <p>種族: {{ currentRace }}</p>
+          <p>クラス: {{ currentClass }}</p>
+          <p>Lv: {{ currentCharacter.stats.allLv }}</p>
+          <p>所持金: {{ character.money }}</p>
+          <p>現在地: {{ character.location }}</p>
+        </div>
+
+        <!-- ステータス -->
+        <div v-if="currentTab === 'ステータス'" class="tab-panel">
+          <div v-for="(role, idx) in currentCharacter.Role" :key="idx" v-if="role.Lv > 0">
+            {{ role.roleName }} Lv{{ role.Lv }}
+          </div>
+          <div class="stats-grid">
+            <div v-for="(val, key) in currentCharacter.stats.baseStats" :key="key">
+              {{ key }}: {{ val }}
+            </div>
+          </div>
+        </div>
+
+        <!-- スキル -->
+        <div v-if="currentTab === 'スキル'" class="tab-panel">
+          <div v-for="s in currentCharacter.skills" :key="s.名前">
+            {{ s.名前 }} ({{ s.行動 }})
+          </div>
+          <p>属性: {{ currentCharacter.attribute }}</p>
+        </div>
+
+        <!-- 装備 -->
+        <div v-if="currentTab === '装備'" class="tab-panel">
+          <div v-for="(val, key) in currentCharacter.equipmentSlot" :key="key">
+            {{ key }}: {{ val || 'なし' }}
+          </div>
+        </div>
+
+        <!-- 手持ち -->
+        <div v-if="currentTab === '手持ち'" class="tab-panel">
+          <p>所持上限: {{ character.maxInventory }}</p>
+          <ul>
+            <li v-for="(item, idx) in character.inventory" :key="idx">
+              {{ item.name }} × {{ item.quantity }}
+            </li>
+          </ul>
+        </div>
+
+        <!-- ギルド -->
+        <div v-if="currentTab === 'ギルド'" class="tab-panel">
+          <p>所属: {{ character.guild.name }}</p>
+          <p>ランク: {{ character.guild.rank }}</p>
+          <p>貢献度: {{ character.guild.contributionPoints }}</p>
+        </div>
+
+        <!-- 進行 -->
+        <div v-if="currentTab === '進行'" class="tab-panel">
+          <p>転移可能な街:</p>
+          <ul>
+            <li v-for="town in character.memoryStreet" :key="town">{{ town }}</li>
+          </ul>
+          <p>クエスト進行:</p>
+          <ul>
+            <li v-for="q in character.questProgress" :key="q.id">
+              {{ q.id }}: {{ q.state }}
+            </li>
+          </ul>
+        </div>
       </div>
 
       <!-- フッター -->
@@ -43,58 +113,41 @@
 import { ref, computed } from "vue";
 import { getRollIcon } from "@/constants/statData";
 
-// 各タブコンポーネントを読み込み
-import BaseTab from "./status/BaseTab.vue";
-import StatsTab from "./status/StatsTab.vue";
-import SkillsTab from "./status/SkillsTab.vue";
-import EquipmentTab from "./status/EquipmentTab.vue";
-import InventoryTab from "./status/InventoryTab.vue";
-import ProgressTab from "./status/ProgressTab.vue";
-
 export default {
   name: "CharacterStatusModal",
-  props: { character: { type: Object, required: true } },
+  props: {
+    character: { type: Object, required: true }, // playerGlobalData
+  },
   emits: ["close", "ok"],
   setup(props, { emit }) {
     const index = ref(0);
     const currentTab = ref("基本");
-
-    const tabs = [
-      { name: "基本", label: "基本", icon: "👤", component: BaseTab },
-      { name: "ステータス", label: "ステータス", icon: "⚔️", component: StatsTab },
-      { name: "スキル", label: "スキル", icon: "📖", component: SkillsTab },
-      { name: "装備", label: "装備", icon: "🛡️", component: EquipmentTab },
-      { name: "手持ち", label: "手持ち", icon: "🎒", component: InventoryTab },
-      { name: "進行", label: "進行", icon: "🗺️", component: ProgressTab },
-    ];
+    const tabs = ["基本", "ステータス", "スキル", "装備", "手持ち", "ギルド", "進行"];
 
     const party = computed(() => props.character?.party ?? []);
-    const currentCharacter = computed(() => party.value[index.value] || {});
+    const currentCharacter = computed(() => {
+      const c = party.value[index.value];
+      if (!c) return { name: "不明", stats: { allLv: 0, baseStats: {} }, Role: [] };
+      return { stats: { allLv: 0, baseStats: {} }, ...c };
+    });
+
     const currentRace = computed(() => currentCharacter.value?.Role?.[1]?.roleName || "");
     const currentClass = computed(() => currentCharacter.value?.Role?.[0]?.roleName || "");
 
-    const currentTabComponent = computed(() => {
-      const tab = tabs.find(t => t.name === currentTab.value);
-      return tab ? tab.component : null;
-    });
-
-    console.log("currentCharacter")
-    console.log(currentCharacter.value)
+    const prevCharacter = () => { if (index.value > 0) index.value--; };
+    const nextCharacter = () => { if (index.value < party.value.length - 1) index.value++; };
 
     return {
-      index, currentTab, tabs,
-      currentCharacter, currentRace, currentClass,
-      currentTabComponent,
+      index, tabs, currentTab,
+      party, currentCharacter, currentRace, currentClass,
       getRollIcon,
-      prevCharacter: () => { if (index.value > 0) index.value--; },
-      nextCharacter: () => { if (index.value < party.value.length - 1) index.value++; },
+      prevCharacter, nextCharacter,
       close: () => emit("close"),
       ok: () => emit("ok", currentCharacter.value),
     };
   },
 };
 </script>
-
 
 <style scoped>
 .modal-overlay {
@@ -144,19 +197,15 @@ export default {
   -webkit-text-stroke: 2px #000;
 }
 .tab-bar {
-  font-size: 25px;
   display: flex; justify-content: space-around;
   background: #3a2612; padding: 6px 0;
-}
-.tab-icon{
-  font-size: 25px;
 }
 .tab-btn {
   display: flex; flex-direction: column; align-items: center;
   color: #e6d5a3; font-size: 14px; cursor: pointer;
 }
 .tab-btn.active { color: #fff; font-weight: bold; text-shadow: 0 0 6px #ffd700; }
-.tab-content { flex: 1; padding: 8px 0; overflow-y: auto; }
+.tab-content { flex: 1; padding: 16px; overflow-y: auto; }
 .tab-panel {
   background: rgba(255,255,240,0.9);
   border: 2px solid #8b5a2b;

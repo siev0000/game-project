@@ -23,13 +23,17 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { applyGlobalScale } from '@/components/useScale.js'
+import { useRouter } from 'vue-router'
+import { runEquipmentTest } from "@/constants/testData.js";
 
 onMounted(() => {
   applyGlobalScale()
+  runEquipmentTest()
 })
 const username = ref('')
 const password = ref('')
 const message = ref('')
+const router = useRouter()
 
 const handleLogin = async () => {
   try {
@@ -43,11 +47,11 @@ const handleLogin = async () => {
 
     if (response.ok) {
       localStorage.setItem('authToken', result.token)
-      localStorage.setItem('user', JSON.stringify(result));
-      console.log("result")
-      console.log(result)
+      localStorage.setItem('username', result.username) // ← 追加
+      localStorage.setItem('user', JSON.stringify(result))
+      console.log("ログイン result", result)
 
-      window.location.href = '/Dashboard'
+      router.push('/dashboard') // ← これでSPA遷移
     } else {
       message.value = `ログイン失敗: ${result.error}`
     }
@@ -55,7 +59,10 @@ const handleLogin = async () => {
     message.value = 'エラー: サーバーと通信できません'
   }
 }
+
+
 </script>
+
 
 <style>
 .container {
@@ -75,13 +82,6 @@ const handleLogin = async () => {
   color: white;
   text-align: center;
   font-size: 25px;
-}
-#scalable-root {
-  display: flex;
-  justify-content: center;
-  padding: 20px;
-  /* background: radial-gradient(circle at center, #fdf6e3 0%, #e4d2a0 100%); */
-  font-family: 'Cinzel', serif;
 }
 
 /* ラベル */

@@ -64,11 +64,13 @@ export default {
     selectCharacter(index) {
       const selected = this.characters[index];
       if (!selected) return;
-      console.log("キャラクター選択:", selected);
+      
       console.log("全キャラクター:", this.characters);
       // TODO: 後でモーダル呼び出しにつなげる
       if (!selected) return;
       this.selectedCharacter = selected;
+      console.log("キャラクター選択:", this.selectedCharacter);
+      
     },
     handleOk(data) {
       console.log("OKで返ってきたデータ:", data);
