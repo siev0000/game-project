@@ -104,6 +104,7 @@ export default {
   display: flex; justify-content: center; align-items: center;
 }
 .modal-content {
+  /* width: 720px; height: 1220px; */
   width: 720px; height: 1220px;
   background: url('/src/assets/images/illust/帰巣本能.webp');
   background-size: cover;
@@ -113,6 +114,7 @@ export default {
   font-family: "Georgia", serif;
   color: #2b1a0f;
   margin-bottom: 60px;
+  padding: 15px;
 }
 /* .modal-content::before {
   content: "";

@@ -1,11 +1,12 @@
 // src/constants/itemFactory.js
 // Excelシートからデータを一度ロードして保持、装備を生成するファクトリー
 import { v4 as uuidv4 } from "uuid";
+
 let cachedWeapons = null;
 let cachedMaterials = null;
 let cachedEnhancements = null;
 let Skill_List = null;
-
+export let Item_List = null;
 
 // 共通フェッチ関数
 async function fetchSheet(endpoint) {
@@ -16,11 +17,13 @@ async function fetchSheet(endpoint) {
 // 初期ロード関数（ゲーム起動時に1回呼ぶ）
 export async function loadItemData() {
   try {
-    const [weapons, materials, enhancements, Skills] = await Promise.all([
+    const [weapons, materials, enhancements, Skills, Items] = await Promise.all([
         fetchSheet("weapons"),                // 武器の基本データ（Excelの「武器」シート）
         fetchSheet("materials"),              // 素材シート
         fetchSheet("equipment-enhancements"), // 装強シート
-        fetchSheet("Skills")  // 装強シート
+        fetchSheet("Skills"),  // 装強シート
+        fetchSheet("items")  // 装強シート
+        
     ]);
 
     // const res4 = await fetch("/api/excel/Skills");
@@ -30,10 +33,12 @@ export async function loadItemData() {
     cachedMaterials = materials;
     cachedEnhancements = enhancements;
     Skill_List = Skills
+    Item_List = Items
     console.log("アイテムデータをロードしました st");
-    // console.log(cachedWeapons);
-    // console.log(cachedMaterials);
+    console.log(cachedWeapons);
+    console.log(cachedMaterials);
     console.log(cachedEnhancements);
+    console.log(Item_List);
     // console.log("アイテムデータをロードしました ed");
   } catch (err) {
     console.error("アイテムデータのロードに失敗:", err);
@@ -43,6 +48,7 @@ export async function loadItemData() {
 
 const WEAPON_TYPES = ["武器", "弓", "杖", "盾", "銃", "素手"];
 const ARMOR_TYPES  = ["頭", "腕", "足", "体", "服"];
+const checkItem種別 = ["素材", "道具", "休憩"]
 
 // 装備品種類 判明
 function detectItemType(itemName) {
@@ -361,7 +367,7 @@ function generateWeapon(baseData, material, enchantments = [], subMaterial=[]) {
   
 
   // 基本値の計算（素材×基礎値）
-  ["全力", "切断", "貫通", "打撃", "射撃"].forEach(key => {
+  ["全力", "切断", "貫通", "打撃", "射撃", "ガード"].forEach(key => {
     const baseVal = toNumber(baseData[key]);
     const materialVal = toNumber(material.物理);
     const result = baseVal * materialVal;
@@ -370,13 +376,18 @@ function generateWeapon(baseData, material, enchantments = [], subMaterial=[]) {
 
     equip[key] = result;
   });
-
+    console.log("=== 属性処理 ===")
+    console.log(material.属性)
   // 属性処理
-  if (baseData.属性) {
-    const attrs = baseData.属性.split("・");
+  if (material.属性) {
+    const attrs = material.属性.split("・");
+    console.log("=== attrs ===")
+    console.log(attrs)
     const value = toNumber(material.属性値) * toNumber(baseData.基礎値);
     const perAttr = attrs.length > 0 ? value / attrs.length : 0;
     attrs.forEach(attr => {
+
+
       equip[attr] = toNumber(equip[attr]) + perAttr;
     });
     equip.属性 = baseData.属性;
@@ -438,28 +449,41 @@ function generateArmor(baseData, material, enchantments = [], subMaterial=[]) {
   });
 
   // 属性 → 耐性化
-    if (baseData.属性) {
-        const attrs = baseData.属性.split("・");
-        const perAttr = (material.属性値 || 0) / attrs.length;
-        attrs.forEach(attr => {
-            if (attr === "物理") {
-            equipment["物理軽減"] += perAttr;
-            } else if (attr === "魔法") {
-            equipment["魔法軽減"] += perAttr;
-            } else if (attr === "精神攻撃") {
-            equipment["精神耐性"] = (equipment["精神耐性"] || 0) + perAttr;
-            } else {
-            equipment[`${attr}耐性`] = (equipment[`${attr}耐性`] || 0) + perAttr;
-            }
-        });
-    }
+  if (material.属性) {
+    const attrs = material.属性.split("・");
+    const perAttr = (material.属性値 || 0) / attrs.length;
+    console.table("属性配列:", attrs);
+    console.log("物理軽減:", baseData.物理軽減);
+    console.log("属性ごとの加算値:", perAttr);
+    attrs.forEach(attr => {
+        if (attr === "物理") {
+        equip["物理軽減"] += perAttr * baseData.物理軽減;
+        } else if (attr === "魔法") {
+        equip["魔法軽減"] += perAttr * baseData.物理軽減;
+        }
+        //  else if (attr === "精神攻撃") {
+        // equip["精神耐性"] = (equip["精神耐性"] || 0) + perAttr;
+        // } else {
+        // equip[`${attr}耐性`] = (equip[`${attr}耐性`] || 0) + perAttr;
+        // }
+    });
+  }
 
+  // 素材に耐性データが含まれる場合を反映
+  Object.keys(material).forEach(key => {
+    if (key.endsWith("耐性")) {
+      const val = Number(material[key]) || 0;
+      if (val !== 0) {
+        equip[key] = (equip[key] || 0) + val*baseData.物理軽減;
+      }
+    }
+  });
 
   // 回避率・命中率（防具用）
   applyAccuracyEvasion(equip, baseData, material, true);
 
   // 物理軽減
-  equip.物理軽減 = (baseData.物理軽減 || 0) * (material.物理 || 1);
+  equip.物理軽減 = equip.物理軽減 + (baseData.物理軽減 || 0) * (material.物理 || 1);
 
   //   能力	装備特性
   // --- 装備特性（カンマ区切りを配列化） ---
@@ -638,4 +662,49 @@ export function createEquipment(type, materialName, enhancementNames = []) {
   console.log(`[createEquipment] 生成完了: ${equipment.名前}`);
   console.log(equipment);
   return equipment;
+}
+
+/**
+ * DB保存データからゲーム用インベントリを再構築する
+ * @param {Array} dbInventory - DBからロードしたインベントリ
+ * @returns {Array} rebuiltInventory - 再構築済みインベントリ
+ */
+export function rebuildInventory(dbInventory) {
+  const rebuiltInventory = [];
+
+  for (const item of dbInventory) {
+    try {
+      // 種別判定
+      const type = item.種別;
+
+      // === 素材・道具・休憩系は Item_List から取得 ===
+      if (checkItem種別.includes(type)) {
+        const base = Item_List.find(x => x.名前 === item.名前);
+        if (!base) {
+          console.warn(`Item_Listに存在しないアイテム: ${item.名前}`);
+          continue;
+        }
+
+        rebuiltInventory.push({
+          ...base,
+          数量: item.数量 ?? 1
+        });
+      }
+      // === それ以外は装備を生成 ===
+      else {
+        const eq = createEquipment(item.分類, item.素材, item.付与 || []);
+        eq.id = item.id || eq.id;
+        eq.装備中 = item.装備中 || null;
+
+        // 名前とルビを補完
+        eq.名前 = item.名前 || eq.名前;
+        eq.ルビ = item.ルビ || eq.ルビ;
+        rebuiltInventory.push(eq);
+      }
+    } catch (err) {
+      console.error(`インベントリ再構築中にエラー: ${item.名前}`, err);
+    }
+  }
+
+  return rebuiltInventory;
 }

@@ -196,8 +196,8 @@ router.get("/items", (req, res) => {
     );
 
     res.json(filteredItemData);
-    //console.log('取得したアイテムデータ:', itemData2.map(Technique => Technique['名前'] || '名前が未定義'));
-    // res.json(itemData2);
+    console.log('取得したアイテムデータ:', itemData2.map(Technique => Technique['名前'] || '名前が未定義'));
+    res.json(itemData2);
   } catch (error) {
     console.error("Error fetching Technique data:", error);
     res.status(500).json({ error: "Failed to fetch Technique data" });
@@ -231,18 +231,36 @@ router.get("/equipments", (req, res) => {
 });
 
 // 「装備品」シートからデータを取得するAPI
+// router.get("/weapons", (req, res) => {
+//   try {
+//     const weaponData = itemData["装備品"]; // シート名「装備品」を取得
+
+//     if (!weaponData) {
+//       console.error("装備品シートが見つかりません");
+//       return res.status(404).json({ error: "装備品シートが見つかりません" });
+//     }
+
+//     // 名前が空白や未定義でないデータのみ返す
+//     const filteredData = weaponData.filter(
+//       (row) => row["名前"] && row["名前"].trim() !== ""
+//     );
+
+//     res.json(filteredData);
+//   } catch (error) {
+//     console.error("Error fetching weapon data:", error);
+//     res.status(500).json({ error: "Failed to fetch weapon data" });
+//   }
+// });
 router.get("/weapons", (req, res) => {
   try {
-    const weaponData = itemData["装備品"]; // シート名「装備品」を取得
-
-    if (!weaponData) {
-      console.error("装備品シートが見つかりません");
-      return res.status(404).json({ error: "装備品シートが見つかりません" });
+    const weaponData = itemData["装備品"];
+    if (!Array.isArray(weaponData)) {
+      console.error("装備品シートが不正:", typeof weaponData, weaponData);
+      return res.status(500).json({ error: "装備品シートが不正です" });
     }
 
-    // 名前が空白や未定義でないデータのみ返す
     const filteredData = weaponData.filter(
-      (row) => row["名前"] && row["名前"].trim() !== ""
+      (row) => row?.["名前"] && row["名前"].trim() !== ""
     );
 
     res.json(filteredData);

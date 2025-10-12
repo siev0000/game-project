@@ -14,6 +14,7 @@ export const dungeonList = ref([]);      // ダンジョン構造（部屋・遭
 export const questList = ref([]);        // クエスト一覧
 export const locationList = ref([]);     // 拠点・街・エリア
 
+// 初期全データ取得処理
 export async function loadGameData() {
   if (allData.value.length) return;
 
@@ -43,6 +44,7 @@ export async function loadGameData() {
   // ===== 冒険関連 =====
   const res6 = await fetch("/api/excel/items");
   itemList.value = await res6.json();        // アイテム（消耗品・素材）
+  // console.log("")
 
   const res9 = await fetch("/api/excel/dungeon");
   dungeonList.value = await res9.json();     // ダンジョン（部屋構造・遭遇）
@@ -55,17 +57,61 @@ export async function loadGameData() {
 }
 
 // ログの出し
-export async function logEquipment(equip, template) {
+export async function logEquipment(equip) {
+  if (!equip || typeof equip !== "object") return {};
+
   const ordered = {};
+  const filtered = {};
   let i = 1;
-  Object.keys(template).forEach(key => {
-    const value = equip[key] ?? null;
-    if (value !== null && value !== 0 && value !== "") {
-      ordered[i.toString().padStart(3, "0")] = { key, value };
+
+  for (const [key, value] of Object.entries(equip)) {
+    // ❌ 出力除外条件
+    if (
+      value === null ||
+      value === undefined ||
+      value === "" ||
+      (typeof value === "number" && value === 0) ||
+      (typeof value === "string" && value.trim() === "0") ||
+      (Array.isArray(value) && value.length === 0)
+    ) {
+      continue;
     }
+
+    // 🔹 表示用の整形処理
+    let displayValue = value;
+    if (Array.isArray(value)) {
+      // 配列の中にオブジェクトがある場合 → 名前だけ抽出
+      displayValue = value
+        .map(v => {
+          if (typeof v === "object" && v !== null) {
+            // 名前キーがあるならそれだけ表示
+            return v.名前 || v.name || "[無名]";
+          }
+          return String(v);
+        })
+        .join("・");
+    } else if (typeof value === "object") {
+      // オブジェクト単体なら名前を優先
+      displayValue = value.名前 || value.name || "[Object]";
+    }
+
+    // ✅ 出力対象データのみ保持
+    ordered[i.toString().padStart(3, "0")] = { key, value: displayValue };
+    filtered[key] = value;
     i++;
-  });
-  console.log(ordered);
+  }
+
+  // 🔸 ログ出力
+  if (Object.keys(ordered).length > 0) {
+    console.groupCollapsed(`装備ログ: ${equip.名前 || "(名称不明)"}`);
+    console.table(ordered);
+    console.groupEnd();
+  } else {
+    console.log(`装備ログ: ${equip.名前 || "(名称不明)"} は有効値なし`);
+  }
+
+  // 🔹 フィルタ済みデータを返す
+  return filtered;
 }
 
 

@@ -333,7 +333,8 @@ const totalCrit = computed(() => {
 </script>
 <style scoped>
 .create-skill-panel{
-  height: 340px;
+  /* height: 340px; */
+  height: 375px;
   margin-bottom: 5px;
   background: rgba(255,255,240,0.9);
   border: 2px solid #8b5a2b;
@@ -361,7 +362,8 @@ const totalCrit = computed(() => {
   padding-left: 0;  /* 左の余白も調整 */
   margin: 0;        /* 必要なら余白も消す */
   /* 合計620 */
-  width: 280px;
+  /* width: 280px; */
+  width: 315px;
   list-style: none;
   padding: 6px;
   margin: 0;
@@ -379,7 +381,8 @@ const totalCrit = computed(() => {
   border-radius: 6px;
   background: rgba(37, 37, 37, 0.9);
 
-  width: 350px;
+  /* width: 350px; */
+  width: 375px;
   height: 400px;
   font-size: 20px;
   padding: 6px;
