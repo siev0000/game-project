@@ -14,6 +14,27 @@ export const dungeonList = ref([]);      // ダンジョン構造（部屋・遭
 export const questList = ref([]);        // クエスト一覧
 export const locationList = ref([]);     // 拠点・街・エリア
 
+// 簡易デフォルトデータ　"剣槍", "黒鉄", ["炎付与Ⅴ", "対魔Ⅱ"]
+const dbEquipments = [
+  { id: "eq_0001", 名前: "木の剣", ルビ:"ウッドソード", 分類: "剣", 素材: "黒鉄", 付与: ["炎付与Ⅴ"], 装備中: "武器2" },
+  { id: "eq_0002", 名前: "虹の短剣", ルビ:"レインボーナイフ", 分類: "短剣", 素材: "虹宝鋼", 付与: ["炎付与Ⅱ","闘気の一撃","氷付与Ⅱ"], 装備中: "武器" },
+  { id: "eq_0003", 名前: "鋼の大剣", ルビ:"", 分類: "大剣", 素材: "鋼", 付与: ["炎付与Ⅱ","闘気の一撃","氷付与Ⅱ"], 装備中: "" },
+  { id: "eq_0004", 名前: "皮の鎧", ルビ:"レザーアーマー", 分類: "鎧", 素材: "皮", 付与: [], 装備中: "体" },
+  { id: "eq_0005", 名前: "鉄の鎧", ルビ:"レザーアーマー", 分類: "鎧", 素材: "鉄", 付与: [], 装備中: "" },
+  { id: "eq_0006", 名前: "虹の鎧", ルビ:"レザーアーマー", 分類: "鎧", 素材: "虹宝鋼", 付与: [], 装備中: "" },
+  { id: "eq_0007", 名前: "金鉄の鎧", ルビ:"レザーアーマー", 分類: "鎧", 素材: "金鉄", 付与: [], 装備中: "" },
+  { id: "eq_0008", 名前: "黒鉄の鎧", ルビ:"レザーアーマー", 分類: "鎧", 素材: "黒鉄", 付与: [], 装備中: "" },
+  { id: "eq_0009", 名前: "金鋼の鎧", ルビ:"レザーアーマー", 分類: "鎧", 素材: "金鋼", 付与: [], 装備中: "" },
+  { id: "eq_0011", 名前: "黒鋼の鎧", ルビ:"レザーアーマー", 分類: "鎧", 素材: "黒鋼", 付与: [], 装備中: "" },
+  { id: "eq_0012", 名前: "虹の兜", ルビ:"レザーアーマー", 分類: "兜", 素材: "虹宝鋼", 付与: ["威圧Ⅲ"], 装備中: "" },
+  { id: "eq_0013", 名前: "虹の冠", ルビ:"レザーアーマー", 分類: "冠", 素材: "虹宝鋼", 付与: ["看破Ⅲ"], 装備中: "頭" },
+  { id: "eq_0014", 名前: "虹の首飾り", ルビ:"", 分類: "首飾り", 素材: "虹宝鋼", 付与: ["魔法技術Ⅱ", "大精霊"], 装備中: "装飾" },
+  { id: "eq_0015", 名前: "虹の指輪", ルビ:"", 分類: "指輪", 素材: "虹宝鋼", 付与: ["大精霊", "毒耐性Ⅲ"], 装備中: "装飾2" },
+  { id: "eq_0016", 名前: "骨の靴", ルビ:"", 分類: "靴", 素材: "死霊の骨", 付与: ["大精霊", "毒耐性Ⅲ"], 装備中: "足" },
+  { 名前: "下位水薬", 種別: "道具", 数量: 3 },
+  { 名前: "鉄", 種別: "素材", 数量: 5 }
+];
+
 // 初期全データ取得処理
 export async function loadGameData() {
   if (allData.value.length) return;
@@ -219,7 +240,12 @@ export function buildPartyStats(partyRaw, context = {}) {
     char.attribute = member.attribute ?? null;
     char.position  = member.position  ?? "前衛_1";
     
-    char.inventory = member.inventory ?? member.inventory;
+    char.inventory =
+      Array.isArray(member.inventory) && member.inventory.length > 0
+        ? member.inventory
+        : dbEquipments;
+    console.log("インベントリ", char.inventory);
+    //  props.character?.inventory?.length > 0 ? props.character.inventory : dbEquipments;
 
     char.isNPC = member.isNPC ?? char.isNPC;
     char.aiType = member.aiType ?? char.aiType;

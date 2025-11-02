@@ -3,22 +3,28 @@
     <p class="tab-sub">所持上限: {{ player?.maxInventory || 15 }}</p>
 
     <div class="inventory-container">
-      <!-- 左：アイテム一覧 -->
-      <ul class="inventory-list">
-        <li v-if="displayInventory.length === 0" class="empty">
-          下位水薬
-        </li>
+    <!-- 左：アイテム一覧 -->
+    <ul class="inventory-list">
+      <li v-if="displayInventory.length === 0" class="empty">
+        下位水薬
+      </li>
 
-        <li
-          v-for="(item, idx) in displayInventory"
-          :key="idx"
-          :class="['inventory-item', { selected: selectedItem?.名前 === item.名前 }]"
-          @click="selectItem(item)"
-        >
-          <span class="item-name">{{ item.名前 }}</span>
-          <span v-if="!isEquipment(item)" class="item-qty">×{{ item.数量 }}</span>
-        </li>
-      </ul>
+      <li
+        v-for="item in displayInventory"
+        :key="item.id || item.名前"
+        :class="['inventory-item', { selected: selectedItem?.id === item.id }]"
+        @click="selectItem(item)"
+      >
+        <span class="item-name">
+          <span v-if="item.装備中" class="equip-mark">
+            {{ getEquipIcon(item.装備中) }}
+          </span>
+          {{ item.名前 }}
+        </span>
+      </li>
+    </ul>
+
+
 
       <!-- 右：選択アイテム説明 -->
       <div class="inventory-detail">
@@ -32,6 +38,26 @@
             <span v-if="selectedItem?.装備Lv" class="label">Lv{{ selectedItem.装備Lv }}</span>
           </h3>
         </div>
+
+        <!-- 装備・解除ボタン -->
+        <div v-if="isEquipment(selectedItem)" class="equip-buttons">
+          <button
+            v-if="!selectedItem.装備中"
+            @click="equipItem(selectedItem)"
+            class="equip-btn equip"
+          >
+            装備する
+          </button>
+
+          <button
+            v-else
+            @click="unequipItem(selectedItem)"
+            class="equip-btn unequip"
+          >
+            装備を外す
+          </button>
+        </div>
+
 
         <template v-if="selectedItem">
           <!-- 右：選択アイテム説明 -->
@@ -126,119 +152,100 @@
                 </div> -->
               </div>
 
-
-          <div class="info-block">
-            <div class="critical-line">
-              <span class="label">Cr率:</span>
-              <span class="value strong">{{ getNumber(selectedItem.Cr率) }}%</span>
-            </div>
-            <div class="critical-line">
-              <span class="label">Cr威力:</span>
-              <span class="value strong">{{ getNumber(selectedItem.Cr威力) }}%</span>
-            </div>
-          </div>
-
-          <!-- 付与 -->
-          <div class="info-block">
-            <div v-if="Array.isArray(selectedItem.付与) && selectedItem.付与.length" class="info-grid">
-              <span class="info-label">付与:</span>
-              <div class="info-list">
-                <template v-for="(t, i) in selectedItem.付与" :key="i">
-                  <span class="info-item">{{ t.名前 || t }}</span>
-                </template>
-              </div>
-            </div>
-          </div>
-
-          <!-- 特性 -->
-          <div class="info-block">
-            <div v-if="Array.isArray(selectedItem.装備特性) && selectedItem.装備特性.length" class="info-grid">
-              <span class="info-label">特性:</span>
-              <div class="info-list">
-                <template v-for="(t, i) in selectedItem.装備特性" :key="i">
-                  <span class="info-item">{{ t.名前 || t }}</span>
-                </template>
-              </div>
-            </div>
-          </div>
+              <!-- クリティカル -->
               <div class="info-block">
-                <p class="detail-desc">{{ selectedItem.武器の説明 || selectedItem.説明 || "説明はありません。" }}</p>
+                <div class="critical-line">
+                  <span class="label">Cr率:</span>
+                  <span class="value strong">{{ getNumber(selectedItem.Cr率) }}%</span>
+                </div>
+                <div class="critical-line">
+                  <span class="label">Cr威力:</span>
+                  <span class="value strong">{{ getNumber(selectedItem.Cr威力) }}%</span>
+                </div>
               </div>
+
+
             </div>
           </template>
 
-<!-- 防具 -->
-<template v-else-if="isArmor(selectedItem)">
-  <div class="armor-card">
-    <!-- 防御性能 -->
-    <div class="info-block">
-      <div class="weapon-line" v-if="getNumber(selectedItem.物理軽減)">
-        <span class="label">物理:</span>
-        <span class="value">{{ getNumber(selectedItem.物理軽減) }}</span>
-      </div>
-      <div class="weapon-line" v-if="getNumber(selectedItem.魔法軽減)">
-        <span class="label">魔法:</span>
-        <span class="value">{{ getNumber(selectedItem.魔法軽減) }}</span>
-      </div>
-    </div>
-
-    <!-- 耐性 -->
-    <div class="info-block" v-if="getValidResists(selectedItem).length">
-      <div class="weapon-line">
-        <span class="label">耐性:</span>
-        <span class="value strong">
-          {{
-            getValidResists(selectedItem)
-              .map(r => getNumber(selectedItem[r]))
-              .reduce((a, b) => a + b, 0)
-          }}
-        </span>
-      </div>
-
-      <!-- 内訳 -->
-      <div class="weapon-subline-grid">
-        <span class="sub-label">└</span>
-        <div class="attr-wrap">
-          <template v-for="r in getValidResists(selectedItem)" :key="r">
-            <span
-              class="sub-value"
-              :class="{ highlight: getNumber(selectedItem[r]) === getMaxResist(selectedItem) }"
-            >
-              {{ r }} {{ getNumber(selectedItem[r]) }}
-            </span>
-          </template>
-        </div>
-      </div>
-    </div>
-
-          <!-- 付与 -->
-          <div class="info-block">
-            <div v-if="Array.isArray(selectedItem.付与) && selectedItem.付与.length" class="info-grid">
-              <span class="info-label">付与:</span>
-              <div class="info-list">
-                <template v-for="(t, i) in selectedItem.付与" :key="i">
-                  <span class="info-item">{{ t.名前 || t }}</span>
-                </template>
-              </div>
-            </div>
-          </div>
-
-          <!-- 特性 -->
-          <div class="info-block">
-            <div v-if="Array.isArray(selectedItem.装備特性) && selectedItem.装備特性.length" class="info-grid">
-              <span class="info-label">特性:</span>
-              <div class="info-list">
-                <template v-for="(t, i) in selectedItem.装備特性" :key="i">
-                  <span class="info-item">{{ t.名前 || t }}</span>
-                </template>
-              </div>
-            </div>
-          </div>
+          <!-- 防具 -->
+          <template v-else-if="isArmor(selectedItem)">
+            <div class="armor-card">
+              <!-- 防御性能 -->
               <div class="info-block">
-                <p class="detail-desc">{{ selectedItem.武器の説明 || selectedItem.説明 || "説明はありません。" }}</p>
+                <div class="weapon-line" v-if="getNumber(selectedItem.物理軽減)">
+                  <span class="label">物理:</span>
+                  <span class="value">{{ getNumber(selectedItem.物理軽減) }}</span>
+                </div>
+                <div class="weapon-line" v-if="getNumber(selectedItem.魔法軽減)">
+                  <span class="label">魔法:</span>
+                  <span class="value">{{ getNumber(selectedItem.魔法軽減) }}</span>
+                </div>
               </div>
+
+              <!-- 耐性 -->
+              <div class="info-block" v-if="getValidResists(selectedItem).length">
+                <div class="weapon-line">
+                  <span class="label">耐性:</span>
+                  <span class="value strong">
+                    {{
+                      getValidResists(selectedItem)
+                        .map(r => getNumber(selectedItem[r]))
+                        .reduce((a, b) => a + b, 0)
+                    }}
+                  </span>
+                </div>
+
+                <!-- 内訳 -->
+                <div class="weapon-subline-grid">
+                  <span class="sub-label">└</span>
+                  <div class="attr-wrap">
+                    <template v-for="r in getValidResists(selectedItem)" :key="r">
+                      <span
+                        class="sub-value"
+                        :class="{ highlight: getNumber(selectedItem[r]) === getMaxResist(selectedItem) }"
+                      >
+                        {{ r }} {{ getNumber(selectedItem[r]) }}
+                      </span>
+                    </template>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 技能 -->
+              <div class="info-block" v-if="getValidSkills(selectedItem).length">
+                <div class="weapon-line">
+                  <span class="label">技能:</span>
+                  <span class="value strong">
+                    {{
+                      getValidSkills(selectedItem)
+                        .map(s => getNumber(selectedItem[s]))
+                        .reduce((a, b) => a + b, 0)
+                    }}
+                  </span>
+                </div>
+
+                <!-- 内訳 -->
+                <div class="weapon-subline-grid">
+                  <span class="sub-label">└ </span>
+                  <div class="attr-wrap">
+                    <template v-for="s in getValidSkills(selectedItem)" :key="s">
+                      <span
+                        class="sub-value"
+                        :class="{ highlight: getNumber(selectedItem[s]) === getMaxSkill(selectedItem) }"
+                      >
+                        {{ s }} +{{ getNumber(selectedItem[s]) }}
+                      </span>
+                    </template>
+                  </div>
+                </div>
+              </div>
+
+
             </div>
           </template>
+
+          
 
 
           <!-- 道具・素材 -->
@@ -250,6 +257,95 @@
               {{ selectedItem.説明 || "説明はありません。" }}
             </p>
           </template>
+
+
+          <!-- ステータス上昇 -->
+          <div class="info-block" v-if="getValidStats(selectedItem).length">
+            <div class="weapon-line">
+              <span class="label">上昇値:</span>
+              <span class="value strong">
+                {{
+                  getValidStats(selectedItem)
+                    .map(s => getNumber(selectedItem[s]))
+                    .reduce((a, b) => a + b, 0)
+                }}
+              </span>
+            </div>
+
+            <!-- 内訳 -->
+            <div class="weapon-subline-grid">
+              <span class="sub-label">└ </span>
+              <div class="attr-wrap">
+                <template v-for="s in getValidStats(selectedItem)" :key="s">
+                  <span
+                    class="sub-value"
+                    :class="{ highlight: getNumber(selectedItem[s]) === getMaxStat(selectedItem) }"
+                  >
+                    {{ s }} +{{ getNumber(selectedItem[s]) }}
+                  </span>
+                </template>
+              </div>
+            </div>
+          </div>
+
+          <!-- ペナルティ（命中率・回避率） -->
+          <div
+            class="info-block penalty-block"
+            v-if="getNumber(selectedItem.命中率) < 0 || getNumber(selectedItem.回避率) < 0"
+          >
+            <div class="weapon-line">
+              <span class="label">ペナルティ</span>
+            </div>
+
+            <div class="weapon-subline-grid">
+              <span class="sub-label">└ </span>
+              <div class="attr-wrap">
+                <span
+                  v-if="getNumber(selectedItem.命中率) < 0"
+                  class="sub-value penalty"
+                >
+                  命中率 {{ getNumber(selectedItem.命中率) }}%
+                </span>
+
+                <span
+                  v-if="getNumber(selectedItem.回避率) < 0"
+                  class="sub-value penalty"
+                >
+                  回避率 {{ getNumber(selectedItem.回避率) }}%
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 付与 -->
+          <div class="info-block">
+            <div v-if="Array.isArray(selectedItem.付与) && selectedItem.付与.length" class="info-grid">
+              <span class="info-label">付与:</span>
+              <div class="info-list">
+                <template v-for="(t, i) in selectedItem.付与" :key="i">
+                  <span class="info-item">{{ t.名前 || t }}</span>
+                </template>
+              </div>
+            </div>
+          </div>
+
+          <!-- 特性 -->
+          <div class="info-block">
+            <div v-if="Array.isArray(selectedItem.装備特性) && selectedItem.装備特性.length" class="info-grid">
+              <span class="info-label">特性:</span>
+              <div class="info-list">
+                <template v-for="(t, i) in selectedItem.装備特性" :key="i">
+                  <span class="info-item">{{ t.名前 || t }}</span>
+                </template>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 説明 -->
+          <div class="info-block">
+            <p class="detail-desc">{{ selectedItem.武器の説明 || selectedItem.説明 || "説明はありません。" }}</p>
+          </div>
+
         </template>
 
         <template v-else>
@@ -258,19 +354,62 @@
       </div>
     </div>
   </div>
+  
+  <!-- 装備スロット選択ダイアログ -->
+<div v-if="showSlotDialog" class="slot-dialog">
+  <div class="dialog-content">
+    <p>どのスロットに装備しますか？</p>
+
+    <div class="slot-buttons">
+      <button
+        v-for="slot in slotChoices"
+        :key="slot"
+        @click="equipItem(pendingItem, slot)"
+      >
+        <span>{{ slot }}</span>
+        <template v-if="getEquippedItemName(slot)">
+          <br />
+          <small class="equipped-name">{{ getEquippedItemName(slot) }}</small>
+        </template>
+      </button>
+    </div>
+
+    <button @click="showSlotDialog = false" class="cancel-btn">キャンセル</button>
+  </div>
+</div>
+
+
 </template>
 
 <script setup>
 import { logEquipment } from "@/constants/statData";
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, nextTick, reactive  } from "vue";
 import { loadItemData, rebuildInventory } from "@/constants/itemFactory.js";
 import "../modals_css/inventoryTab.css";
 
 // ===== 種別判定配列 =====
 const WEAPON_TYPES = ["武器", "弓", "杖", "盾", "銃", "素手"];
-const ARMOR_TYPES  = ["頭", "腕", "足", "体", "服"];
+const ARMOR_TYPES  = ["頭", "腕", "足", "体", "服", "装飾"];
 const ITEM_TYPES   = ["素材", "道具", "休憩"];
-
+const sortOrder = ["武器", "武器2", "頭", "体", "足", "装飾", "装飾2"];
+function getEquipIcon(slot) {
+  switch (slot) {
+    case "武器":
+    case "武器2":
+      return "⚔️";
+    case "頭":
+      return "🪖";
+    case "体":
+      return "🥋";
+    case "足":
+      return "👢";
+    case "装飾":
+    case "装飾2":
+      return "💍";
+    default:
+      return "";
+  }
+}
 const props = defineProps({
   character: { type: Object, required: true },
   player: { type: Object, required: true }
@@ -279,16 +418,21 @@ const props = defineProps({
 // 簡易デフォルトデータ　"剣槍", "黒鉄", ["炎付与Ⅴ", "対魔Ⅱ"]
 const dbEquipments = [
   { id: "eq_0001", 名前: "木の剣", ルビ:"ウッドソード", 分類: "剣", 素材: "黒鉄", 付与: ["炎付与Ⅴ"], 装備中: "武器" },
-  { id: "eq_0003", 名前: "虹の短剣", ルビ:"レインボーナイフ", 分類: "短剣", 素材: "虹宝鋼", 付与: ["炎付与Ⅱ","闘気の一撃","氷付与Ⅱ"], 装備中: "武器" },
-  { id: "eq_0002", 名前: "皮の鎧", ルビ:"レザーアーマー", 分類: "鎧", 素材: "皮", 付与: [], 装備中: "体" },
-  { id: "eq_0004", 名前: "鉄の鎧", ルビ:"レザーアーマー", 分類: "鎧", 素材: "鉄", 付与: [], 装備中: "体" },
-  { id: "eq_0005", 名前: "虹の鎧", ルビ:"レザーアーマー", 分類: "鎧", 素材: "虹宝鋼", 付与: [], 装備中: "体" },
-  { id: "eq_0006", 名前: "金鋼の鎧", ルビ:"レザーアーマー", 分類: "鎧", 素材: "金鋼", 付与: [], 装備中: "体" },
-  { id: "eq_0006", 名前: "黒鋼の鎧", ルビ:"レザーアーマー", 分類: "鎧", 素材: "黒鋼", 付与: [], 装備中: "体" },
-  { id: "eq_0005", 名前: "虹の兜", ルビ:"レザーアーマー", 分類: "兜", 素材: "虹宝鋼", 付与: ["威圧Ⅲ"], 装備中: "体" },
-  { id: "eq_0005", 名前: "虹の冠", ルビ:"レザーアーマー", 分類: "冠", 素材: "虹宝鋼", 付与: ["看破Ⅲ"], 装備中: "頭" },
-  { 名前: "下位水薬", 種別: "道具", 数量: 3 },
-  { 名前: "鉄", 種別: "素材", 数量: 5 }
+  // { id: "eq_0002", 名前: "虹の短剣", ルビ:"レインボーナイフ", 分類: "短剣", 素材: "虹宝鋼", 付与: ["炎付与Ⅱ","闘気の一撃","氷付与Ⅱ"], 装備中: "武器" },
+  // { id: "eq_0003", 名前: "鋼の大剣", ルビ:"", 分類: "大剣", 素材: "鋼", 付与: ["炎付与Ⅱ","闘気の一撃","氷付与Ⅱ"], 装備中: "武器" },
+  // { id: "eq_0004", 名前: "皮の鎧", ルビ:"レザーアーマー", 分類: "鎧", 素材: "皮", 付与: [], 装備中: "体" },
+  // { id: "eq_0005", 名前: "鉄の鎧", ルビ:"レザーアーマー", 分類: "鎧", 素材: "鉄", 付与: [], 装備中: "" },
+  // { id: "eq_0006", 名前: "虹の鎧", ルビ:"レザーアーマー", 分類: "鎧", 素材: "虹宝鋼", 付与: [], 装備中: "" },
+  // { id: "eq_0007", 名前: "金鉄の鎧", ルビ:"レザーアーマー", 分類: "鎧", 素材: "金鉄", 付与: [], 装備中: "" },
+  // { id: "eq_0009", 名前: "黒鉄の鎧", ルビ:"レザーアーマー", 分類: "鎧", 素材: "黒鉄", 付与: [], 装備中: "" },
+  // { id: "eq_0007", 名前: "金鋼の鎧", ルビ:"レザーアーマー", 分類: "鎧", 素材: "金鋼", 付与: [], 装備中: "" },
+  // { id: "eq_0009", 名前: "黒鋼の鎧", ルビ:"レザーアーマー", 分類: "鎧", 素材: "黒鋼", 付与: [], 装備中: "" },
+  // { id: "eq_0010", 名前: "虹の兜", ルビ:"レザーアーマー", 分類: "兜", 素材: "虹宝鋼", 付与: ["威圧Ⅲ"], 装備中: "" },
+  // { id: "eq_0011", 名前: "虹の冠", ルビ:"レザーアーマー", 分類: "冠", 素材: "虹宝鋼", 付与: ["看破Ⅲ"], 装備中: "頭" },
+  // { id: "eq_0012", 名前: "虹の首飾り", ルビ:"", 分類: "首飾り", 素材: "虹宝鋼", 付与: ["魔法技術Ⅱ", "大精霊"], 装備中: "装飾" },
+  // { id: "eq_0013", 名前: "虹の指輪", ルビ:"", 分類: "指輪", 素材: "虹宝鋼", 付与: ["大精霊", "毒耐性Ⅲ"], 装備中: "装飾2" },
+  // { 名前: "下位水薬", 種別: "道具", 数量: 3 },
+  // { 名前: "鉄", 種別: "素材", 数量: 5 }
 ];
 const getNumber = (val) => {
   const num = Number(val);
@@ -349,9 +493,46 @@ const getMaxResist = (item) => {
   return vals.length > 0 ? Math.max(...vals) : 0;
 };
 
+// 技能キーを自動抽出（「隠密」「感知」「軽業」など）
+const getValidSkills = (item) => {
+  if (!item || typeof item !== "object") return [];
 
+  return Object.keys(item).filter((key) => {
+    // 「技能値」に該当する項目を抽出
+    return (
+      [
+        "隠密","感知","威圧","軽業","技術","早業",
+        "看破","騙す","知識","鑑定","装置","変装",
+        "制作","精神接続","魔法技術","指揮"
+      ].includes(key) && getNumber(item[key]) > 0
+    );
+  });
+};
 
+// 最大技能値を取得（ハイライト用）
+const getMaxSkill = (item) => {
+  const vals = getValidSkills(item).map((s) => getNumber(item[s]));
+  return vals.length > 0 ? Math.max(...vals) : 0;
+};
 
+// ステータス上昇対象キー
+const STATUS_KEYS = [
+  "Lv", "HP", "MP", "ST",
+  "攻撃", "防御", "魔力", "精神",
+  "速度", "命中", "SIZ", "APP"
+];
+
+// 有効な上昇ステータスを抽出
+const getValidStats = (item) => {
+  if (!item || typeof item !== "object") return [];
+  return STATUS_KEYS.filter((key) => getNumber(item[key]) > 0);
+};
+
+// 最大上昇値を取得（強調用）
+const getMaxStat = (item) => {
+  const vals = getValidStats(item).map((k) => getNumber(item[k]));
+  return vals.length > 0 ? Math.max(...vals) : 0;
+};
 
 
 
@@ -367,21 +548,40 @@ onBeforeUnmount(() => (isMounted = false));
 onMounted(async () => {
   try {
     await loadItemData();
+
     const baseInv =
-      props.character?.inventory?.length > 0 ? props.character.inventory : dbEquipments;
+      props.character?.inventory?.length > 0
+        ? props.character.inventory
+        : dbEquipments;
+
     const rebuilt = await rebuildInventory(baseInv);
     if (!isMounted) return;
 
-    // Promise.allで全装備の非同期処理を待つ
     const filteredList = await Promise.all(
       rebuilt.map(async (item) => {
-        const filtered = await logEquipment(item); // ← await使用OK
-        console.log(filtered);
+        const filtered = await logEquipment(item);
         return filtered;
       })
     );
 
-    displayInventory.value = filteredList;
+    // 装備中を上にソート
+    displayInventory.value = filteredList.sort((a, b) => {
+      const aIndex = sortOrder.indexOf(a.装備中);
+      const bIndex = sortOrder.indexOf(b.装備中);
+      if (aIndex === -1 && bIndex === -1) return a.名前.localeCompare(b.名前);
+      if (aIndex !== -1 && bIndex === -1) return -1;
+      if (aIndex === -1 && bIndex !== -1) return 1;
+      return aIndex - bIndex;
+    });
+
+    // ✅ ここで equipped を再構築
+    for (const item of displayInventory.value) {
+      if (item.装備中 && sortOrder.includes(item.装備中)) {
+        equipped[item.装備中] = item;
+      }
+    }
+
+    console.log("初期装備状態:", JSON.parse(JSON.stringify(equipped)));
 
   } catch (err) {
     console.error("インベントリ再構築エラー:", err);
@@ -389,10 +589,121 @@ onMounted(async () => {
 });
 
 
+// プレイヤー装備状態
+const equipped = reactive({
+  武器: null,
+  武器2: null,
+  頭: null,
+  体: null,
+  足: null,
+  装飾: null,
+  装飾2: null
+});
+
+
+function equipItem(item, slot = null) {
+  const type = item.種別;
+  if (!type) return;
+
+  // ✅ 動的スロット検出
+  const availableSlots = Object.keys(equipped).filter((key) => {
+    // 武器または装飾の場合、それらのスロット名を抽出
+    if (type === "武器" && key.match(/^武器(\d*)$/)) return true;
+    if (type === "装飾" && key.match(/^装飾(\d*)$/)) return true;
+    return false;
+  });
+
+  // 複数候補あり → ダイアログ表示
+  if (!slot && availableSlots.length > 1) {
+    showSlotDialog.value = true;
+    pendingItem.value = item;
+    slotChoices.value = availableSlots;
+    return;
+  }
+
+  // スロット未指定 → 最初の空きを自動で選択
+  if (!slot) {
+    slot = availableSlots.find((s) => !equipped[s]) || availableSlots[0] || type;
+  }
+
+  // 既に装備中なら外す
+  if (equipped[slot]) unequipItem(slot);
+
+  equipped[slot] = item;
+  item.装備中 = slot;
+  sortInventory();
+
+  console.log(`装備完了: ${item.名前} → ${slot}`);
+  showSlotDialog.value = false;
+  pendingItem.value = null;
+}
+
+const showSlotDialog = ref(false); // ダイアログ表示フラグ
+const pendingItem = ref(null);     // 選択中の装備
+const slotChoices = ref([]);       // 選択候補スロット
+
+
+// 外す処理
+function unequipItem(target) {
+  let slot = null;
+
+  // 引数が文字列ならスロット名
+  if (typeof target === "string") {
+    slot = target;
+  }
+  // 引数がアイテムオブジェクトなら装備中スロットを参照
+  else if (target && target.装備中) {
+    slot = target.装備中;
+  }
+
+  if (!slot) return;
+
+  const current = equipped[slot];
+  if (!current) return;
+
+  current.装備中 = null;
+  equipped[slot] = null;
+
+  console.log(`装備解除: ${current.名前} (${slot})`);
+  console.log("現在の装備状態:", JSON.parse(JSON.stringify(equipped)));
+
+  sortInventory();
+}
+
+
+// インベントリソート
+function sortInventory() {
+  displayInventory.value.sort((a, b) => {
+    const aIndex = a.装備中 ? sortOrder.indexOf(a.装備中) : 999;
+    const bIndex = b.装備中 ? sortOrder.indexOf(b.装備中) : 999;
+    return aIndex - bIndex;
+  });
+
+  console.log("現在の装備状態:", JSON.parse(JSON.stringify(equipped)));
+}
+
+// スロットに装備されているアイテム名を取得
+const getEquippedItemName = (slot) => {
+  const eq = displayInventory.value.find(item => item.装備中 === slot);
+  return eq ? eq.名前 : "";
+};
+
 // 判定関数
-const isWeapon = (item) => WEAPON_TYPES.includes(item.種別);
-const isArmor = (item) => ARMOR_TYPES.includes(item.種別);
-const isEquipment = (item) => isWeapon(item) || isArmor(item);
+const isWeapon = (item) => {
+  if (!item || typeof item !== "object") return false;
+  return WEAPON_TYPES.includes(item.種別);
+};
+
+const isArmor = (item) => {
+  if (!item || typeof item !== "object") return false;
+  return ARMOR_TYPES.includes(item.種別);
+};
+
+const isEquipment = (item) => {
+  if (!item || typeof item !== "object") return false;
+  return isWeapon(item) || isArmor(item);
+};
+
 </script>
 <style scoped>
 .inventory-tab {
@@ -541,12 +852,12 @@ const isEquipment = (item) => isWeapon(item) || isArmor(item);
   grid-template-columns: 36px 1fr; /* 左:ラベル 右:内容 */
   gap: 4px 8px;
   margin: 0 0 2px 20px;
-  font-size: 23px;
+  font-size: 21px;
   opacity: 0.9;
   line-height: 1.5;
 }
 
-/* 左側ラベル └ : */
+/* 左側ラベル └  */
 .sub-label {
   color: #d8c79c;
   text-align: right;
@@ -647,4 +958,144 @@ const isEquipment = (item) => isWeapon(item) || isArmor(item);
   box-shadow: inset 0 0 4px rgba(255, 255, 255, 0.05);
 }
 
+/* 装備変更 */
+.equip-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.equip-btn {
+  padding: 6px 12px;
+  border: 2px solid #8b5a2b;
+  border-radius: 6px;
+  background: #c8b48a;
+  color: #3b2f1c;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.equip-btn:hover {
+  transform: scale(1.05);
+}
+.equip-btn.equip {
+  background: #88c57f;
+}
+.equip-btn.unequip {
+  background: #cc7777;
+}
+.inventory-item.highlighted {
+  background: rgba(255, 215, 0, 0.45);
+  transition: background 0.6s ease;
+}
+
+.inventory-item .equip-mark {
+  margin-right: 4px;
+  font-size: 1.1em;
+}
+
+
+/*  */
+.slot-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.dialog-content {
+  background: #2c2a24;
+  border: 2px solid #d6b66b;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  color: #fdf8e4;
+}
+
+.slot-buttons button {
+  margin: 8px;
+  padding: 6px 12px;
+  background: #4b3f2f;
+  border: 1px solid #d6b66b;
+  border-radius: 6px;
+  color: #fdf8e4;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  margin-top: 12px;
+  background: #6b5340;
+}
+/* 装備スロット選択ダイアログ */
+.slot-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.dialog-content {
+  background: #2d2a22;
+  border: 3px solid #c8b48a;
+  border-radius: 12px;
+  padding: 20px 24px;
+  text-align: center;
+  color: #ffeecc;
+  width: 280px;
+}
+
+.slot-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.slot-buttons button {
+  background: #c8b48a;
+  border: 2px solid #8b5a2b;
+  border-radius: 6px;
+  color: #3b2f1c;
+  font-weight: bold;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.slot-buttons button:hover {
+  background: #e6c06f;
+}
+
+.cancel-btn {
+  margin-top: 12px;
+  background: #444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.cancel-btn:hover {
+  background: #666;
+}
+.equipped-name {
+  font-size: 25px;
+  color: #000000;
+  opacity: 0.85;
+}
 </style>

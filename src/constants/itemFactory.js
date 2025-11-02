@@ -34,11 +34,11 @@ export async function loadItemData() {
     cachedEnhancements = enhancements;
     Skill_List = Skills
     Item_List = Items
-    console.log("アイテムデータをロードしました st");
-    console.log(cachedWeapons);
-    console.log(cachedMaterials);
-    console.log(cachedEnhancements);
-    console.log(Item_List);
+    // console.log("アイテムデータをロードしました st");
+    // console.log(cachedWeapons);
+    // console.log(cachedMaterials);
+    // console.log(cachedEnhancements);
+    // console.log(Item_List);
     // console.log("アイテムデータをロードしました ed");
   } catch (err) {
     console.error("アイテムデータのロードに失敗:", err);
@@ -228,9 +228,9 @@ function applyAccuracyEvasion(equip, baseData, material, isArmor = false) {
 
     equip[key] = result;
 
-    console.log(
-      `[${isArmor ? "Armor" : "Weapon"} ${key}] base=${baseVal}, 全力=${materialFactor}, effective=${effective}, result=${result}`
-    );
+    // console.log(
+    //   `[${isArmor ? "Armor" : "Weapon"} ${key}] base=${baseVal}, 全力=${materialFactor}, effective=${effective}, result=${result}`
+    // );
   });
 }
 
@@ -291,11 +291,11 @@ function applyEnchantments(equip, enchantments = [], baseValue = 1, useMultiplie
     }
 
     // ====== 判定ログ ======
-    console.log(
-      `[Enchant] 判定: ${enchData.名前} → ${canApply ? "付与可能 ✅" : "付与不可 ❌"}`
-      + ` (累計コスト=${totalCost}, 追加コスト=${cost}, 素材Lv=${materialLv})`
-      + (!canApply ? ` | 理由: ${reason}` : "")
-    );
+    // console.log(
+    //   `[Enchant] 判定: ${enchData.名前} → ${canApply ? "付与可能 ✅" : "付与不可 ❌"}`
+    //   + ` (累計コスト=${totalCost}, 追加コスト=${cost}, 素材Lv=${materialLv})`
+    //   + (!canApply ? ` | 理由: ${reason}` : "")
+    // );
 
 
     // ====== 判定ログ ======
@@ -376,13 +376,13 @@ function generateWeapon(baseData, material, enchantments = [], subMaterial=[]) {
 
     equip[key] = result;
   });
-    console.log("=== 属性処理 ===")
-    console.log(material.属性)
+    // console.log("=== 属性処理 ===")
+    // console.log(material.属性)
   // 属性処理
   if (material.属性) {
     const attrs = material.属性.split("・");
-    console.log("=== attrs ===")
-    console.log(attrs)
+    // console.log("=== attrs ===")
+    // console.log(attrs)
     const value = toNumber(material.属性値) * toNumber(baseData.基礎値);
     const perAttr = attrs.length > 0 ? value / attrs.length : 0;
     attrs.forEach(attr => {
@@ -400,7 +400,7 @@ function generateWeapon(baseData, material, enchantments = [], subMaterial=[]) {
   equip["Cr率"]   = (toNumber(baseData["Cr率"])  + toNumber(material["Cr率"]))*100 ;
   equip["Cr威力"] = (toNumber(baseData["Cr威力"]) + toNumber(material["Cr威力"]))*100 ;
 
-　// --- 射程・弾倉・リロード時間・攻撃回数・攻撃タイプ・効果 ---
+  // --- 射程・弾倉・リロード時間・攻撃回数・攻撃タイプ・効果 ---
   equip["射程"]       = toNumber(baseData["射程"]);
   equip["弾倉"]       = toNumber(baseData["弾倉"]);
   equip["リロード時間"] = toNumber(baseData["リロード時間"]);
@@ -409,7 +409,7 @@ function generateWeapon(baseData, material, enchantments = [], subMaterial=[]) {
 
   equip["装備Lv"] = material.素材Lv;
 
-  console.log(`[createEquipment] 装備Lv設定: 素材=${material.名前 || "不明"} → 装備Lv=${equip["装備Lv"]}`);
+  // console.log(`[createEquipment] 装備Lv設定: 素材=${material.名前 || "不明"} → 装備Lv=${equip["装備Lv"]}`);
 
 
   //   能力	装備特性
@@ -418,7 +418,7 @@ equip["装備特性"] = baseData["装備特性"]
   ? baseData["装備特性"].split(",").map(s => s.trim())
   : [];
 
-console.log("[createEquipment] 装備特性追加:", baseData["装備特性"], "→", equip["装備特性"]);
+// console.log("[createEquipment] 装備特性追加:", baseData["装備特性"], "→", equip["装備特性"]);
 
 
   // --- 素材の武器能力（カンマ区切りを配列化） ---
@@ -452,9 +452,9 @@ function generateArmor(baseData, material, enchantments = [], subMaterial=[]) {
   if (material.属性) {
     const attrs = material.属性.split("・");
     const perAttr = (material.属性値 || 0) / attrs.length;
-    console.table("属性配列:", attrs);
-    console.log("物理軽減:", baseData.物理軽減);
-    console.log("属性ごとの加算値:", perAttr);
+    // console.table("属性配列:", attrs);
+    // console.log("物理軽減:", baseData.物理軽減);
+    // console.log("属性ごとの加算値:", perAttr);
     attrs.forEach(attr => {
         if (attr === "物理") {
         equip["物理軽減"] += perAttr * baseData.物理軽減;
@@ -593,7 +593,7 @@ export function createEquipment(type, materialName, enhancementNames = []) {
 
   // 判定
   const category = detectItemType(type);
-  console.log("[createEquipment] 引数1:", { type, materialName, enhancementNames, category , baseData});
+  // console.log("[createEquipment] 引数1:", { type, materialName, enhancementNames, category , baseData});
 
   let equipment;
   switch (category) {
@@ -652,15 +652,15 @@ export function createEquipment(type, materialName, enhancementNames = []) {
   equipment.金額 = part1 + part2;
 
   // 詳細ログ
-  console.log(
-    `[Price] 金額計算: (${materialPrice} × ${weaponPrice} = ${part1}) + (${materialLv} × ${enchantPrice} = ${part2}) = ${equipment.金額}`
-  );
+  // console.log(
+  //   `[Price] 金額計算: (${materialPrice} × ${weaponPrice} = ${part1}) + (${materialLv} × ${enchantPrice} = ${part2}) = ${equipment.金額}`
+  // );
 
 
   equipment.id =  uuidv4()
   // === 生成結果ログ出力 ===
-  console.log(`[createEquipment] 生成完了: ${equipment.名前}`);
-  console.log(equipment);
+  // console.log(`[createEquipment] 生成完了: ${equipment.名前}`);
+  // console.log(equipment);
   return equipment;
 }
 
