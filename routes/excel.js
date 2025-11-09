@@ -109,18 +109,18 @@ router.get("/classes", (req, res) => {
   }
 });
 
-// 「スキル」シートからデータを取得するAPI
+// 「技」シートからデータを取得するAPI
 router.get("/Skills", (req, res) => {
   try {
-    console.log("スキルシートをキャッシュから取得:", excelCache["Technique"]);
-    const TechniqueData = excelCache["スキル"]; // シート名「スキル」を取得
+    console.log("技シートをキャッシュから取得:", excelCache["Technique"]);
+    const TechniqueData = excelCache["技"]; // シート名「技」を取得
 
     if (!TechniqueData) {
-      console.error("スキルシートが見つかりません");
-      return res.status(404).json({ error: "スキルシートが見つかりません" });
+      console.error("技シートが見つかりません");
+      return res.status(404).json({ error: "技シートが見つかりません" });
     }
 
-    // console.log('取得したスキルデータ:', TechniqueData);
+    // console.log('取得した技データ:', TechniqueData);
 
     // 名前が空白や未定義でないデータのみフィルタリング
     const filteredData = TechniqueData.filter(

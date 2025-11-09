@@ -85,7 +85,7 @@
                   <td><input type="number" v-model.number="classLv" min="1" /></td>
                 </tr>
               </thead>
-              <tbody v-if="activeTab !== 'スキル'">
+              <tbody v-if="activeTab !== '技'">
                 <tr v-for="stat in statMap[activeTab]" :key="stat">
                   <td @click="selectKey(stat)">{{ stat }}</td>
                   <td>{{ getDisplayValue(totalStats[stat] || 0, stat) }}</td>
@@ -96,7 +96,7 @@
               <!-- Skill表示 -->
               <tbody v-else>
                 <tr v-for="i in 10" :key="'skill-'+i">
-                  <td>スキル</td>
+                  <td>技</td>
                   <td>{{ i }}</td>
 
                   <!-- 種族 -->
@@ -185,6 +185,10 @@
       <div v-else class="skill-detail-box">
         {{ selectedKey ? (statDescriptions[selectedKey] || '説明がありません') : '項目を選択すると説明が表示されます' }}
       </div>
+      <!-- フッター -->
+      <div class="footer">
+        <button class="btn cancel" @click="returnDashboard">選択に戻る</button>
+      </div>
       
 
       <!-- モーダル -->
@@ -218,7 +222,7 @@ const showRaceModal = ref(false)
 const showClassModal = ref(false)
 const showAttributeModal = ref(false)
 
-const tabs = ['ステータス', '技能', '耐性', 'スキル']
+const tabs = ['ステータス', '技能', '耐性', '技']
 const activeTab = ref('ステータス')
 
 
@@ -249,7 +253,7 @@ const displayRuby = (val) => {
   return val === 0 ? '' : val;
 };
 
-  console.log("スキル選択")
+  console.log("技選択")
 onMounted(async () => {
   await loadGameData();
   console.log(allData.value, attributeList.value, Skill_List.value);
@@ -581,7 +585,7 @@ function getSkills(data, level) {
   return skills;
 }
 
-// スキル選択時処理
+// 技選択時処理
 const onSkillSelect = (skillName) => {
   if (!skillName) return;
 
@@ -678,7 +682,7 @@ const confirmCharacter = async () => {
   // ステータス
   mainChar.stats.allLv = raceLv.value + classLv.value;
   mainChar.stats.baseStats = totalStats.value;
-  mainChar.stats.abilities = {}; // スキルは後で処理
+  mainChar.stats.abilities = {}; // 技は後で処理
 
   characterData.id = generateId(); // ランダムID
   characterData.name = characterName.value;
@@ -723,7 +727,11 @@ async function saveCharacterToDB(characterData) {
     console.error("キャラクター登録エラー:", err);
     alert("通信エラーでキャラクター登録できませんでした。");
   }
+};
+async function returnDashboard(){
+  router.push('/Dashboard')
 }
+
 
 </script>
 
@@ -736,7 +744,8 @@ async function saveCharacterToDB(characterData) {
   text-decoration: underline;
 }
 .tabs {
-  margin-top: 10px;
+  margin-top: 5px;
+  margin: 6px 0;
 }
 .tabs button {
   margin-right: 5px;
@@ -775,8 +784,8 @@ h1 {
   text-align: center;
   color: #5a3b12;
   text-shadow: 0 2px 2px rgba(0,0,0,0.3);
-  margin-top: 5px;
-  margin-bottom: 5px;
+  margin-top: 0px;
+  margin-bottom: 0px;
 }
 
 .name_input {
@@ -996,8 +1005,8 @@ th {
 }
 
 .skill-detail-box {
-  height: 270px;
-  margin-top: 8px;
+  height: 250px;
+  margin-top: 4px;
   font-size: 20px;
   color: #ffeecc;
   background-color: rgba(0, 0, 0, 0.6);

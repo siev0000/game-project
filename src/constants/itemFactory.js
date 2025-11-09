@@ -27,7 +27,7 @@ export async function loadItemData() {
     ]);
 
     // const res4 = await fetch("/api/excel/Skills");
-    // Skill_List.value = await res4.json();      // スキル
+    // Skill_List.value = await res4.json();      // 技
 
     cachedWeapons = weapons;
     cachedMaterials = materials;

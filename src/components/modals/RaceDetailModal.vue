@@ -404,13 +404,13 @@ function confirmSelection() {
 
 .confirm {
   width: 200px;
-  height: 45px;
+  height: 35px;
   background-color: #564d3c;
   color: white;
   padding: 1px 20px;
   border-radius: 8px;
 
-  font-size: 33px;
+  font-size: 25px;
   
   cursor: pointer;
   user-select: none;

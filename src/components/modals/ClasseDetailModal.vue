@@ -412,12 +412,12 @@ function confirmSelection() {
   color: white;
   padding: 1px 20px;
   border-radius: 8px;
-  font-size: 39px;
+  font-size: 25px;
   cursor: pointer;
   user-select: none;
   text-align: center;
   transition: background-color 0.2s;
-  height: 45px;
+  height: 35px;
   width: 200px;
 }
 

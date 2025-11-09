@@ -70,7 +70,7 @@ button {
   padding: 20px 30px;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  background-image: url('/images/入力ホーム.jpg');
+  background-image: url('/src/assets/images/入力ホーム.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

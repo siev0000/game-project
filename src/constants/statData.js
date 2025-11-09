@@ -5,7 +5,7 @@ import { playerGlobalData, characterDataTemplate } from "../scripts/characterDat
 export const allData = ref([]);          // クラス・種族
 export const attributeList = ref([]);    // 属性
 export const race_attributes = ref([]);  // 種族ごとの初期ステータス補正
-export const Skill_List = ref([]);       // スキル
+export const Skill_List = ref([]);       // 技
 export const weaponList = ref([]);       // 武器・攻撃手段
 export const itemList = ref([]);         // アイテム（消耗品・素材）
 export const equipmentList = ref([]);    // 装備品（武器・防具・アクセ）
@@ -50,7 +50,7 @@ export async function loadGameData() {
   race_attributes.value = await res3.json(); // 種族ステータス補正
 
   const res4 = await fetch("/api/excel/Skills");
-  Skill_List.value = await res4.json();      // スキル
+  Skill_List.value = await res4.json();      // 技
 
   // ===== 戦闘関連 =====
   const res5 = await fetch("/api/excel/weapons");
@@ -144,20 +144,20 @@ export const statMap = {
   耐性: ['切断耐性', '貫通耐性', '打撃耐性', '炎耐性', '氷耐性', '雷耐性', '酸耐性', '音耐性', '光耐性', '闇耐性', '善耐性', '悪耐性', '正耐性', '負耐性',
          '精神耐性', '毒耐性', '盲目耐性', '幻覚耐性', '石化耐性', '怯み耐性', '拘束耐性', '呪い耐性', '即死耐性', '時間耐性', '出血耐性', '疲労耐性', '体幹耐性',
          '物理耐性', '魔法耐性', 'Cr率耐性', 'Cr威力耐性'],
-  スキル: ['Skill1', 'Skill2', 'Skill3', 'Skill4', 'Skill5', 'Skill6', 'Skill7', 'Skill8', 'Skill9', 'Skill10']
+  技: ['Skill1', 'Skill2', 'Skill3', 'Skill4', 'Skill5', 'Skill6', 'Skill7', 'Skill8', 'Skill9', 'Skill10']
 };
 
 export const statDescriptions = {
   'HP': '生命力。数値が高いほど攻撃を受けられる',
   'MP': '魔力量。魔法使用時に消費',
-  'ST': '持久力。スキルに使用',
+  'ST': '持久力。技に使用',
   '攻撃': '攻撃力。物理攻撃の強さ',
-  '防御': '物理防御の高さ、防御の上手さ。防御スキルを使うときに判定する',
+  '防御': '物理防御の高さ、防御の上手さ。防御技を使うときに判定する',
   '魔力': '魔法攻撃の威力',
   '精神': '精神的耐久力や魔防に関係',
   '回避': '行動順・回避に影響',
   '命中': '命中率。攻撃の当たりやすさ',
-  'SIZ': '体格。影響するスキルもある',
+  'SIZ': '体格。影響する技もある',
   'APP': '魅力。交渉や一部行動に影響',
   '切断耐性': '斬撃に対する防御力',
   '貫通耐性': '槍や矢など貫通攻撃の耐性',
@@ -184,7 +184,7 @@ export const statDescriptions = {
   '即死耐性': '一撃で倒される攻撃に対する抵抗',
   '時間耐性': '時間停止・遅延などの異常に対する耐性',
   '出血耐性': '持続ダメージ系の出血に対する耐性',
-  '疲労耐性': '行動不能やスキル使用制限への耐性',
+  '疲労耐性': '行動不能や技使用制限への耐性',
   '体幹耐性': '崩れ・転倒・体勢への影響に対する耐性',
   '物理耐性': '数値に応じて弱い物理攻撃を無効化することができる',
   '魔法耐性': '数値に応じて弱い魔法攻撃を無効化することができる',
@@ -225,7 +225,7 @@ export function buildPartyStats(partyRaw, context = {}) {
     console.log(raceName, raceData)
     char.race = raceData?.分類 ?? ""; 
 
-    // ステータス・スキル反映
+    // ステータス・技反映
     applyRoleData({ party: [member] });
 
     char.stats.baseStats = member.stats?.baseStats ?? {};
@@ -414,7 +414,7 @@ export function findRace(name) {
 }
 //★=== キャラクターステータス ==============================================================================
 /**
- * characterData にステータスとスキルを付与する
+ * characterData にステータスと技を付与する
  * @param {object} characterData - キャラ作成時のデータ
  * @returns {object} 更新済みキャラデータ
  */
@@ -440,9 +440,9 @@ export function applyRoleData(characterData) {
         mainChar.stats.baseStats[key] += Number(race[key]) || 0;
       }
     }
-    // 初期スキル
-    if (race.初期スキル) {
-      const skills = race.初期スキル.split(",").map(s => s.trim());
+    // 初期技
+    if (race.初期技) {
+      const skills = race.初期技.split(",").map(s => s.trim());
       mainChar.stats.abilities[race.名前] =
         Skill_List.value.filter(s => skills.includes(s.名前));
     }
@@ -457,8 +457,8 @@ export function applyRoleData(characterData) {
         mainChar.stats.baseStats[key] += Number(role[key]) || 0;
       }
     }
-    if (role.初期スキル) {
-      const skills = role.初期スキル.split(",").map(s => s.trim());
+    if (role.初期技) {
+      const skills = role.初期技.split(",").map(s => s.trim());
       mainChar.stats.abilities[role.名前] =
         Skill_List.value.filter(s => skills.includes(s.名前));
     }
@@ -518,22 +518,22 @@ export function applySizeBonus(value, key, siz = 100) {
 }
 
 /**
- * パッシブスキルの条件チェック（AND条件）
- * @param {object} skill - スキルデータ
- * @param {object} context - 行動情報 { 攻撃手段, 使用スキル, 使用系統 }
+ * パッシブ技の条件チェック（AND条件）
+ * @param {object} skill - 技データ
+ * @param {object} context - 行動情報 { 攻撃手段, 使用技, 使用系統 }
  * @returns {boolean} 発動するかどうか
  */
 function checkPassiveCondition(skill, context) {
   if (skill.攻撃手段 && skill.攻撃手段 !== context.攻撃手段) return false;
-  if (skill.条件 && skill.条件 !== context.使用スキル) return false;
+  if (skill.条件 && skill.条件 !== context.使用技) return false;
   if (skill.条件系統 && skill.条件系統 !== context.使用系統) return false;
   return true;
 }
 
 /**
- * パッシブスキルを総合ステータスに反映
+ * パッシブ技を総合ステータスに反映
  * @param {object} characterData - キャラデータ
- * @param {object} context - 行動情報 { 攻撃手段, 使用スキル, 使用系統 }
+ * @param {object} context - 行動情報 { 攻撃手段, 使用技, 使用系統 }
  * @returns {object} totalStats - 最終ステータス（パッシブ込み）
  */
 export function calcTotalStats(characterData, context = {}) {
@@ -547,7 +547,7 @@ export function calcTotalStats(characterData, context = {}) {
         if (checkPassiveCondition(skill, context)) {
           activeSkills.push(skill);
 
-          // スキル効果を加算
+          // 技効果を加算
           for (const key in skill) {
             if (
               key !== "名前" &&
@@ -565,7 +565,7 @@ export function calcTotalStats(characterData, context = {}) {
     }
   }
 
-  // 発動中パッシブスキルを保持
+  // 発動中パッシブ技を保持
   characterData.party[0].stats.activePassives = activeSkills;
 
   return base;
@@ -610,7 +610,7 @@ function getSkillsByLevelFromEntry(entry, uptoLv) {
  * Role 配列を走査して、各ロール(Lv>0)の Skill1..Skill10 をLv上限まで取得。
  * allData からロール名（種族/クラス）一致の行を探して集約します。
  * @param {Object} mainChar - characterData.party[0]
- * @returns {Array<Object>} - 取得スキル配列（重複名は自動排除）
+ * @returns {Array<Object>} - 取得技配列（重複名は自動排除）
  */
 function collectSkillsFromRoles(mainChar) {
   if (!mainChar?.Role?.length || !allData.value?.length) return [];

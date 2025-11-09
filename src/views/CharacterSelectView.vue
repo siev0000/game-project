@@ -44,44 +44,75 @@ export default {
   data() {
     return {
       characters: [],
-      selectedCharacter: null,  // ← これを追加
+      selectedCharacter: null,
     };
   },
   methods: {
     async loadCharacters() {
-      const user = JSON.parse(localStorage.getItem("user"));
-      if (!user?.characters) return;
+      const token = localStorage.getItem("authToken"); // ← JWTトークンを取得
+      if (!token) {
+        alert("ログイン情報がありません。再ログインしてください。");
+        this.$router.push("/login");
+        return;
+      }
 
-      await loadGameData();
-      this.characters = user.characters.map((c) => buildCharacterStats(c));
+      try {
+        // ゲームデータを先にロード（クラス・技など）
+        await loadGameData();
+
+        // サーバーから最新キャラクター一覧を取得
+        const res = await fetch("/api/getCharacters", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`, // ← トークンを送る
+          },
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          // サーバーから取得したキャラクターをビルド
+          this.characters = (data.characters || []).map((c) => buildCharacterStats(c));
+          console.log("🎯 最新キャラクター一覧取得:", this.characters);
+        } else {
+          console.error("取得失敗:", data.error);
+          alert("キャラクター一覧の取得に失敗しました。");
+        }
+      } catch (err) {
+        console.error("通信エラー:", err);
+        alert("サーバーに接続できません。");
+      }
     },
+
     getRaceImage(char) {
       return getRollIcon(char.Role?.[1]?.roleName);
     },
+
     getClassImage(char) {
       return getRollIcon(char.Role?.[0]?.roleName);
     },
+
     selectCharacter(index) {
       const selected = this.characters[index];
       if (!selected) return;
-      
+
       console.log("全キャラクター:", this.characters);
-      // TODO: 後でモーダル呼び出しにつなげる
-      if (!selected) return;
       this.selectedCharacter = selected;
       console.log("キャラクター選択:", this.selectedCharacter);
-      
     },
+
     handleOk(data) {
       console.log("OKで返ってきたデータ:", data);
       this.selectedCharacter = null; // モーダルを閉じる
-    }
+    },
   },
+
   mounted() {
-    this.loadCharacters();
+    this.loadCharacters(); // ← 起動時にサーバーから最新データ取得
   },
 };
 </script>
+
 
 <style scoped>
 #character-select {

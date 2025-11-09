@@ -3,9 +3,9 @@
 
 /**
  * 基本威力計算
- * @param {number} basePower - スキルの基礎威力 (例: 威力+20 → 20)
+ * @param {number} basePower - 技の基礎威力 (例: 威力+20 → 20)
  * @param {object} attacker - 攻撃側キャラデータ
- * @param {object} skill - 使用するスキルデータ { 判定: "速度", 追加威力: "早業" }
+ * @param {object} skill - 使用する技データ { 判定: "速度", 追加威力: "早業" }
  */
 export function calcPower(basePower, attacker, skill) {
   let power = basePower;
@@ -71,7 +71,7 @@ export function applyCritical(damage, attacker) {
 
 
 /**
- * スキルデータをまとめてステータス補正込みで返す
+ * 技データをまとめてステータス補正込みで返す
  * @param {object} skill - Skill_List の1件
  * @param {object} attacker - 攻撃側キャラデータ
  * @returns {object}
@@ -192,7 +192,7 @@ export function cleanEffectOverview(overview) {
 }
 
 /**
- * 選択中のスキルを合算して総合数値を返す
+ * 選択中の技を合算して総合数値を返す
  * @param {object} selectedSkills - { A: skill|null, S: skill|null, Q: skill|null }
  * @returns {object} - { 威力, 攻撃回数, クリティカル }
  */

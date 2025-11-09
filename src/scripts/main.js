@@ -226,7 +226,7 @@ function isAllConditionsEmptyOrZero(cls) {
     "条件系統Lv",
     "条件クラス_1",
     "条件クラス_2",
-    "条件スキル",
+    "条件技",
     "条件属性",
   ];
   return conditions.every((key) => !cls[key] || cls[key] === 0);
@@ -718,7 +718,7 @@ function adjustLevels(event) {
   updateIsHuman(); // 人族判定を更新
   calculateAndDisplayStatus(); // ステータス更新
   displayTechniques(); // 技能更新
-  displayAbilities(raceLevelInput.value, classLevelInput.value); // スキルを更新
+  displayAbilities(raceLevelInput.value, classLevelInput.value); // 技を更新
 }
 // ========================================================
 
@@ -853,10 +853,10 @@ showTab("stats");
 
 // ========== データ計算 ======================================================================
 
-// ステータス計算と取得スキルを返す
+// ステータス計算と取得技を返す
 function calculateStats(entity, level) {
   console.log(
-    " ステータス計算と取得スキルを返す :",
+    " ステータス計算と取得技を返す :",
     entity,
     level,
     entity[`Skill1`]
@@ -1112,7 +1112,7 @@ confirmLevelsButton.addEventListener("click", async () => {
   }
 });
 
-// スキル取得
+// 技取得
 async function loadTechniques() {
   try {
     const response = await fetch("/api/excel/Techniques");
@@ -1122,9 +1122,9 @@ async function loadTechniques() {
 
     const Techniques = await response.json();
     SkillData = Techniques;
-    console.log("取得したスキルデータ SkillData :", SkillData);
+    console.log("取得した技データ SkillData :", SkillData);
   } catch (error) {
-    console.error("スキルデータの取得中にエラーが発生:", error);
+    console.error("技データの取得中にエラーが発生:", error);
   }
 }
 

@@ -1,0 +1,67 @@
+✅ 例② メタリックグレー（軍用・工業ロボ感）
+::-webkit-scrollbar {
+  width: 12px;
+}
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-left: 1px solid #333;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #666, #999, #666);
+  border-radius: 2px;
+  border: 1px solid #222;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #777, #bbb, #777);
+}
+
+
+🧠 印象: 「アンドロイドOS」「工業用HUD」系。
+金属的でロボのパネル感が出る。
+
+✅ 例③ パルスライト（AIコア／デジタル信号風）
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #101010;
+  box-shadow: inset 0 0 4px rgba(0, 255, 255, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: repeating-linear-gradient(
+    180deg,
+    #00ffff,
+    #00ffff 2px,
+    #0099ff 4px
+  );
+  border-radius: 2px;
+  animation: pulse 1.2s infinite linear;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 4px #00ffff; }
+  50% { box-shadow: 0 0 12px #00ffff; }
+  100% { box-shadow: 0 0 4px #00ffff; }
+}
+
+
+🧠 印象: 「AIの目」「稼働中のマシン」みたいなパルス演出。
+モーション付きで未来感を強調。
+
+🧩 補足
+
+Firefox対応を足すなら：
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #00e0ff #0a0a0a;
+}
+
+💡提案
+
+もしUI全体を「近未来」モードに切り替えたいなら、
+body に .theme-future クラスを付けておき、
+
+.theme-future ::-webkit-scrollbar-thumb { ... }

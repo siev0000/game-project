@@ -62,8 +62,8 @@ export default {
     const tabs = [
       { name: "基本", label: "基本", icon: "👤", component: BaseTab },
       { name: "ステータス", label: "ステータス", icon: "⚔️", component: StatsTab },
-      { name: "スキル", label: "スキル", icon: "📖", component: SkillsTab },
-      { name: "装備", label: "装備", icon: "🛡️", component: EquipmentTab },
+      { name: "技", label: "技", icon: "📖", component: SkillsTab },
+      // { name: "装備", label: "装備", icon: "🛡️", component: EquipmentTab },
       { name: "手持ち", label: "手持ち", icon: "🎒", component: InventoryTab },
       { name: "進行", label: "進行", icon: "🗺️", component: ProgressTab },
     ];
@@ -171,6 +171,7 @@ export default {
 }
 .btn {
   min-width: 140px; padding: 10px 18px;
+  min-height: 45px;
   font-size: 18px; cursor: pointer;
   border-radius: 8px; border: none;
   margin-bottom: 0px;

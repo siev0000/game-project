@@ -356,23 +356,28 @@
   </div>
   
   <!-- 装備スロット選択ダイアログ -->
-  <div v-if="showSlotDialog" class="slot-dialog">
-    <div class="dialog-content">
-      <p>どのスロットに装備しますか？</p>
+<div v-if="showSlotDialog" class="slot-dialog">
+  <div class="dialog-content">
+    <p>どのスロットに装備しますか？</p>
 
-      <div class="slot-buttons">
-        <button
-          v-for="slot in slotChoices"
-          :key="slot"
-          @click="equipItem(pendingItem, slot)"
-        >
-          {{ slot }}
-        </button>
-      </div>
-
-      <button @click="showSlotDialog = false" class="cancel-btn">キャンセル</button>
+    <div class="slot-buttons">
+      <button
+        v-for="slot in slotChoices"
+        :key="slot"
+        @click="equipItem(pendingItem, slot)"
+      >
+        <span>{{ slot }}</span>
+        <template v-if="getEquippedItemName(slot)">
+          <br />
+          <small class="equipped-name">{{ getEquippedItemName(slot) }}</small>
+        </template>
+      </button>
     </div>
+
+    <button @click="showSlotDialog = false" class="cancel-btn">キャンセル</button>
   </div>
+</div>
+
 
 </template>
 
@@ -633,6 +638,9 @@ function equipItem(item, slot = null) {
   pendingItem.value = null;
 }
 
+const showSlotDialog = ref(false); // ダイアログ表示フラグ
+const pendingItem = ref(null);     // 選択中の装備
+const slotChoices = ref([]);       // 選択候補スロット
 
 
 // 外す処理
@@ -673,6 +681,12 @@ function sortInventory() {
 
   console.log("現在の装備状態:", JSON.parse(JSON.stringify(equipped)));
 }
+
+// スロットに装備されているアイテム名を取得
+const getEquippedItemName = (slot) => {
+  const eq = displayInventory.value.find(item => item.装備中 === slot);
+  return eq ? eq.名前 : "";
+};
 
 // 判定関数
 const isWeapon = (item) => {
@@ -1019,5 +1033,69 @@ const isEquipment = (item) => {
   margin-top: 12px;
   background: #6b5340;
 }
+/* 装備スロット選択ダイアログ */
+.slot-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
 
+.dialog-content {
+  background: #2d2a22;
+  border: 3px solid #c8b48a;
+  border-radius: 12px;
+  padding: 20px 24px;
+  text-align: center;
+  color: #ffeecc;
+  width: 280px;
+}
+
+.slot-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.slot-buttons button {
+  background: #c8b48a;
+  border: 2px solid #8b5a2b;
+  border-radius: 6px;
+  color: #3b2f1c;
+  font-weight: bold;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.slot-buttons button:hover {
+  background: #e6c06f;
+}
+
+.cancel-btn {
+  margin-top: 12px;
+  background: #444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.cancel-btn:hover {
+  background: #666;
+}
+.equipped-name {
+  font-size: 25px;
+  color: #000000;
+  opacity: 0.85;
+}
 </style>

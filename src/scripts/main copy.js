@@ -15,7 +15,7 @@ const characterData = {
         allLv: 10, // 全体の合計レベル
         allEf: 0, // 全体の合計努力値
         baseStats: {}, // 基礎ステータス（例: HP, MP, 攻撃など初期値）
-        TechniqueValues: {}, // 技能値（例: 隠密、感知、威圧などのスキル値）
+        TechniqueValues: {}, // 技能値（例: 隠密、感知、威圧などの技値）
         resistances: {}, // 耐性（例: 炎耐性、氷耐性など）
         bodyAttributes: {}, // 肉体値（例: 筋力、耐久など）
         weaknesses: [], // 弱点（例: 火が弱点、魔法攻撃が弱点など）
@@ -29,8 +29,8 @@ const characterData = {
     statusEffects: [], // 現在の状態異常（例: 毒、麻痺など）
     combatData: {
         actionPoints: 30, // 行動ポイント（1ターンで行えるアクション数）
-        initiative: 10, // 戦闘での行動順序（素早さやスキルに影響される）
-        cooldowns: {} // スキルや魔法のクールダウン管理（例: {"スキル名": 2ターン})
+        initiative: 10, // 戦闘での行動順序（素早さや技に影響される）
+        cooldowns: {} // 技や魔法のクールダウン管理（例: {"技名": 2ターン})
     },
 
     // 一時的なバフ/デバフ
@@ -233,7 +233,7 @@ async function getUserId() {
 
 // 条件が空または0であるかを判定
 function isAllConditionsEmptyOrZero(cls) {
-    const conditions = ['条件系統', '条件系統Lv', '条件クラス_1', '条件クラス_2', '条件スキル', '条件属性'];
+    const conditions = ['条件系統', '条件系統Lv', '条件クラス_1', '条件クラス_2', '条件技', '条件属性'];
     return conditions.every(key => !cls[key] || cls[key] === 0);
 }
 
@@ -665,7 +665,7 @@ function adjustLevels(event) {
     updateIsHuman(); // 人族判定を更新
     calculateAndDisplayStatus(); // ステータス更新
     displayTechniques(); // 技能更新
-    displayAbilities(raceLevelInput.value, classLevelInput.value); // スキルを更新
+    displayAbilities(raceLevelInput.value, classLevelInput.value); // 技を更新
 }
 // ========================================================
 
@@ -799,9 +799,9 @@ showTab('stats');
 
 // ========== データ計算 ======================================================================
 
-// ステータス計算と取得スキルを返す
+// ステータス計算と取得技を返す
 function calculateStats(entity, level) {
-    console.log(" ステータス計算と取得スキルを返す :", entity , level, entity[`Skill1`])
+    console.log(" ステータス計算と取得技を返す :", entity , level, entity[`Skill1`])
     const stats = {};
 
 
@@ -1037,7 +1037,7 @@ confirmLevelsButton.addEventListener('click', async () => {
 });
 
 
-// スキル取得
+// 技取得
 async function loadTechniques() {
     try {
         const response = await fetch('/api/excel/Techniques');
@@ -1047,10 +1047,10 @@ async function loadTechniques() {
 
         const Techniques = await response.json();
         SkillData = Techniques
-        console.log('取得したスキルデータ SkillData :', SkillData);
+        console.log('取得した技データ SkillData :', SkillData);
         
     } catch (error) {
-        console.error('スキルデータの取得中にエラーが発生:', error);
+        console.error('技データの取得中にエラーが発生:', error);
     }
 }
 

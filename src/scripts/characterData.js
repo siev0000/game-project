@@ -17,7 +17,7 @@ export const characterDataTemplate = {
     allEf: 0,
     baseStats: {},        // HP, 攻撃, 防御などの基本値
     temporaryBonuses: {}, // 一時補正
-    abilities: {},        // 習得スキル
+    abilities: {},        // 習得技
     cooldowns: {},        // クールタイム
     statusEffects: [],    // 状態異常
     experience: 0,        // 経験値
@@ -36,7 +36,7 @@ export const characterDataTemplate = {
   },
   inventory: [],     // 主人公が持っているアイテムリスト
   
-  // --- スキル・属性 ---
+  // --- 技・属性 ---
   skills: [],
   magic: [],
   attribute: null,

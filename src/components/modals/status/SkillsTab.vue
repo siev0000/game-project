@@ -1,5 +1,5 @@
 <template>
-  <!-- 作成スキル一覧 -->
+  <!-- 作成技一覧 -->
   <div class="create-skill-panel">
   </div>
   <div class="tab-panel_skill">
@@ -48,7 +48,7 @@
 
 <!-- 🔽 横並びに変更 -->
     <div class="skills-container">
-      <!-- 左：スキル一覧 -->
+      <!-- 左：技一覧 -->
       <ul class="skill-list">
         <li
           v-for="skill in filteredSkills"
@@ -159,7 +159,7 @@
 
       </div>
       <div class="skill-detail-box empty" v-else>
-        <p>スキルを選択すると詳細が表示されます</p>
+        <p>技を選択すると詳細が表示されます</p>
       </div>
     </div>
 
@@ -244,7 +244,7 @@ const displayRuby = (val) => {
   return val === 0 ? '' : val;
 };
 
-// 選択したスキル（リストクリック → 詳細に反映）
+// 選択した技（リストクリック → 詳細に反映）
 const selectSkill = (skill) => {
   if (!skill) return;
 
@@ -257,13 +257,13 @@ const selectSkill = (skill) => {
   fitTextToWidth("skill-name-detail-box", 185, skill.名前 || "", 30);
 };
 
-// 決定（大きなスキル名ボタンをクリック）
+// 決定（大きな技名ボタンをクリック）
 const setSkill = (skill) => {
   if (!skill) return;
   const type = skill.行動;
   if (!['A','S','Q'].includes(type)) return;
 
-  // 同じスキルなら解除
+  // 同じ技なら解除
   if (selectedSkills.value[type]?.名前 === skill.名前) {
     selectedSkills.value[type] = null;
   } else {
@@ -450,7 +450,7 @@ const totalCrit = computed(() => {
 .sub-tab-btn.P.active {
   background: rgb(141, 141, 141);
 }
-/* ==== スキル行の色（背景帯） ==== */
+/* ==== 技行の色（背景帯） ==== */
 .type-a { background-color: rgba(83, 0, 0); }   /* 赤系 */
 .type-s { background-color: rgba(83, 83, 0); } /* 黄系 */
 .type-q { background-color: rgba(0, 83, 0); }   /* 緑系 */

@@ -53,8 +53,8 @@
           </div>
         </div>
 
-        <!-- スキル -->
-        <div v-if="currentTab === 'スキル'" class="tab-panel">
+        <!-- 技 -->
+        <div v-if="currentTab === '技'" class="tab-panel">
           <div v-for="s in currentCharacter.skills" :key="s.名前">
             {{ s.名前 }} ({{ s.行動 }})
           </div>
@@ -122,7 +122,7 @@ export default {
   setup(props, { emit }) {
     const index = ref(0);
     const currentTab = ref("基本");
-    const tabs = ["基本", "ステータス", "スキル", "装備", "手持ち", "ギルド", "進行"];
+    const tabs = ["基本", "ステータス", "技", "装備", "手持ち", "ギルド", "進行"];
 
     const party = computed(() => props.character?.party ?? []);
     const currentCharacter = computed(() => {

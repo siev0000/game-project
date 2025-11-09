@@ -13,7 +13,7 @@
   </div>
 
 
-<!-- スキル一覧 -->
+<!-- 技一覧 -->
 <ul class="skill-list">
   <li
     v-for="skill in filteredSkills"
@@ -107,7 +107,7 @@
       <div class="skill-description">{{ selectedSkill.説明 }}</div>
     </div>
     <div class="skill-detail-box empty" v-else>
-      <p>スキルを選択すると詳細が表示されます</p>
+      <p>技を選択すると詳細が表示されます</p>
     </div>
   </div>
 </template>
@@ -218,7 +218,7 @@ const displayRuby = (val) => {
 .sub-tab-btn.P.active {
   background: rgb(141, 141, 141);
 }
-/* ==== スキル行の色（背景帯） ==== */
+/* ==== 技行の色（背景帯） ==== */
 .type-a { background-color: rgba(83, 0, 0); }   /* 赤系 */
 .type-s { background-color: rgba(83, 83, 0); } /* 黄系 */
 .type-q { background-color: rgba(0, 83, 0); }   /* 緑系 */

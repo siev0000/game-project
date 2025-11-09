@@ -138,7 +138,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// キャラクター取得
+// キャラクター追加
 router.post('/characters', authenticateUser, async (req, res) => {
   const userId = req.user._id;      // JWTから来るIDは文字列
   const characterData = req.body;
@@ -164,7 +164,24 @@ router.post('/characters', authenticateUser, async (req, res) => {
 });
 
 
+// キャラクター一覧取得
+router.get('/getCharacters', authenticateUser, async (req, res) => {
+  try {
+    const db = getDb();
+    const users = db.collection('users');
+    const userId = req.user._id; // JWTから復元したID
 
+    const user = await users.findOne({ _id: new ObjectId(userId) });
+    if (!user) {
+      return res.status(404).json({ error: 'ユーザーが見つかりません' });
+    }
+
+    res.status(200).json({ characters: user.characters || [] });
+  } catch (err) {
+    console.error('❌ キャラクター一覧取得エラー:', err);
+    res.status(500).json({ error: 'キャラクター一覧の取得に失敗しました' });
+  }
+});
 
 
 
