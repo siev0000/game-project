@@ -203,6 +203,8 @@ const props = defineProps({
   player: { type: Object, required: true }
 });
 
+console.log("== skillsTab ==",props)
+
 const skillTypes = ["A", "S", "Q", "P"];
 const currentSkillType = ref("A");
 const selectedSkill = ref(null);

@@ -70,8 +70,8 @@ export default {
 
     const party = computed(() => props.character?.party ?? []);
     const currentCharacter = computed(() => party.value[index.value] || {});
-    const currentRace = computed(() => currentCharacter.value?.Role?.[1]?.roleName || "");
-    const currentClass = computed(() => currentCharacter.value?.Role?.[0]?.roleName || "");
+    const currentRace = computed(() => currentCharacter.value?.Role?.[0]?.roleName || "");
+    const currentClass = computed(() => currentCharacter.value?.Role?.[1]?.roleName || "");
 
     const currentTabComponent = computed(() => {
       const tab = tabs.find(t => t.name === currentTab.value);

@@ -555,6 +555,7 @@ onMounted(async () => {
         : dbEquipments;
 
     const rebuilt = await rebuildInventory(baseInv);
+    // const rebuilt = baseInv;
     if (!isMounted) return;
 
     const filteredList = await Promise.all(

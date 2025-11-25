@@ -17,24 +17,29 @@
         <!-- タブ内容 -->
         <div v-if="tabs.includes(activeTab)">
           <div class="table-wrapper">
-<table>
+<!-- 基本のテーブル -->
+            <table v-if="activeTab !== '魔法'">
   <thead>
     <!-- 1行目：属性／合計／Role名 -->
     <tr>
       <!-- 属性 -->
       <th class="role-list">
-        <div class="attr-cell">
+        <div class="attr-icon-wrap">
+          <!-- <span class="attr-ruby">
+            {{ props.character?.attribute?.[0] || "属" }}
+          </span> -->
           <img
             v-if="props.character?.attribute && getAttrIcon(props.character.attribute)"
             :src="getAttrIcon(props.character.attribute)"
             :alt="props.character.attribute"
             class="icon-Attribute-img"
           />
-          <span>{{ props.character?.attribute || "属性" }}</span>
         </div>
+
       </th>
       <!-- 合計 -->
-      <th>合計</th>
+      <th class="all-list">合計</th>
+      <th class="passive-header">P</th> <!-- ★ 追加 -->
       <!-- Role名（空のものは非表示） -->
       <th
         v-for="(role, rIndex) in (props.character?.Role || []).filter(r => r.roleName)"
@@ -49,7 +54,7 @@
     <tr>
       <td>Lv</td>
       <td class="role-total-Lv">{{ totalLevel }}</td>
-
+      <td class="passive-lv-cell">/</td> <!-- ★ 追加 -->
       <!-- Lvボタン（名前がないRoleは非表示） -->
       <td
         v-for="(role, rIndex) in (props.character?.Role || []).filter(r => r.roleName)"
@@ -57,6 +62,7 @@
         class="role-lv-cell"
         @click="levelUpRole(role)"
       >
+
         <button class="lv-btn">Lv{{ role.Lv }}</button>
       </td>
     </tr>
@@ -69,14 +75,22 @@
 
       <!-- 合計値 -->
       <td>
-        {{ getDisplayValue(calcTotalStat(stat), stat) }}
+        <!-- {{ baseStatsTotal(stat, )  }} -->
+        {{ roundTo(applySizeBonus(props.character.stats.baseStats[stat], [stat], props.character.stats.totalStats["SIZ"] ) + calcPassiveStat(stat)) }}
+        <!-- props.character -->
+      </td>
+      
+      <!-- ★ パッシブ -->
+      <td>
+        {{ roundTo(calcPassiveStat(stat))}}
+        <!-- {{ props.character.stats.activePassives[stat] }} -->
       </td>
 
       <!-- 各Role -->
       <td v-for="(role, rIndex) in (props.character?.Role || []).filter(r => r.roleName)"
         :key="'stat-' + rIndex"
       >
-        {{ getDisplayValue(calcRoleStat(role, stat), stat) }}
+        {{ roundTo(calcRoleStat(role, stat)) }}
       </td>
 
     </tr>
@@ -87,6 +101,7 @@
     <tr v-for="i in 10" :key="'skill-' + i">
       <td>技</td>
       <td>{{ i }}</td>
+      <td>/</td>
 
       <td v-for="(role, rIndex) in (props.character?.Role || []).filter(r => r.roleName)"
         :key="'skill-role-' + rIndex"
@@ -105,6 +120,47 @@
       </td>
     </tr>
   </tbody>
+
+</table>
+
+<!-- 属性タブ専用テーブル -->
+<table v-if="activeTab === '魔法'" class="attr-table">
+
+  <thead>
+    <!-- 1行目：名前 + 属性一覧 -->
+    <tr>
+      <th class="left-col">名前</th>
+
+      <th
+        v-for="(attr, idx) in props.character.attributeList"
+        :key="'attr-head-' + idx"
+        class="attr-head-col"
+      >
+        <div class="attr-cell-header">
+          <img
+            v-if="getAttrIcon(attr)"
+            :src="getAttrIcon(attr)"
+            :alt="attr"
+            class="icon-Attribute-header"
+          />
+          <span>{{ attr }}</span>
+        </div>
+      </th>
+    </tr>
+
+    <!-- 2行目：Lv -->
+    <tr>
+      <td class="left-col">Lv</td>
+
+      <td
+        v-for="(attr, idx) in props.character.attributeList"
+        :key="'attr-lv-' + idx"
+        class="attr-lv-col"
+      >
+        {{ props.character.attributeLv?.[attr] || 0 }}
+      </td>
+    </tr>
+  </thead>
 
 </table>
 
@@ -180,13 +236,18 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, toRaw } from 'vue'
 import { useRouter } from 'vue-router'
 import RaceModal from '@/components/modals/RaceModal.vue'
 import ClassModal from '@/components/modals/ClassModal.vue'
 import AttributeModal from '@/components/modals/AttributeModal.vue'
 // 必ず使う
-import { loadGameData, statMap, statDescriptions, allData, attributeList, race_attributes, Skill_List } from '@/constants/statData.js';
+import { 
+  loadGameData, statMap, statDescriptions, allData, baseStatsTotal, createEquipTotalSkill,
+  calcRoleStat, race_attributes, Skill_List , getSizeBonus, applySizeBonus, statusUpdate,
+  getAttrIcon, getRollIcon, getAttackIcon, applyRoleData, calcTotalStats, collectSkillsFromRoles
+} from '@/constants/statData.js';
+
 import { playerGlobalData } from '@/scripts/characterData.js'
 
 const router = useRouter()
@@ -202,18 +263,13 @@ const showRaceModal = ref(false)
 const showClassModal = ref(false)
 const showAttributeModal = ref(false)
 
-const tabs = ['ステータス', '技能', '耐性', '技']
+const tabs = ['ステータス', '技能', '耐性', '技', '魔法']
 const activeTab = ref('ステータス')
 
-
-const raceStats = ref({})
-const classStats = ref({})
 const totalStats = ref({})
 
 const selectedSkillDetail = ref(null);
 
-const raceLv = ref(1)   // 初期値1
-const classLv = ref(9)  // 初期値1
 
 // 取得
 const props = defineProps({
@@ -247,17 +303,17 @@ onMounted(async () => {
   recalcStats();
 })
 
-const imageMap = import.meta.glob('@/assets/images/**/*', { eager: true, import: 'default' })
-const getImageUrl = (relativePath) => {
-  try {
-    const match = Object.entries(imageMap).find(([key]) => key.endsWith(relativePath))
-    // // console.log("getImageUrl : ", match, relativePath)
+// const imageMap = import.meta.glob('@/assets/images/**/*', { eager: true, import: 'default' })
+// const getImageUrl = (relativePath) => {
+//   try {
+//     const match = Object.entries(imageMap).find(([key]) => key.endsWith(relativePath))
+//     // // console.log("getImageUrl : ", match, relativePath)
 
-    return match ? match[1] : ''
-  } catch {
-    return ''
-  }
-}
+//     return match ? match[1] : ''
+//   } catch {
+//     return ''
+//   }
+// }
 
 const attrIconMods = import.meta.glob(
   "/src/assets/images/属性アイコン/100/*.webp",
@@ -268,10 +324,10 @@ for (const [path, url] of Object.entries(attrIconMods)) {
   const filename = path.split("/").pop().replace(/\.webp$/i, "");
   ATTR_ICONS[filename] = url; // 例：ATTR_ICONS["力場"] = "blob:..."
 }
-const getAttrIcon = (attr)=> {
-  const name = (attr?.属性名 || attr?.name || "").trim();
-  return name && ATTR_ICONS[name] ? ATTR_ICONS[name] : "";
-}
+// const getAttrIcon = (attr)=> {
+//   const name = (attr?.属性名 || attr?.name || "").trim();
+//   return name && ATTR_ICONS[name] ? ATTR_ICONS[name] : "";
+// }
 
 const selectedKey = ref('')
 const selectKey = (key, detail) => {
@@ -296,27 +352,27 @@ for (const [path, url] of Object.entries(attackIconMods)) {
 }
 
 // 表記ゆらぎにある程度強い取得関数（全角カッコ等を吸収）
-const getAttackIcon = (method) => {
-  const raw = (method ?? "").toString().trim();
-  if (!raw) return "";
+// const getAttackIcon = (method) => {
+//   const raw = (method ?? "").toString().trim();
+//   if (!raw) return "";
 
-  const noSpace = raw.replace(/\s+/g, "");
-  const noParen = raw.replace(/[（(].*?[)）]/g, "").trim();
-  const noParenNoSpace = noParen.replace(/\s+/g, "");
+//   const noSpace = raw.replace(/\s+/g, "");
+//   const noParen = raw.replace(/[（(].*?[)）]/g, "").trim();
+//   const noParenNoSpace = noParen.replace(/\s+/g, "");
 
-  return (
-    ATTACK_ICONS[raw] ||
-    ATTACK_ICONS[noSpace] ||
-    ATTACK_ICONS[noParen] ||
-    ATTACK_ICONS[noParenNoSpace] ||
-    ATTACK_ICONS["default"] || // あればフォールバック
-    ""
-  );
-};
+//   return (
+//     ATTACK_ICONS[raw] ||
+//     ATTACK_ICONS[noSpace] ||
+//     ATTACK_ICONS[noParen] ||
+//     ATTACK_ICONS[noParenNoSpace] ||
+//     ATTACK_ICONS["default"] || // あればフォールバック
+//     ""
+//   );
+// };
 
 
 // 役割: Role[] ベースで totalStats を再計算
-const recalcStats = () => {
+const recalcStats = async () => {
   const roles = (props.character?.Role || []).filter(r => r.roleName);
   const newTotalStats = {};
 
@@ -338,7 +394,7 @@ const recalcStats = () => {
         return Math.max(max, base);
       }, 0);
     } else {
-      // それ以外は (/10 * Lv) を合算（丸めは最後の表示でgetDisplayValueに任せる）
+      // それ以外は (/10 * Lv) を合算（丸めは最後の表示でapplySizeBonusに任せる）
       const sum = roles.reduce((acc, role) => {
         return acc + (getBase(role, key) / 10) * (role.Lv || 0);
       }, 0);
@@ -346,15 +402,24 @@ const recalcStats = () => {
     }
   });
 
-  totalStats.value = newTotalStats;
-  console.log("== recalcStats ==")
-  console.log(newTotalStats)
+  // ============================================================
+  // ★★ スキル再構築処理（ここが今回追加すべき本体）★★
+  // ============================================================
+
+  // const allSkills = collectSkillsFromRoles(props.character) || [];  // 重複排除のためSet使用
+  const characterData = await statusUpdate(props.character)
+  props.character = characterData
+  // Set → Array に変換
+  // props.character.skills = Array.from(allSkills);
+
+  console.log("== recalcStats (skills updated) ==");
+  // console.log("allSkills:", allSkills);
+  // console.log("skills:", props.character.skills);
+  console.log("totalStats:", newTotalStats);
 };
 
 
 const selectRace = (raceName) => {
-  // console.log("selectRace raceName:", raceName)
-  // console.log(allData)
   // 種族データ全体を検索してセット
   const raceObj = allData.value.find(r => r.名前 === raceName);
   if (raceObj) {
@@ -367,8 +432,6 @@ const selectRace = (raceName) => {
 };
 
 const selectClass = (className) => {
-  // console.log("selectClass className:", className)
-  // console.log(allData)
   // クラスデータ全体を検索してセット
   const classObj = allData.value.find(c => c.名前 === className);
   if (classObj) {
@@ -399,110 +462,33 @@ const selectAttribute = (selectAttributes) => {
 };
 
 /**
- * 指定ステータスの合計値（Lv比例で全Role合算）
- * ※ SIZのみ例外：Lv関係なく最大値を返す
- * ※ 最終結果は四捨五入
+ * パッシブアビリティの合計値を返す
+ * props.character.stats.activePassives から statKey に一致する数値を加算
  */
-function calcTotalStat(statKey) {
-  if (!props.character?.Role) return 0;
+function calcPassiveStat(statKey) {
+  const passives = props.character?.stats?.activePassives || [];
+  if (!Array.isArray(passives)) return 0;
 
-  const roles = props.character.Role.filter(r => r.roleName);
+  let total = 0;
 
-  // === SIZだけ特殊 ===
-  if (statKey === "SIZ") {
-    const maxValue = roles.reduce((max, role) => {
-      const data = selectStatsData(role.roleName);
-      const base = data?.[statKey] || 0;
-      return Math.max(max, base);
-    }, 0);
-    return Math.round(maxValue);
-  }
+  for (const skill of passives) {
+    if (!skill) continue;
 
-  // === 通常処理 ===
-  const total = roles.reduce((sum, role) => sum + calcRoleStat(role, statKey), 0);
-  return Math.round(total);
-}
-
-/**
- * 単一Roleの指定ステータス値を取得（Lv比例）
- * ※ SIZのみ例外：Lvによる補正なし（基礎値をそのまま返す）
- */
-function calcRoleStat(role, statKey) {
-  if (!role?.roleName) return 0;
-
-  const data = selectStatsData(role.roleName);
-  const base = data?.[statKey] || 0;
-
-  // === SIZだけ特別扱い ===
-  if (statKey === "SIZ") {
-    return base; // レベル無関係にそのまま
-  }
-
-  // === 通常ステータス ===
-  return base / 10 * (role.Lv || 0);
-}
-
-
-// 数値にSIZボーナスを適用して返す
-function getDisplayValue(value, key) {
-  if (key === "特徴") {
-    return `${value || ""}`;
-  }
-
-  const baseValue = typeof value === "number" ? value : parseFloat(value) || 0;
-
-  // SIZはtotalStatsから取得（SIZボーナス計算用）
-  const siz = totalStats.value["SIZ"] ?? 100;
-  const bonusPercent = getSizeBonus(siz);
-
-  const bonusKeysPlus = ["HP", "攻撃", "威圧"];
-  const bonusKeysMinus = ["回避", "隠密", "軽業"];
-
-  if (bonusKeysPlus.includes(key)) {
-    if (key === "威圧") {
-      const TechniqueBonus = Math.round(bonusPercent);
-      return baseValue + TechniqueBonus;
-    } else {
-      const multiplier = 1 + bonusPercent / 100;
-      return Math.round(baseValue * multiplier);
+    // skill[statKey] が数値 or 数値文字列の場合のみ加算
+    const val = Number(skill[statKey]);
+    if (!isNaN(val)) {
+      total += val;
     }
-  } else if (bonusKeysMinus.includes(key)) {
-    if (key === "隠密" || key === "軽業") {
-      const TechniqueBonus = Math.round(bonusPercent);
-      return baseValue - TechniqueBonus;
-    } else {
-      const multiplier = 1 + bonusPercent / 100;
-      return Math.round(baseValue * (1 / multiplier));
-    }
-  } else {
-    return baseValue;
   }
-}
 
-// サイズボーナスの計算
-function getSizeBonus(siz) {
-  if (siz >= 180) {
-    return Math.round(siz / 50 + 8);;
-  } else if (siz <= 150) {
-    return -Math.round((160 - siz) / 3);
-  } else {
-    return 0;
-  }
-}
-
-//Skillを取得
-function getSkills(data, level) {
-  const skills = [];
-  for (let i = 1; i <= level; i++) {
-    const key = `Skill${i}`;
-    if (data[key]) skills.push(data[key]);
-  }
-  return skills;
+  // console.log("== calcPassiveStat ==",statKey,total, toRaw(passives))
+  return total;
 }
 
 // 技選択時処理
 const onSkillSelect = (skillName) => {
   if (!skillName) return;
+  // console.log(Skill_List.value)
 
   const skill = Skill_List.value.find(s => s.名前 === skillName);
   if (!skill) {
@@ -545,25 +531,7 @@ function openAttributeModal() {
   
 }
 
-const isCharacterValid = computed(() => {
-  return (
-    characterName.value.trim() !== "" &&
-    selectedRace.value &&
-    selectedClass.value &&
-    selectedAttribute.value &&
-    raceLv.value + classLv.value === 10
-  );
-});
 
-// ユニークIDをランダム生成（16桁ランダム英数字）
-function generateId(length = 16) {
-  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-}
 
 const totalLevel = computed(() =>
   (props.character?.Role || [])
@@ -571,7 +539,7 @@ const totalLevel = computed(() =>
     .reduce((sum, r) => sum + (r.Lv || 0), 0)
 );
 
-function levelUpRole(role) {
+async function levelUpRole(role) {
   if (!role || !role.roleName) return;
   if (role.Lv >= 10) {
     alert(`${role.roleName}は最大Lvです`);
@@ -580,42 +548,24 @@ function levelUpRole(role) {
   role.Lv++;
   console.log(`${role.roleName} Lvアップ → ${role.Lv}`);
   if (typeof recalcStats === "function") recalcStats();
+  // props.character.stats.baseStats
+  console.log("== Lvアップ ==")
+  // console.log(toRaw(props.character.inventory));
+  const characterData = await statusUpdate(props.character)
+  props.character = characterData
+
 }
 
 
 // 不要になる箇所
 // Lvや選択が変わるたびに再計算
 watch(
-  [selectedRace, selectedClass, selectedAttribute, raceLv, classLv],
-  (
-    [newRace, , , newRaceLv, newClassLv],
-    [oldRace, , , oldRaceLv, oldClassLv]
-  ) => {
-    if (newRace?.分類 === "人族") {
-      raceLv.value = 0;
-      classLv.value = 10;
-    } else {
-      if ( raceLv.value == 0){
-        raceLv.value = 1;
-      }
-      raceLv.value = Math.min(10, raceLv.value);
-      classLv.value = Math.min(10, classLv.value);
-
-      const total = raceLv.value + classLv.value;
-
-      if (total !== 10) {
-        if (newRaceLv !== oldRaceLv) {
-          // 種族側を動かした → クラス側を調整
-          classLv.value = Math.max(0, 10 - raceLv.value);
-        } else if (newClassLv !== oldClassLv) {
-          // クラス側を動かした → 種族側を調整
-          raceLv.value = Math.max(0, 10 - classLv.value);
-        }
-      }
-    }
+  [selectedRace, selectedClass, selectedAttribute],
+  () => {
     recalcStats();
   }
 );
+
 
 
 // ★ 新しく追加したい監視
@@ -626,89 +576,11 @@ watch(
   },
   { deep: true, immediate: true } // 初期値も出したいなら
 );
-
-const confirmCharacter = async () => {
-  if (!isCharacterValid.value) return; // 念のため防御
-
-  // テンプレートをコピー
-  const characterData = structuredClone(playerGlobalData);
-
-  // console.log("テンプレートをコピー:", characterData);
-
-  // 主人公データを party[0] に格納する想定で処理
-  const mainChar = characterData.party[0];
-
-  // 入力内容を反映
-  characterData.name = characterName.value; // グローバル側の名前
-  mainChar.name = characterName.value;      // 主人公キャラの名前
-  mainChar.race = selectedRace.value.名前;
-
-  // クラス情報
-  mainChar.Role[0] = {
-    roleName: selectedClass.value.名前,
-    Lv: classLv.value,
-    Ef: 0,
-  };
-  mainChar.Role[1] = {
-    roleName: selectedRace.value.名前,
-    Lv: raceLv.value,
-    Ef: 0,
-  };
-
-  // ステータス
-  mainChar.stats.allLv = raceLv.value + classLv.value;
-  mainChar.stats.baseStats = totalStats.value;
-  mainChar.stats.abilities = {}; // 技は後で処理
-
-  characterData.id = generateId(); // ランダムID
-  characterData.name = characterName.value;
-  characterData.race = selectedRace.value.名前;
-  characterData.class = selectedClass.value.名前;
-
-
-  // console.log("作成キャラクター:", characterData);
-  alert("キャラクター作成が完了しました！");
-  // 🔽 最後にDBへ保存
-  await saveCharacterToDB(characterData);
-};
-
-// キャラ登録処理
-async function saveCharacterToDB(characterData) {
-  const token = localStorage.getItem("authToken");
-  if (!token) {
-    alert("ログインしてください");
-    return;
-  }
-
-  try {
-    const res = await fetch("/api/characters", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(characterData),
-    });
-
-    const result = await res.json();
-    if (res.ok) {
-      // console.log("キャラクター登録成功:", result);
-      alert("キャラクター登録が完了しました！");
-      router.push('/Dashboard')
-
-    } else {
-      alert("登録失敗: " + result.error);
-    }
-  } catch (err) {
-    console.error("キャラクター登録エラー:", err);
-    alert("通信エラーでキャラクター登録できませんでした。");
-  }
-};
-
-async function returnDashboard(){
-  router.push('/Dashboard')
+function roundTo(val, digit = 0) {
+  const n = Number(val) || 0;
+  const p = Math.pow(10, digit);
+  return Math.round(n * p) / p;
 }
-
 
 </script>
 
@@ -738,7 +610,8 @@ async function returnDashboard(){
   color: #5a3b12;
   box-shadow: 0 2px 0 #a0722a;
   margin-right: 5px;
-  font-size: 25px;
+  font-size: 20px;
+  max-height: 50px;
 }
 
 .tabs button.active {
@@ -863,13 +736,13 @@ table thead th {
 /* 1列目の幅固定 */
 table th:first-child,
 table td:first-child {
-  width: 90px;
+  width: 80px;
   height: 33px;
 }
 /* 2列目の幅固定 */
 table th:first-child,
 table td:first-child {
-  width: 90px;
+  width: 80px;
   height: 33px;
 }
 
@@ -890,7 +763,7 @@ th {
   height: 651px; /* 表全体の高さ */
   background: radial-gradient(circle at center, #5e5b54 0%, #423d2f 100%);
   border: 5px solid #b58b4c;
-  overflow-y: auto;
+  overflow-y: scroll;
   font-size: 21.6px;
 }
 
@@ -925,21 +798,6 @@ th {
   z-index: 5;
 }
 
-.icon-img{
-  width: 50px;
-  height: 50px;
-  position: absolute;
-  left: 4px;
-  object-fit: contain;
-  border-radius: 50%;
-  top: 50%;
-  transform: translateY(-50%);
-}
-.icon-Attribute-img{
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-}
 
 .clickable {
   position: relative;
@@ -950,10 +808,9 @@ th {
   text-align: center;
 }
 .attr-cell {
-  display: flex;
-  align-items: center; /* 縦中央揃え */
-  flex-direction: row;   /* 横並び */
-  gap: 6px; /* 画像と文字の間隔 */
+  height: 0px; /* 画像と文字の間隔 */
+  position: relative;
+  transform: translate(0%, 100%);
 }
 .clickable_Attribute.ready {
   background-color: #f5deb3; /* 薄い緑 */
@@ -1115,6 +972,55 @@ button:disabled {
   vertical-align: middle;
 }
 .role-list {
-  width: 85px;
+  width: 75px;
 }
+
+.all-list {
+  width: 50px;
+}
+
+.passive-header {
+  width: 22px;
+}
+
+.attr-icon-wrap {
+  position: relative;   /* ← ルビ配置に必要 */
+  width: 50px;
+  height: 50px;
+
+  margin: 0 auto;       /* ← ★左右中央揃えの決め手 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-Attribute-img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+/* 属性テーブル用 */
+.attr-cell-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+.icon-Attribute-header {
+  width: 32px;
+  height: 32px;
+}
+
+.left-col {
+  width: 60px;
+  text-align: left;
+}
+
+.attr-head-col,
+.attr-lv-col {
+  text-align: center;
+  padding: 6px 8px;
+}
+
 </style>

@@ -1,7 +1,6 @@
 // statData.js
-import { ref, toRaw } from 'vue';
+import { ref } from 'vue';
 import { playerGlobalData, characterDataTemplate } from "../scripts/characterData";
-import { getEquippedItems } from "./itemFactory"; 
 
 export const allData = ref([]);          // クラス・種族
 export const attributeList = ref([]);    // 属性
@@ -143,10 +142,9 @@ export async function logEquipment(equip) {
 export const statMap = {
   ステータス: ['HP', 'MP', 'ST', '攻撃', '防御', '魔力', '精神', '回避', '命中', 'SIZ', 'APP'],
   技能: ['隠密', '感知', '威圧', '軽業', '技術', '早業', '看破', '騙す', '知識', '鑑定', '装置', '変装', '制作', '精神接続', '魔法技術', '指揮'],
-  耐性: ['物理軽減', '魔法軽減','切断耐性', '貫通耐性', '打撃耐性', '炎耐性', '氷耐性', '雷耐性', '酸耐性', '音耐性', '光耐性', '闇耐性', '善耐性', '悪耐性', '正耐性', '負耐性',
+  耐性: ['切断耐性', '貫通耐性', '打撃耐性', '炎耐性', '氷耐性', '雷耐性', '酸耐性', '音耐性', '光耐性', '闇耐性', '善耐性', '悪耐性', '正耐性', '負耐性',
          '精神耐性', '毒耐性', '盲目耐性', '幻覚耐性', '石化耐性', '怯み耐性', '拘束耐性', '呪い耐性', '即死耐性', '時間耐性', '出血耐性', '疲労耐性', '体幹耐性',
          '物理耐性', '魔法耐性', 'Cr率耐性', 'Cr威力耐性'],
-  肉体: ['素手', '角', '牙', '爪', '翼', '尾', '外皮', '装甲', '再生'],
   技: ['Skill1', 'Skill2', 'Skill3', 'Skill4', 'Skill5', 'Skill6', 'Skill7', 'Skill8', 'Skill9', 'Skill10']
 };
 
@@ -434,56 +432,23 @@ export function findRace(name) {
 export function applyRoleData(mainChar) {
   if (!mainChar) return;
 
+  // // ステータスが存在しないなら初期化
   if (!mainChar.stats) {
     mainChar.stats = { baseStats: {}, abilities: {} };
   }
 
+  // ===== ステータスの再計算 =====
   const keys = [
     ...statMap["ステータス"],
     ...statMap["技能"],
-    ...statMap["耐性"],
-    ...statMap["肉体"],
+    ...statMap["耐性"]
   ];
 
   keys.forEach(key => {
-    if (statMap["肉体"].includes(key)) {
-      // ★ 肉体（生存系）は別方式で最大値を算出
-      mainChar.stats.baseStats[key] = calcBodyMax(key, mainChar.Role);
-      return;
-    }
-
-    if (statMap["耐性"].includes(key)) {
-      // 耐性
-      mainChar.stats.baseStats[key] = sumFlatResistances(key, mainChar.Role);
-      return;
-    }
-    // 通常ステータス
     mainChar.stats.baseStats[key] = baseStatsTotal(key, mainChar.Role);
-
   });
 
   return mainChar;
-}
-// 耐性計算
-function sumFlatResistances(key, roles) {
-  return roles.reduce((sum, role) => {
-    if (!role.roleName) return sum;
-
-    const data = selectStatsData(role.roleName);
-    const base = Number(data?.[key] || 0);
-    return sum + base;
-  }, 0);
-}
-// 肉体計算
-function calcBodyMax(key, roles) {
-  let max = 0;
-
-  for (const role of roles) {
-    const base = role?.[key] ?? 0;          // クラスの基礎値
-    max += base;
-  }
-
-  return max;
 }
 
 /**
@@ -491,7 +456,7 @@ function calcBodyMax(key, roles) {
  * ※ SIZのみ例外：Lv関係なく最大値を返す
  * ※ 最終結果は四捨五入
  */
-export function baseStatsTotal(statKey, role) {
+function baseStatsTotal(statKey, role) {
   if (!role) return 0;
 
   const roles = role.filter(r => r.roleName);
@@ -519,27 +484,22 @@ export function baseStatsTotal(statKey, role) {
 
 /**
  * 単一Roleの指定ステータス値を取得（Lv比例）
- * ※ SIZ・耐性は例外：Lvによる補正なし
+ * ※ SIZのみ例外：Lvによる補正なし（基礎値をそのまま返す）
  */
-export function calcRoleStat(role, statKey, extraLv = 0) {
+function calcRoleStat(role, statKey, extraLv = 0) {
   if (!role?.roleName) return 0;
-
+  
   const data = selectStatsData(role.roleName);
-  const base = Number(data?.[statKey] || 0);
+  const base = data?.[statKey] || 0;
 
-  // === SIZ は Lv の影響なし ===
+  // === SIZだけ特別扱い ===
   if (statKey === "SIZ") {
-    return base;
+    return base; // レベル無関係
   }
 
-  // === 耐性 は Lv の影響なし ===
-  if (statMap["耐性"].includes(statKey)) {
-    return base;
-  }
-
-  // === 通常ステータス・技能のみ Lv 補正 ===
   const lv = (role.Lv || 0) + extraLv;
-  return (base / 10) * lv;
+
+  return base / 10 * lv;
 }
 // データ全体を検索して返す
 const selectStatsData = (name) => {
@@ -553,62 +513,44 @@ const selectStatsData = (name) => {
  * @param {string} key           ステータス名
  * @param {number} siz           SIZ値（未指定なら100扱い）
  */
-export function applySizeBonus(value, key, siz = 170) {
-  // 型チェック
-  const keyType = typeof key;
-
-  if (keyType !== "string") {
-    // 文字列に変換して処理継続
-    key = String(key ?? "");
-  }
-
+export function applySizeBonus(value, key, siz = 100) {
   const baseValue = typeof value === "number" ? value : parseFloat(value) || 0;
+
   const bonusPercent = getSizeBonus(siz);
 
-  // トリム
-  const trimmedKey = key.trim();
+  // プラス補正対象
+  const bonusKeysPlus = ["HP", "攻撃", "威圧"];
 
-  // デバッグログ
-  // console.log("=== SIZ補正デバッグ ===", {
-  //   originalKey: key,
-  //   trimmedKey,
-  //   baseValue,
-  //   bonusPercent,
-  //   siz
-  // });
+  // マイナス補正対象
+  const bonusKeysMinus = ["回避", "隠密", "軽業"];
 
-  const bonusKeysPlus  = ['HP', '攻撃', '威圧'];
-  const bonusKeysMinus = ['回避', '隠密', '軽業'];
-
-  let newValue = baseValue;
-
-  // ------ プラス補正 ------
-  if (bonusKeysPlus.includes(trimmedKey)) {
-
-    if (trimmedKey === '威圧') {
-      newValue = baseValue + Math.round(bonusPercent);
+  // === プラス補正系 ===
+  if (bonusKeysPlus.includes(key)) {
+    if (key === "威圧") {
+      // 威圧は直接加算
+      return baseValue + Math.round(bonusPercent);
     } else {
-      const mult = 1 + bonusPercent / 100;
-      newValue = Math.round(baseValue * mult);
+      // HP / 攻撃は倍率補正
+      const multiplier = 1 + bonusPercent / 100;
+      return Math.round(baseValue * multiplier);
     }
-    console.log("[applySizeBonus] ▶ プラス補正", trimmedKey, newValue);
   }
 
-  // ------ マイナス補正 ------
-  else if (bonusKeysMinus.includes(trimmedKey)) {
-
-    if (trimmedKey === '隠密' || trimmedKey === '軽業') {
-      newValue = baseValue - Math.round(bonusPercent);
+  // === マイナス補正系 ===
+  if (bonusKeysMinus.includes(key)) {
+    if (key === "隠密" || key === "軽業") {
+      // 隠密 / 軽業 は直接下げる
+      return baseValue - Math.round(bonusPercent);
     } else {
-      const mult = 1 + bonusPercent / 100;
-      newValue = Math.round(baseValue * (1 / mult));
+      // 回避は逆倍率
+      const multiplier = 1 + bonusPercent / 100;
+      return Math.round(baseValue * (1 / multiplier));
     }
-    console.log("[applySizeBonus] ▶ マイナス補正", trimmedKey, newValue);
   }
-  return newValue;
+
+  // === 補正対象外 ===
+  return baseValue;
 }
-
-
 
 // サイズボーナスの計算
 export function getSizeBonus(siz) {
@@ -623,33 +565,17 @@ export function getSizeBonus(siz) {
 
 
 /**
- * パッシブ技の条件チェック（AND条件、複数技対応）
+ * パッシブ技の条件チェック（AND条件）
  * @param {object} skill - 技データ
- * @param {object|Array} context - 技の使用情報
- *   例: { 技一覧: [ {攻撃手段, 使用技, 使用系統}, ... ] }
+ * @param {object} context - 行動情報 { 攻撃手段, 使用技, 使用系統 }
+ * @returns {boolean} 発動するかどうか
  */
-export function checkPassiveCondition(skill, context = {}) {
-  // context が {技一覧: [...]} ならそれを使う
-  const contextList = Array.isArray(context.技一覧)
-    ? context.技一覧
-    : [context];
-
-  // ★「どれか1つの技でも条件を満たせば true」
-  return contextList.some(ctx => {
-    // ①攻撃手段の条件
-    if (skill.攻撃手段 && skill.攻撃手段 !== ctx.攻撃手段) return false;
-
-    // ②使用技の条件
-    if (skill.条件 && skill.条件 !== ctx.使用技) return false;
-
-    // ③系統条件
-    if (skill.条件系統 && skill.条件系統 !== ctx.使用系統) return false;
-
-    // 上記すべてを通れば 1技としては一致
-    return true;
-  });
+function checkPassiveCondition(skill, context) {
+  if (skill.攻撃手段 && skill.攻撃手段 !== context.攻撃手段) return false;
+  if (skill.条件 && skill.条件 !== context.使用技) return false;
+  if (skill.条件系統 && skill.条件系統 !== context.使用系統) return false;
+  return true;
 }
-
 
 /**
  * パッシブ技を総合ステータスに反映
@@ -658,141 +584,43 @@ export function checkPassiveCondition(skill, context = {}) {
  * @param {object} context - 発動条件
  * @returns {{ totalStats: object, activePassives: Array }}
  */
-export function calcTotalStats(baseStats,skills = [],context = {}) {
-  // 基礎
+export function calcTotalStats(baseStats, skills = [], context = {}) {
   const total = structuredClone(baseStats);
   const activePassives = [];
 
-  // ============================
-  // 1) パッシブの加算
-  // ============================
   for (const skill of skills) {
     if (skill.行動 !== "P") continue;
-
-    const isActive = checkPassiveCondition(skill, context);
-    if (!isActive) continue;
+    if (!checkPassiveCondition(skill, context)) continue;
 
     activePassives.push(skill);
 
     for (const key in skill) {
-      if (["名前","行動","攻撃手段","条件","条件系統"].includes(key)) continue;
+      // 除外項目
+      if (
+        key === "名前" ||
+        key === "行動" ||
+        key === "攻撃手段" ||
+        key === "条件" ||
+        key === "条件系統"
+      ) {
+        continue;
+      }
 
+      // 数値 or 数値文字列なら加算
       const val = parseFloat(skill[key]);
+
       if (!isNaN(val)) {
         total[key] = (total[key] || 0) + val;
       }
     }
   }
 
-  // ============================
-  // 3) 結果
-  // ============================
   return {
     totalStats: total,
     activePassives
   };
 }
 
-/**
- * 装備をパッシブ扱いに変換、一部スキルを出力する。
- * → activePassives に入れるための構造を作る
- */
-export async function createEquipTotalSkill(equippedItems) {
-  const equippedItem = getEquippedItems(equippedItems);
-  console.log("== createEquipTotalSkill ==",equippedItem)
-  const EQUIP_KEYS = [
-    ...statMap.ステータス,
-    ...statMap.技能,
-    ...statMap.耐性,
-  ];
-
-  const equipSkill = {
-    名前: "装備合計効果", ルビ: "",
-    系統: "", 行動: "P", Rank: "",
-    装備由来: true,
-    効果概要: "", 説明: "",
-    ID: "item_all",
-    攻撃手段: "", 条件: "", 条件系統: "", 特殊: "",
-  };
-
-  // --- 装備名一覧を説明に入れる ---
-  const equipNames = equippedItem
-    .map(eq => eq?.名前 || "")
-    .filter(n => n !== "");
-
-  equipSkill.説明 = equipNames.length > 0
-    ? `装備: ${equipNames.join(" / ")}`
-    : "装備なし";
-
-  // --- 能力値合計の準備 ---
-  const total = {};
-  for (const key of EQUIP_KEYS) {
-    total[key] = 0;
-  }
-
-  // --- 合計を作る ---
-  for (const eq of equippedItem) {
-    for (const key of EQUIP_KEYS) {
-      const val = Number(eq[key]);
-      if (!isNaN(val)) {
-        total[key] += val;
-      }
-    }
-  }
-
-  // --- skill に合計値をコピー（0 以外のみ） ---
-  for (const key of EQUIP_KEYS) {
-    if (total[key] !== 0) {
-      equipSkill[key] = total[key];
-    }
-  }
-
-  // --- 効果概要を作成（0 のものは表示しない） ---
-  const effects = [];
-  for (const key of EQUIP_KEYS) {
-    if (total[key] !== 0) {
-      effects.push(`${key}+${total[key]}`);
-    }
-  }
-
-  equipSkill.効果概要 = effects.join(" / ");
-
-  // 装備スキル一覧（能力から抽出）
-  const useSkills = await collectEquipSkills(equippedItem);
-
-  console.log("== createEquipTotalSkill skill==", equipSkill, useSkills)
-  return {
-      equipStats: equipSkill,   // Pスキル（装備合計効果）
-      equipSkills: useSkills    // 装備スキル一覧
-  };
-}
-// equippedItems: 装備中になっているアイテム配列
-// 例: const equippedItems = inventory.filter(item => item.装備中);
-export function collectEquipSkills(equippedItems = []) {
-  const result = [];
-  const seen = new Set(); // 重複排除用（IDベース）
-
-  for (const item of equippedItems) {
-    if (!item || !Array.isArray(item.能力)) continue;
-
-    for (const skill of item.能力) {
-      if (!skill) continue;
-
-      // ID があれば ID 優先で重複排除
-      const key = skill.ID || skill.名前;
-      if (!key) {
-        result.push(skill);
-        continue;
-      }
-
-      if (seen.has(key)) continue;
-      seen.add(key);
-      result.push(skill);
-    }
-  }
-
-  return result;
-}
 
 
 
@@ -837,7 +665,7 @@ function getSkillsByLevelFromEntry(entry, uptoLv) {
  * @param {Object} mainChar - characterData.party[0]
  * @returns {Array<Object>} - 取得技配列（重複名は自動排除）
  */
-export function collectSkillsFromRoles(mainChar) {
+function collectSkillsFromRoles(mainChar) {
   if (!mainChar?.Role?.length || !allData.value?.length) return [];
 
   const acquired = [];
@@ -859,43 +687,6 @@ export function collectSkillsFromRoles(mainChar) {
     if (!mapByName.has(s.名前)) mapByName.set(s.名前, s);
   }
   return Array.from(mapByName.values());
-}
-
-// レベルアップ
-export async function statusUpdate(character) {
-  // ① Roleを適用して baseStats 更新
-  character = await applyRoleData(character);
-
-  // ② Role + 装備 のスキルをまとめて取得
-  const allSkills = await collectSkillsFromRoles(character);
-  character.skills = allSkills;
-  // character.skills.push(allSkills);
-  // character.stats.activePassives.push(allSkills);
-
-  // ③ パッシブ + 装備効果 を合算した totalStats を作成
-  const { totalStats, activePassives } = await calcTotalStats(
-    toRaw(character.stats.baseStats),
-    toRaw(character.skills),
-    {}
-  );
-
-  character.stats.activePassives = activePassives;
-  character.stats.totalStats = totalStats;
-  const { equipStats, equipSkills } = await createEquipTotalSkill(toRaw(character.inventory));
-
-  // スキル一覧へ追加
-  if (Array.isArray(equipSkills)) {
-    for (const s of equipSkills) {
-      character.skills.push(s);
-    }
-  }
-  // 装備の能力値を追加
-  character.stats.activePassives.push(equipStats);
-
-  console.log('== equipStats ==', equipStats, character.stats.activePassives)
-  console.log('== equipSkill ==', equipSkills, character.skills)
-
-  return character;
 }
 
 // ==== ギルドランクスタイル ====

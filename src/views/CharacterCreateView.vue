@@ -391,7 +391,7 @@ const recalcStats = () => {
       // SIZ合計は大きい方を採用
       newTotalStats[key] = Math.max(newRaceStats[key] || 0, newClassStats[key] || 0);
     } else {
-      newRaceStats[key] = Math.floor((raceData[key] || 0) / 10 * (raceLv.value + 10)); //種族の0Lvのステータス配分
+      newRaceStats[key] = Math.floor((raceData[key] || 0) / 10 * (raceLv.value + 5)); //種族の0Lvのステータス配分
       newClassStats[key] = Math.floor((classData[key] || 0) / 10 * classLv.value);
       // 合計
       newTotalStats[key] = (newRaceStats[key] || 0 ) + ( newClassStats[key] || 0);
@@ -668,16 +668,17 @@ const confirmCharacter = async () => {
   mainChar.race = selectedRace.value.名前;
 
   // クラス情報
-  mainChar.Role[0] = {
-    roleName: selectedClass.value.名前,
-    Lv: classLv.value,
-    Ef: 0,
-  };
-  mainChar.Role[1] = {
+    mainChar.Role[0] = {
     roleName: selectedRace.value.名前,
     Lv: raceLv.value,
     Ef: 0,
   };
+  mainChar.Role[1] = {
+    roleName: selectedClass.value.名前,
+    Lv: classLv.value,
+    Ef: 0,
+  };
+
 
   // ステータス
   mainChar.stats.allLv = raceLv.value + classLv.value;
@@ -688,6 +689,8 @@ const confirmCharacter = async () => {
   characterData.name = characterName.value;
   characterData.race = selectedRace.value.名前;
   characterData.class = selectedClass.value.名前;
+
+  characterData.party[0].attribute = [selectedAttribute.value.属性名]
 
 
   console.log("作成キャラクター:", characterData);
@@ -703,7 +706,8 @@ async function saveCharacterToDB(characterData) {
     alert("ログインしてください");
     return;
   }
-
+  // console.log(characterData)
+  // return
   try {
     const res = await fetch("/api/characters", {
       method: "POST",

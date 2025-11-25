@@ -26,6 +26,8 @@ const token = localStorage.getItem('authToken')
 
 onMounted(() => {
   const storedUsername = localStorage.getItem('username')
+  // console.log("token:", token)
+  // console.log("username:", storedUsername)
   if (!storedUsername || !token) {
     router.push('/login') // Vue Router のパスに合わせる
   } else {

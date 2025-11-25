@@ -1,7 +1,7 @@
 // src/constants/itemFactory.js
 // Excelシートからデータを一度ロードして保持、装備を生成するファクトリー
 import { v4 as uuidv4 } from "uuid";
-
+import { toRaw } from 'vue'
 let cachedWeapons = null;
 let cachedMaterials = null;
 let cachedEnhancements = null;
@@ -247,8 +247,9 @@ function toNumber(val) {
  * @param {Boolean} useMultiplier 倍率で計算するか（true=基礎値×倍率, false=固定値加算）
  */
 function applyEnchantments(equip, enchantments = [], baseValue = 1, useMultiplier = false) {
+  enchantments = toRaw(enchantments)
   // console.log(`[enchantments] 能力：`, enchantments);
-
+  
   if (!equip.能力) equip.能力 = []; 
   let totalCost = 0; // 累計コスト
   const materialLv = toNumber(equip.装備Lv || 0); // 素材のLvを取得
@@ -674,10 +675,26 @@ export function rebuildInventory(dbInventory) {
 
   for (const item of dbInventory) {
     try {
-      // 種別判定
-      const type = item.種別;
+      // ===============================
+      // 付与の normalize（最重要）
+      // オブジェクト配列 → 名前の配列に戻す
+      // ===============================
+      let normalizedFuyu = [];
 
-      // === 素材・道具・休憩系は Item_List から取得 ===
+      if (Array.isArray(item.付与)) {
+        if (typeof item.付与[0] === "object") {
+          // ★ ビルド済み → 名前の配列へ変換
+          normalizedFuyu = item.付与.map(f => f.名前);
+        } else {
+          // ★ 初期データ （["炎付与Ⅴ"]）
+          normalizedFuyu = [...item.付与];
+        }
+      }
+
+      // ===============================
+      // 素材・道具・休憩系の処理
+      // ===============================
+      const type = item.種別;
       if (checkItem種別.includes(type)) {
         const base = Item_List.find(x => x.名前 === item.名前);
         if (!base) {
@@ -689,22 +706,35 @@ export function rebuildInventory(dbInventory) {
           ...base,
           数量: item.数量 ?? 1
         });
+        continue;
       }
-      // === それ以外は装備を生成 ===
-      else {
-        const eq = createEquipment(item.分類, item.素材, item.付与 || []);
-        eq.id = item.id || eq.id;
-        eq.装備中 = item.装備中 || null;
 
-        // 名前とルビを補完
-        eq.名前 = item.名前 || eq.名前;
-        eq.ルビ = item.ルビ || eq.ルビ;
-        rebuiltInventory.push(eq);
-      }
+      // ===============================
+      // 装備品の再ビルド
+      // normalizedFuyu を渡す！
+      // ===============================
+      const eq = createEquipment(item.分類, item.素材, normalizedFuyu);
+
+      eq.id = item.id || eq.id;
+      eq.装備中 = item.装備中 || null;
+      eq.名前 = item.名前 || eq.名前;
+      eq.ルビ = item.ルビ || eq.ルビ;
+
+      rebuiltInventory.push(eq);
+
     } catch (err) {
       console.error(`インベントリ再構築中にエラー: ${item.名前}`, err);
     }
   }
 
   return rebuiltInventory;
+}
+
+
+/**
+ * 装備中アイテム一覧だけ返す
+ * @param {Array} inventory - 全所持品
+ */
+export function getEquippedItems(inventory = []) {
+  return inventory.filter(item => item.装備中 && item.装備中 !== "");
 }

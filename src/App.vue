@@ -5,6 +5,7 @@ import { applyGlobalScale } from "@/components/useScale.js";
 onMounted(() => {
   applyGlobalScale("scalable-root");
 });
+
 </script>
 
 <template>

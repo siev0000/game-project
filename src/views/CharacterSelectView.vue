@@ -35,9 +35,12 @@
 </template>
 
 <script>
-import { buildCharacterStats, loadGameData, getRollIcon } from "@/constants/statData.js";
+import { buildCharacterStats, loadGameData, getRollIcon, 
+  createEquipTotalSkill, statusUpdate 
+  } from "@/constants/statData.js";
 import CharacterStatusModal from "../components/modals/CharacterStatusModal.vue";
-
+import { loadItemData, rebuildInventory } from "../constants/itemFactory"
+import { toRaw } from 'vue'
 export default {
   name: "CharacterSelectView",
   components: { CharacterStatusModal },
@@ -59,7 +62,7 @@ export default {
       try {
         // ゲームデータを先にロード（クラス・技など）
         await loadGameData();
-
+        await loadItemData();
         // サーバーから最新キャラクター一覧を取得
         const res = await fetch("/api/getCharacters", {
           method: "GET",
@@ -77,6 +80,7 @@ export default {
         } else {
           console.error("取得失敗:", data.error);
           alert("キャラクター一覧の取得に失敗しました。");
+          this.$router.push("/login");
         }
       } catch (err) {
         console.error("通信エラー:", err);
@@ -92,13 +96,37 @@ export default {
       return getRollIcon(char.Role?.[0]?.roleName);
     },
 
-    selectCharacter(index) {
+    async selectCharacter(index) {
       const selected = this.characters[index];
       if (!selected) return;
 
+      // ★ パーティ全員分のインベントリを rebuildInventory で更新
+      if (Array.isArray(selected.party)) {
+        await Promise.all(
+          selected.party.map(async member => {
+            member.inventory = await rebuildInventory(member.inventory);
+            console.log("== inventory ==", toRaw(member.inventory))
+            member = await statusUpdate(member)
+            // 装備合計スキルを生成
+            // const { equipStats, equipSkills } = await createEquipTotalSkill(member.inventory);
+            // console.log("== equipSkill ==", equipStats)
+            // // スキル一覧へ追加
+            // member.skills.push(equipStats);
+            // member.stats.activePassives.push(equipStats);
+
+            // if (Array.isArray(equipSkills)) {
+            //   for (const skill of equipSkills) {
+            //     member.skills.push(skill);
+            //   }
+            // }
+
+          })
+        );
+      }
+
       console.log("全キャラクター:", this.characters);
       this.selectedCharacter = selected;
-      console.log("キャラクター選択:", this.selectedCharacter);
+      console.log("キャラクター選択:", toRaw(this.selectedCharacter));
     },
 
     handleOk(data) {
