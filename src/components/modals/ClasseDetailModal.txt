@@ -1,19 +1,18 @@
 <template>
   <div class="modal-overlay" >
     <div class="modal">
-      <div class="modal-content" id="race-modal">
+      <div class="modal-content" id="classe-modal">
         <!-- 種族画像と名前 -->
-        <div class="race-info" >
-          <img @click="emit('close')" :src="getImageUrl(currentRace.画像url)" :alt="currentRace.名前" class="race-image" />
+        <div class="classe-info" >
+          <img @click="emit('close')" :src="getImageUrl(currentClasse.画像url)" :alt="currentClasse.名前" class="classe-image" />
           <img
-            v-if="(currentRace?.初期系統 || '').trim()"
+            v-if="(currentClasse?.初期系統 || '').trim()"
             @click="emit('close')"
-            :src="getAttrIcon(currentRace.初期系統)"
-            :alt="currentRace.名前"
-            class="race-image2"
+            :src="getImageUrl(`${(currentClasse.初期系統 || '').trim()}.webp`)"
+            :alt="currentClasse.名前"
+            class="classe-image2"
           />
-          
-          <h2>{{ currentRace.名前 }}</h2>
+          <h2>{{ currentClasse.名前 }}</h2>
         </div>
 
         <!-- タブ選択 -->
@@ -75,16 +74,16 @@
 
 
         <!-- ナビゲーション -->
-        <!-- <button class="side-arrow left" @click="prevRace" :disabled="currentIndex <= 0">&#8592;</button>
-        <button class="side-arrow right" @click="nextRace" :disabled="currentIndex >= raceList.length - 1">&#8594;</button> -->
+        <!-- <button class="side-arrow left" @click="prevClasse" :disabled="currentIndex <= 0">&#8592;</button>
+        <button class="side-arrow right" @click="nextClasse" :disabled="currentIndex >= classeList.length - 1">&#8594;</button> -->
       </div>
       <div class="nav-buttons">
-        <div class="side-arrow left" @click="prevRace">〈</div>
-        <div class="side-arrow right" @click="nextRace">〉</div>
-      </div>
-      <div class="confirm-button">
-        <div class="confirm" @click="emit('close')">閉じる</div>
-        <div class="confirm" @click="confirmSelection">決定</div>
+        <div class="side-arrow left" @click="prevClasse">〈</div>
+        <div class="side-arrow right" @click="nextClasse">〉</div>
+        <div class="confirm-button">
+          <div class="confirm" @click="emit('close')">閉じる</div>
+          <div class="confirm" @click="confirmSelection">決定</div>
+        </div>
       </div>
     </div>
   </div>
@@ -104,28 +103,9 @@ const getImageUrl = (relativePath) => {
     return ''
   }
 }
-// 属性アイコン/100 フォルダだけを対象にする
-const attrIconMap = import.meta.glob(
-  "/src/assets/images/属性アイコン/100/*.webp",
-  { eager: true, as: "url" }
-);
-
-// ファイル名をキーにした辞書を作成
-const ATTR_ICONS = {};
-for (const [path, url] of Object.entries(attrIconMap)) {
-  const filename = path.split("/").pop().replace(/\.webp$/i, "");
-  ATTR_ICONS[filename] = url;
-}
-
-// 取得関数：currentRace.初期系統 をキーに探す
-const getAttrIcon = (name) => {
-  const key = (name || "").trim();
-  return key && ATTR_ICONS[key] ? ATTR_ICONS[key] : "";
-};
-
 
 const props = defineProps({
-  raceList: Array,
+  classeList: Array,
   currentIndex: Number
 })
 const emit = defineEmits(['close'])
@@ -135,17 +115,24 @@ const currentIndex = ref(props.currentIndex)
 
 watch(() => props.currentIndex, (val) => currentIndex.value = val)
 
-const tabs = ['ステータス', '技能', '耐性']
+console.log("props :")
+console.log(props)
+
+const tabs = ['ステータス', '技能', '耐性', '特徴']
 
 const TechniqueKeys = statMap['技能']
 const resistanceKeys = statMap['耐性']
 const TechniqueSplitIndex = TechniqueKeys.indexOf('装置')
 const resistSplitIndex = resistanceKeys.indexOf('毒耐性')
 
-const currentRace = computed(() => props.raceList[currentIndex.value])
+// const currentClasse = computed(() => props.classeList[currentIndex.value])
+const currentClasse = computed(() => {
+  if (!props.classeList || !Array.isArray(props.classeList)) return null
+  return props.classeList[currentIndex.value] || null
+})
 const statKeys = computed(() => statMap[activeTab.value])
-console.log("ステータス:"+ currentRace)
-console.log(currentRace)
+console.log("ステータス:"+ currentClasse)
+console.log(currentClasse)
 const leftKeys = computed(() => {
   if (activeTab.value === '技能') return TechniqueKeys.slice(0, TechniqueSplitIndex)
   if (activeTab.value === '耐性') return resistanceKeys.slice(0, resistSplitIndex)
@@ -162,11 +149,11 @@ const selectKey = (key) => {
   selectedKey.value = key
 }
 
-const prevRace = () => {
+const prevClasse = () => {
   if (currentIndex.value > 0) currentIndex.value--
 }
-const nextRace = () => {
-  if (currentIndex.value < props.raceList.length - 1) currentIndex.value++
+const nextClasse = () => {
+  if (currentIndex.value < props.classeList.length - 1) currentIndex.value++
 }
 
 function getSizeBonus(siz) {
@@ -182,14 +169,17 @@ function getSizeBonus(siz) {
 // 表示用の値を返す
 function getDisplayValue(key) {
   if (key === "特徴") {
-    const value = currentRace.value[key];
+    const value = currentClasse.value[key];
     return `${key}: ${value || ""}`;
   }
 
-  const rawValue = currentRace.value[key];
+  const rawValue = currentClasse.value[key];
   const baseValue = typeof rawValue === "number" ? rawValue : parseFloat(rawValue) || 0;
 
-  const siz = currentRace.value["SIZ"] ?? 100;
+  const siz = currentClasse.value["SIZ"] === 0
+  ? 170
+  : (currentClasse.value["SIZ"] ?? 100)
+
   const bonusPercent = getSizeBonus(siz);
   const bonusKeysPlus = ["HP", "攻撃", "威圧"];
   const bonusKeysMinus = ["速度", "隠密", "軽業"];
@@ -226,45 +216,40 @@ function getDisplayValue(key) {
 
 // 決定→閉じる
 function confirmSelection() {
-  if (!currentRace.value) return
-  emit('confirm', currentRace.value) // 親へ「決定した値」を渡す
+  if (!currentClasse.value) return
+  emit('confirm', currentClasse.value) // 親へ「決定した値」を渡す
   emit('close')                      // モーダルを閉じる
 }
 
 </script>
 
 <style scoped>
-.confirm-button {
-  position: absolute;
-  bottom: 10px;
-  width: 350px;
-  left: 50%;
-  transform: translateX(-50%);
-  pointer-events: auto;
-
-  display: flex;             /* 横並びにする */
-  justify-content: space-between; /* ボタン間に余白 */
-  gap: 10px;                 /* ボタンの間隔 */
-}
-.modal {
+.modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
-  height: 100%;
   z-index: 1000;
+}
+
+.modal {
+  position: relative;
+  display: inline-block; /* shrink-wrap to content so overlay centering works */
+  vertical-align: middle;
+  z-index: 1001;
+  width: 720px;
+  overflow: visible;
 }
 
 .modal-content {
   background: #222;
   color: white;
-  padding: 0 35px;
+  padding: 0 50px;
   border-radius: 8px;
   width: 630px;
-  height: 1190px;
+  height: 1220px;
   /* max-width: 600px;
   max-height: 90vh; */
   overflow-x: hidden;
@@ -272,19 +257,19 @@ function confirmSelection() {
   font-size: 30px;
 }
 
-.race-info {
+.classe-info {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.race-image {
+.classe-image {
   width: 140px;
   height: 140px;
   object-fit: contain;
-  border-radius: 8px;
+  border-radius: 50%;
 }
-.race-image2 {
+.classe-image2 {
   position: absolute;
   width: 60px;
   height: 60px;
@@ -302,7 +287,7 @@ function confirmSelection() {
 
 .tabs button {
   padding: 6px 6px;
-  font-size: 30px;
+  font-size: 27px;
   border: none;
   border-radius: 6px;
   background: #444;
@@ -386,6 +371,8 @@ function confirmSelection() {
 
 .nav-buttons {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
@@ -395,7 +382,7 @@ function confirmSelection() {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background-color: #564d3c1c;
+  background-color: rgba(86,77,60,0.14);
   color: white;
   padding: 12px 9px;
   border-radius: 8px;
@@ -404,30 +391,42 @@ function confirmSelection() {
   user-select: none;
   transition: background-color 0.2s;
   pointer-events: auto;
+  z-index: 20;
 }
 
 .side-arrow.left {
-  left: -15px;
+  left: -0px;
 }
 
 .side-arrow.right {
-  right: -15px;
+  right: -30px;
+}
+
+.confirm-button {
+  position: absolute;
+  bottom: 10px;
+  width: 350px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: auto;
+
+  display: flex;             /* 横並びにする */
+  justify-content: space-between; /* ボタン間に余白 */
+  gap: 10px;                 /* ボタンの間隔 */
 }
 
 .confirm {
-  width: 200px;
-  height: 35px;
   background-color: #564d3c;
   color: white;
   padding: 1px 20px;
   border-radius: 8px;
-
   font-size: 25px;
-  
   cursor: pointer;
   user-select: none;
   text-align: center;
   transition: background-color 0.2s;
+  height: 35px;
+  width: 200px;
 }
 
 .confirm:hover {

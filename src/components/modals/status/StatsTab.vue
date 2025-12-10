@@ -1,6 +1,38 @@
 <template>
     <div class="container">
       <form @submit.prevent="openLevelModal">
+        
+      <td class="exp-btn-cell">
+        <button 
+          class="lvup-btn"
+          :class="{ 'lvup-active': character.stats.experience >= character.stats.nextLevelExp }"
+          :disabled="character.stats.experience < character.stats.nextLevelExp"
+          @click="levelUpMode = !levelUpMode"
+        >
+          Lvアップ
+        </button>
+      </td>
+      <td class="exp-btn-cell">
+        <button
+          class="addclass-btn"
+          :class="{ 'lvup-active': character.stats.experience >= character.stats.nextLevelExp }"
+          :disabled="character.stats.experience < character.stats.nextLevelExp"
+          @click="openAddClassModal"
+        >
+          新規取得
+        </button>
+      </td>
+      <td class="exp-cell">
+        EXP {{ character.stats.experience }} / {{ character.stats.nextLevelExp }}
+        （残り: {{ character.stats.nextLevelExp - character.stats.experience }}）
+      </td>
+        <!-- ★ テスト用：EXP増減ボタン -->
+      <td class="exp-cell">
+        <button @click="addExp(-500)" class="exp-btn minus">-500</button>
+      </td>
+      <td class="exp-cell">
+        <button @click="addExp(500)"  class="exp-btn plus">+500</button>
+      </td>
 
         <!-- タブ切り替え -->
         <div class="tabs">
@@ -17,205 +49,184 @@
         <!-- タブ内容 -->
         <div v-if="tabs.includes(activeTab)">
           <div class="table-wrapper">
-<!-- 基本のテーブル -->
+            <!-- 基本のテーブル -->
             <table v-if="activeTab !== '魔法'">
-  <thead>
-    <!-- 1行目：属性／合計／Role名 -->
-    <tr>
-      <!-- 属性 -->
-      <th class="role-list">
-        <div class="attr-icon-wrap">
-          <!-- <span class="attr-ruby">
-            {{ props.character?.attribute?.[0] || "属" }}
-          </span> -->
-          <img
-            v-if="props.character?.attribute && getAttrIcon(props.character.attribute)"
-            :src="getAttrIcon(props.character.attribute)"
-            :alt="props.character.attribute"
-            class="icon-Attribute-img"
-          />
-        </div>
+        <thead>
+          <!-- 1行目：属性／合計／Role名 -->
+          <tr class="header-row-1">
+            <!-- 属性 -->
+            <th class="role-list">
+              <div class="attr-icon-wrap">
+                <!-- <span class="attr-ruby">
+                  {{ props.character?.attribute?.[0] || "属" }}
+                </span> -->
+                <img
+                  v-if="props.character?.attribute && getAttrIcon(props.character.attribute)"
+                  :src="getAttrIcon(props.character.attribute)"
+                  :alt="props.character.attribute"
+                  class="icon-Attribute-img"
+                />
+              </div>
 
-      </th>
-      <!-- 合計 -->
-      <th class="all-list">合計</th>
-      <th class="passive-header">P</th> <!-- ★ 追加 -->
-      <!-- Role名（空のものは非表示） -->
-      <th
-        v-for="(role, rIndex) in (props.character?.Role || []).filter(r => r.roleName)"
-        :key="'role-name-' + rIndex"
-        class="role-header"
-      >
-        {{ role.roleName }}
-      </th>
-    </tr>
+            </th>
+            <!-- 合計 -->
+            <th class="all-list">合計</th>
+            <th class="passive-header">P</th> <!-- ★ 追加 -->
+            <!-- 1行目：Role名 -->
+            <th
+              v-for="(role, rIndex) in (props.character?.Role || []).filter(r => r.roleName)"
+              :key="'role-name-' + rIndex"
+              class="role-header role-with-bg"
+              :data-role-index="rIndex"
+            >
+              <div class="role-header-content">
+                <img
+                  v-if="getRollIcon(role.roleName)"
+                  :src="getRollIcon(role.roleName)"
+                  :alt="role.roleName"
+                  class="role-icon-bg role-bg-top"
+                />
+                <span class="role-name-text" :class="'role-name-' + rIndex">
+                  {{ role.roleName }}
+                </span>
+              </div>
+            </th>
+          </tr>
 
-    <!-- 2行目：Lv表示 -->
-    <tr>
-      <td>Lv</td>
-      <td class="role-total-Lv">{{ totalLevel }}</td>
-      <td class="passive-lv-cell">/</td> <!-- ★ 追加 -->
-      <!-- Lvボタン（名前がないRoleは非表示） -->
-      <td
-        v-for="(role, rIndex) in (props.character?.Role || []).filter(r => r.roleName)"
-        :key="'role-lv-' + rIndex"
-        class="role-lv-cell"
-        @click="levelUpRole(role)"
-      >
+          <!-- ヘッダー2行目：Lv表示 -->
+          <tr class="header-row-2">
+            <th>Lv</th>
+            <th class="role-total-Lv">{{ totalLevel }}</th>
+            <th class="passive-lv-cell">/</th>
+            <th
+              v-for="(role, rIndex) in (props.character?.Role || []).filter(r => r.roleName)"
+              :key="'role-lv-' + rIndex"
+              class="role-lv-cell role-with-bg"
+            >
+              <div class="role-header-content">
+                <!-- <img
+                  v-if="getRollIcon(role.roleName)"
+                  :src="getRollIcon(role.roleName)"
+                  :alt="role.roleName"
+                  class="role-icon-bg role-bg-bottom"
+                /> -->
+                <button
+                  class="lv-btn"
+                  :class="{ 'lv-btn-active': levelUpMode, 'lv-btn-inactive': !levelUpMode }"
+                  :disabled="!levelUpMode"
+                  @click="levelUpMode && levelUpRole(role)"
+                >
+                  Lv{{ role.Lv }}
+                </button>
 
-        <button class="lv-btn">Lv{{ role.Lv }}</button>
-      </td>
-    </tr>
-  </thead>
+              </div>
+            </th>
+          </tr>
+        </thead>
 
-  <!-- ステータス・技能・耐性 -->
-  <tbody v-if="activeTab !== '技'">
-    <tr v-for="stat in statMap[activeTab]" :key="stat">
-      <td @click="selectKey(stat)">{{ stat }}</td>
+            <!-- ステータス・技能・耐性 -->
+            <tbody v-if="activeTab !== '技'">
+              <tr v-for="stat in statMap[activeTab]" :key="stat">
+                <td @click="selectKey(stat)">{{ stat }}</td>
 
-      <!-- 合計値 -->
-      <td>
-        <!-- {{ baseStatsTotal(stat, )  }} -->
-        {{ roundTo(applySizeBonus(props.character.stats.baseStats[stat], [stat], props.character.stats.totalStats["SIZ"] ) + calcPassiveStat(stat)) }}
-        <!-- props.character -->
-      </td>
-      
-      <!-- ★ パッシブ -->
-      <td>
-        {{ roundTo(calcPassiveStat(stat))}}
-        <!-- {{ props.character.stats.activePassives[stat] }} -->
-      </td>
+                <!-- 合計値 -->
+                <td>
+                  <!-- {{ baseStatsTotal(stat, )  }} -->
+                  {{ roundTo(applySizeBonus(props.character.stats.baseStats[stat], [stat], props.character.stats.totalStats["SIZ"] ) + calcPassiveStat(stat)) }}
+                  <!-- props.character -->
+                </td>
+                
+                <!-- ★ パッシブ -->
+                <td>
+                  {{ roundTo(calcPassiveStat(stat))}}
+                  <!-- {{ props.character.stats.activePassives[stat] }} -->
+                </td>
 
-      <!-- 各Role -->
-      <td v-for="(role, rIndex) in (props.character?.Role || []).filter(r => r.roleName)"
-        :key="'stat-' + rIndex"
-      >
-        {{ roundTo(calcRoleStat(role, stat)) }}
-      </td>
+                <!-- 各Role -->
+                <td v-for="(role, rIndex) in (props.character?.Role || []).filter(r => r.roleName)"
+                  :key="'stat-' + rIndex"
+                >
+                  {{ roundTo(calcRoleStat(role, stat)) }}
+                </td>
 
-    </tr>
-  </tbody>
+              </tr>
+            </tbody>
 
-  <!-- スキル -->
-  <tbody v-else>
-    <tr v-for="i in 10" :key="'skill-' + i">
-      <td>技</td>
-      <td>{{ i }}</td>
-      <td>/</td>
+            <!-- スキル -->
+            <tbody v-else>
+              <tr v-for="i in 10" :key="'skill-' + i">
+                <td>技</td>
+                <td>{{ i }}</td>
+                <td>/</td>
 
-      <td v-for="(role, rIndex) in (props.character?.Role || []).filter(r => r.roleName)"
-        :key="'skill-role-' + rIndex"
-      >
-        <div v-if="i <= (role.Lv || 0)" class="skill-cell">
-          <div
-            class="skill-inner"
-            :class="typeClass(getSkillType(selectStatsData(role.roleName)?.[`Skill${i}`]))"
-            @click="onSkillSelect(selectStatsData(role.roleName)?.[`Skill${i}`])"
-          >
-            <div class="skill-name">
-              {{ selectStatsData(role.roleName)?.[`Skill${i}`] || "" }}
-            </div>
-          </div>
-        </div>
-      </td>
-    </tr>
-  </tbody>
+                <td v-for="(role, rIndex) in (props.character?.Role || []).filter(r => r.roleName)"
+                  :key="'skill-role-' + rIndex"
+                >
+                  <div v-if="i <= (role.Lv || 0)" class="skill-cell">
+                    <div
+                      class="skill-inner"
+                      :class="typeClass(getSkillType(selectStatsData(role.roleName)?.[`Skill${i}`]))"
+                      @click="onSkillSelect(selectStatsData(role.roleName)?.[`Skill${i}`])"
+                    >
+                      <div class="skill-name">
+                        {{ selectStatsData(role.roleName)?.[`Skill${i}`] || "" }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
 
-</table>
+          </table>
 
-<!-- 属性タブ専用テーブル -->
-<table v-if="activeTab === '魔法'" class="attr-table">
+          <!-- 属性タブ専用テーブル -->
+          <table v-if="activeTab === '魔法'" class="attr-table">
 
-  <thead>
-    <!-- 1行目：名前 + 属性一覧 -->
-    <tr>
-      <th class="left-col">名前</th>
+            <thead>
+              <!-- 1行目：名前 + 属性一覧 -->
+              <tr>
+                <th class="left-col">名前</th>
 
-      <th
-        v-for="(attr, idx) in props.character.attributeList"
-        :key="'attr-head-' + idx"
-        class="attr-head-col"
-      >
-        <div class="attr-cell-header">
-          <img
-            v-if="getAttrIcon(attr)"
-            :src="getAttrIcon(attr)"
-            :alt="attr"
-            class="icon-Attribute-header"
-          />
-          <span>{{ attr }}</span>
-        </div>
-      </th>
-    </tr>
+                <th
+                  v-for="(attr, idx) in props.character.attributeList"
+                  :key="'attr-head-' + idx"
+                  class="attr-head-col"
+                >
+                  <div class="attr-cell-header">
+                    <img
+                      v-if="getAttrIcon(attr)"
+                      :src="getAttrIcon(attr)"
+                      :alt="attr"
+                      class="icon-Attribute-header"
+                    />
+                    <span>{{ attr }}</span>
+                  </div>
+                </th>
+              </tr>
 
-    <!-- 2行目：Lv -->
-    <tr>
-      <td class="left-col">Lv</td>
+              <!-- 2行目：Lv -->
+              <tr>
+                <td class="left-col">Lv</td>
 
-      <td
-        v-for="(attr, idx) in props.character.attributeList"
-        :key="'attr-lv-' + idx"
-        class="attr-lv-col"
-      >
-        {{ props.character.attributeLv?.[attr] || 0 }}
-      </td>
-    </tr>
-  </thead>
+                <td
+                  v-for="(attr, idx) in props.character.attributeList"
+                  :key="'attr-lv-' + idx"
+                  class="attr-lv-col"
+                >
+                  {{ props.character.attributeLv?.[attr] || 0 }}
+                </td>
+              </tr>
+            </thead>
 
-</table>
+          </table>
 
           </div>
         </div>
       </form>
 
       <!-- 選択項目の説明 -->
-      <div class="skill-detail-box" v-if="selectedSkillDetail">
-        <div class="skill-header">
-          <span class="skill-keito">
-            <img
-              v-if="getAttackIcon(selectedSkillDetail?.攻撃手段)"
-              :src="getAttackIcon(selectedSkillDetail?.攻撃手段)"
-              :alt="selectedSkillDetail?.攻撃手段 || ''"
-              class="skill-keito__icon"
-            />
-            <span class="skill-keito__label">{{ selectedSkillDetail?.攻撃手段 }}</span>
-          </span>
-          <ruby class="skill-name-detail-box" :class="typeClass(selectedSkillDetail.行動)">
-            {{ selectedSkillDetail.名前 }}
-            <rt>{{ displayRuby(selectedSkillDetail?.ルビ) }}</rt>
-          </ruby>
-          
-          <span class="skill-keito">
-            {{ selectedSkillDetail.系統 === 0 ? '' : selectedSkillDetail.系統 }}
-          </span>
-
-          <span class="skill-type"  :class="typeClass(selectedSkillDetail.行動)">{{ selectedSkillDetail.行動 }}</span>
-        </div>
-        <hr />
-
-        <div class="skill-power">
-          <span class="label">使用するステータス:</span>
-          <span class="values">
-            <template v-if="selectedSkillDetail.判定">
-              {{ selectedSkillDetail.判定 }}
-              <span class="arrow up2">⬆⬆</span>
-            </template>
-
-            <span v-if="selectedSkillDetail.判定 && selectedSkillDetail.追加威力" class="separator"></span>
-
-            <template v-if="selectedSkillDetail.追加威力">
-              {{ selectedSkillDetail.追加威力 }}
-              <span class="arrow up1">⬆</span>
-            </template>
-
-            <template v-if="!selectedSkillDetail.判定 && !selectedSkillDetail.追加威力">
-              なし
-            </template>
-          </span>
-        </div>
-
-        <hr />
-        <div class="skill-description">{{ selectedSkillDetail.説明 }}</div>
+      <div class="skill-detail-box" v-if="hasSkillDetail()">
+        <div v-html="renderSkillHtml(selectedSkillDetail)"></div>
       </div>
 
       <div v-else class="skill-detail-box">
@@ -229,14 +240,14 @@
 
       <!-- モーダル -->
       <RaceModal v-if="showRaceModal" @close="showRaceModal = false" @select="selectRace" />
-      <ClassModal v-if="showClassModal" :selectedRace="selectedRace" @close="showClassModal = false" @select="selectClass" />
+      <ClassModal v-if="showClassModal" :playerData="character" @close="showClassModal = false" @select="selectClass" />
       <AttributeModal v-if="showAttributeModal" :attributes="availableAttributes" @close="showAttributeModal = false" @select="selectAttribute" />
 
     </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, toRaw } from 'vue'
+import { ref, computed, onMounted, watch, nextTick, toRaw } from 'vue'
 import { useRouter } from 'vue-router'
 import RaceModal from '@/components/modals/RaceModal.vue'
 import ClassModal from '@/components/modals/ClassModal.vue'
@@ -246,9 +257,13 @@ import {
   loadGameData, statMap, statDescriptions, allData, baseStatsTotal, createEquipTotalSkill,
   calcRoleStat, race_attributes, Skill_List , getSizeBonus, applySizeBonus, statusUpdate,
   getAttrIcon, getRollIcon, getAttackIcon, applyRoleData, calcTotalStats, collectSkillsFromRoles
+  , getExperience, fitTextForElement, renderSkillHtml, attributeList
 } from '@/constants/statData.js';
 
 import { playerGlobalData } from '@/scripts/characterData.js'
+
+import { autoAcquireMagic } from "@/constants/magicData.js";
+
 
 const router = useRouter()
 
@@ -269,7 +284,100 @@ const activeTab = ref('ステータス')
 const totalStats = ref({})
 
 const selectedSkillDetail = ref(null);
+const levelUpMode = ref(false);
 
+
+
+function hasSkillDetail() {
+  return !!(selectedSkillDetail.value);
+}
+
+// function renderSkillHtml() {
+//   console.log("renderSkillHtml called, hasSkillDetail:", hasSkillDetail(), "selectedSkillDetail.value:", selectedSkillDetail.value);
+//   const d = selectedSkillDetail.value;
+
+//   if (!d) {
+//     return selectedKey.value
+//       ? (statDescriptions[selectedKey.value] || "説明がありません")
+//       : "項目を選択すると説明が表示されます";
+//   }
+
+//   // 攻撃手段アイコン
+//   const icon = (d.攻撃手段 && getAttackIcon(d.攻撃手段))
+//     ? `<img 
+//           src="${getAttackIcon(d.攻撃手段)}" 
+//           alt="${d.攻撃手段}" 
+//           style="width:55px; height:55px; object-fit:contain; vertical-align:middle;"
+//       >`
+//     : "";
+
+//   // 行動タイプに応じたスタイル
+//   const getActionStyle = (action) => {
+//     if (action === 'A') return 'background-color: rgba(255, 0, 0, 0.2);';
+//     if (action === 'S') return 'background-color: rgba(255, 255, 0, 0.2);';
+//     if (action === 'Q') return 'background-color: rgba(0, 255, 0, 0.2);';
+//     return '';
+//   };
+  
+//   const actionStyle = d.行動 ? getActionStyle(d.行動) : '';
+
+//   // 判定と追加威力
+//   const judgeHtml = (() => {
+//     let html = "";
+//     if (d.判定) {
+//       html += `${d.判定}<span style="font-size:25px; font-weight:bold; line-height:0; color:#ff0000;">⬆⬆</span>`;
+//     }
+//     if (d.判定 && d.追加威力) {
+//       html += `<span style="display:inline-block; width:15px;"></span>`;
+//     }
+//     if (d.追加威力) {
+//       html += `${d.追加威力}<span style="font-size:25px; font-weight:bold; line-height:0; color:#ff6600;">⬆</span>`;
+//     }
+//     if (!d.判定 && !d.追加威力) {
+//       html = "なし";
+//     }
+//     return html;
+//   })();
+
+//   return `
+//     <div>
+//       <div style="height:45px; display:grid; grid-template-columns:2fr 5.5fr 1.5fr 1fr; align-items:center; gap:4px; text-align:center;">
+//         <span style="font-size:30px; text-align:center; display:inline-flex; align-items:center; gap:6px;">
+//           ${icon}
+//           <span style="white-space:nowrap;">${d.攻撃手段 || ""}</span>
+//         </span>
+
+//         <ruby style="font-size:30px; height:48px; margin-top:0; padding-bottom: 3px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-weight:bold; ${actionStyle}">
+//           ${d.名前}
+//           <rt>${displayRuby(d.ルビ)}</rt>
+//         </ruby>
+
+//         <span style="font-size:30px; text-align:center;">
+//           ${d.系統 === 0 ? "" : d.系統}
+//         </span>
+
+//         <span style="font-size:30px; text-align:center; ${actionStyle}">
+//           ${d.行動 || ""}
+//         </span>
+//       </div>
+
+//       <hr style="margin:4px 0;">
+
+//       <div style="display:flex; align-items:center; height:20px; gap:0.5em;">
+//         <span style="min-width:8em; font-weight:bold;">使用するステータス:</span>
+//         <span style="display:flex; align-items:center; gap:4px;">
+//           ${judgeHtml}
+//         </span>
+//       </div>
+
+//       <hr style="margin:4px 0;">
+
+//       <div style="font-size:23px; display:flex; height:78px; overflow-y:auto;">
+//         ${d.説明 || ""}
+//       </div>
+//     </div>
+//   `;
+// }
 
 // 取得
 const props = defineProps({
@@ -291,17 +399,30 @@ const typeClass = (t) => ({
   'type-q': t === 'Q',
 });
 const displayRuby = (val) => {
-  // console.log("displayRuby called:", val, typeof val);
   return val === 0 ? '' : val;
 };
 
 onMounted(async () => {
   await loadGameData();
-  // console.log(allData.value, attributeList.value, Skill_List.value);
-  console.log("== ステータスタブ ==")
-  console.log(props.character)
+  console.log("== ステータスタブ ==");
+  console.log(props.character);
+
+  console.log("-- currentCharacter --")
+  console.log(props.character, attributeList.value)
+  console.log(autoAcquireMagic(props.character, attributeList.value, 6))
+  console.log(autoAcquireMagic(props.character, attributeList.value, 7))
+  console.log(autoAcquireMagic(props.character, attributeList.value, 8))
+  console.log(autoAcquireMagic(props.character, attributeList.value, 9))
+
   recalcStats();
-})
+
+  // ★ DOM反映を待つ
+  await nextTick();
+
+  // ★ Role文字サイズ調整
+  updateRoleNameFont();
+});
+
 
 // const imageMap = import.meta.glob('@/assets/images/**/*', { eager: true, import: 'default' })
 // const getImageUrl = (relativePath) => {
@@ -431,16 +552,28 @@ const selectRace = (raceName) => {
   recalcStats();
 };
 
+// 新規取得モーダルを開く
+const openAddClassModal = () => {
+  if (props.character.stats.experience < props.character.stats.nextLevelExp) return;
+  showClassModal.value = true;
+};
+
+// ClassModal で選択されたクラス名を受け取る
 const selectClass = (className) => {
-  // クラスデータ全体を検索してセット
-  const classObj = allData.value.find(c => c.名前 === className);
-  if (classObj) {
-    selectedClass.value = classObj;
-    // classLv.value = classObj.Lv ?? 1;
-  }
-  // console.log(selectedClass.value)
+  if (!className) return;
+
+  // 新しいクラスを Role に追加（Lv1からスタート）
+  props.character.Role.push({
+    roleName: className,
+    Lv: 1
+  });
+
+  console.log(`新規クラス取得: ${className}`);
+
+  // ステータス再計算
+  if (typeof recalcStats === "function") recalcStats();
+
   showClassModal.value = false;
-  recalcStats();
 };
 
 // データ全体を検索して返す
@@ -451,14 +584,8 @@ const selectStatsData = (name) => {
 
 const selectAttribute = (selectAttributes) => {
   // Attribute
-  // console.log("selectAttribute selectAttributes:", selectAttributes)
-  // console.log(showAttributeModal.value)
-  // console.log("selectedAttribute 動作確認:")
-  // console.log(selectAttributes)
-  // console.log(selectAttributes.属性名)
   selectedAttribute.value = selectAttributes
   showAttributeModal.value = false;
-  // recalcStats();
 };
 
 /**
@@ -539,23 +666,69 @@ const totalLevel = computed(() =>
     .reduce((sum, r) => sum + (r.Lv || 0), 0)
 );
 
+
 async function levelUpRole(role) {
   if (!role || !role.roleName) return;
   if (role.Lv >= 10) {
     alert(`${role.roleName}は最大Lvです`);
     return;
   }
+  // -----------------------
+  // 1. Role レベルアップ
+  // -----------------------
   role.Lv++;
   console.log(`${role.roleName} Lvアップ → ${role.Lv}`);
   if (typeof recalcStats === "function") recalcStats();
-  // props.character.stats.baseStats
-  console.log("== Lvアップ ==")
-  // console.log(toRaw(props.character.inventory));
-  const characterData = await statusUpdate(props.character)
-  props.character = characterData
+  console.log("== Lvアップ ==");
+  // ステータス更新
+  const characterData = await statusUpdate(props.character);
+  props.character = characterData;
 
+  // -------------------------
+  // 2. 成長タイプの取得
+  // -------------------------
+  // 例：種族 or クラスに growthType を置く
+  const type = props.character.raceType || "人族";
+
+  // -------------------------
+  // 3. 累積必要経験値（nextLevelExp）の再計算
+  // -------------------------
+  const nextExp = getExperience(type, role.Lv + 1);
+
+  // experience は累積なので変更しない
+  props.character.stats.nextLevelExp = nextExp;
+
+  console.log(
+    `次のレベル(Lv${role.Lv + 1}) までの累積必要経験値 = `,
+    nextExp
+  );
+
+  // -------------------------
+  // 4. レベルアップモード終了
+  // -------------------------
+  levelUpMode.value = false;
 }
+const addExp = (amount) => {
+  props.character.stats.experience =
+    Math.max(0, props.character.stats.experience + amount);
+  console.log("経験値:", props.character.stats.experience);
+};
 
+// 名前更新
+function updateRoleNameFont() {
+  const roles = (props.character?.Role || []).filter(r => r.roleName);
+  console.log("名前更新:", roles);
+  // roles.forEach((role, index) => {
+  //   const el = document.getElementById(`role-name-${index}`);
+
+  //   fitTextForElement({
+  //     el,
+  //     text: role.roleName, // ← 自動調整したい文字
+  //     maxFontSize: 26,     // ← お好みで
+  //     minFontSize: 12
+  //   });
+  // });
+}
 
 // 不要になる箇所
 // Lvや選択が変わるたびに再計算
@@ -566,16 +739,16 @@ watch(
   }
 );
 
-
-
 // ★ 新しく追加したい監視
 watch(
-  () => selectedSkillDetail,
-  (val, oldVal) => {
-    // console.log("selectedSkillDetail が変化しました:", { newVal: val, oldVal });
+  () => selectedSkillDetail.value,
+  (newVal, oldVal) => {
+    console.log("Skill updated:", newVal);
+    console.log(" selectedSkillDetail.value :", selectedSkillDetail.value);
   },
-  { deep: true, immediate: true } // 初期値も出したいなら
+  { deep: true }
 );
+
 function roundTo(val, digit = 0) {
   const n = Number(val) || 0;
   const p = Math.pow(10, digit);
@@ -584,16 +757,49 @@ function roundTo(val, digit = 0) {
 
 </script>
 
-
-
 <style scoped>
-.clickable {
-  cursor: pointer;
-  color: blue;
-  text-decoration: underline;
+/* ==================== 
+   基本レイアウト 
+ ==================== */
+:root {
+  --header-height: 54px;
 }
 
-.tabs {
+#scalable-root {
+  display: flex;
+  justify-content: center;
+  font-family: 'Cinzel', serif;
+}
+
+.container {
+  width: 705px;
+  max-width: none !important;
+  min-height: 820px;
+  border: 3px solid #b58b4c;
+  border-radius: 16px;
+  padding: 2px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  background-image: url('/src/assets/images/入力ホーム.jpg');
+  font-size: 20px;
+}
+
+
+/* ==================== 
+   ヘッダー・タイトル 
+   ==================== */
+.container h1 {
+  text-align: center;
+  color: #5a3b12;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.3);
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+
+/* ==================== 
+   タブ 
+   ==================== */
+.container .tabs {
   margin-top: 1px;
   display: flex;
   gap: 6px;
@@ -620,48 +826,15 @@ function roundTo(val, digit = 0) {
   font-weight: bold;
 }
 
-.container {
-  width: 705px ;   /* 横幅いっぱいに */
-  max-width: none !important;
-  min-height: 820px;
-  /* background: rgba(255, 255, 255, 0.9); */
-  border: 3px solid #b58b4c;
-  border-radius: 16px;
-  padding: 5px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-  font-size: 20px;
-}
 
-#scalable-root {
-  display: flex;
-  justify-content: center;
-  /* background: radial-gradient(circle at center, #fdf6e3 0%, #e4d2a0 100%); */
-  font-family: 'Cinzel', serif;
-}
-
-.role-header {
-  width: 200px;
-}
-
-.role-total-Lv {
-  font-size: 28px;
-  font-weight: bold;
-  max-height: 40px;
-  padding: 0px;
-}
-
-#name{
+/* ==================== 
+   入力フィールド 
+   ==================== */
+#name {
   font-size: 20px;
   font-weight: bold;
   width: 250px;
   height: 40px;
-}
-h1 {
-  text-align: center;
-  color: #5a3b12;
-  text-shadow: 0 2px 2px rgba(0,0,0,0.3);
-  margin-top: 0px;
-  margin-bottom: 0px;
 }
 
 .name_input {
@@ -686,264 +859,14 @@ input[type="number"] {
   width: 150px;
   height: 40px;
   background: #fffdf6;
-  text-align: center; /* 数値・テキストを中央寄せ */
-}
-
-
-.clickable {
-  cursor: pointer;
-  color: #004f7a;
-  text-decoration: underline;
-}
-
-button {
-  background: linear-gradient(#fceabb, #f8b500);
-  border: 2px solid #b58b4c;
-  border-radius: 999px;
-  padding: 4px 12px;
-  font-weight: bold;
-  color: #5a3b12;
-  cursor: pointer;
-  margin-top: 0px;
-  margin-bottom: 0px;
-  box-shadow: 0 2px 0 #a0722a;
-}
-
-button:hover {
-  filter: brightness(1.05);
-}
-
-:root {
-  --header-height: 54px; /* ヘッダーの実際の高さ */
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-/* ヘッダー行の高さと装飾 */
-table thead tr:first-child {
-  height: var(--header-height);
-  background: linear-gradient(#f8e0a0, #f5deb3);
-}
-
-table thead th {
-  font-weight: bold;
-  font-size: 1.1em;
-}
-
-/* 1列目の幅固定 */
-table th:first-child,
-table td:first-child {
-  width: 80px;
-  height: 33px;
-}
-/* 2列目の幅固定 */
-table th:first-child,
-table td:first-child {
-  width: 80px;
-  height: 33px;
-}
-
-/* セル共通 */
-th, td {
-  border: 1px solid #b58b4c;
-  padding: 6px;
-  text-align: center;
-  height: 33px;
-}
-
-th {
-  background: #f5deb3;
-}
-
-/* スクロール用ラッパー */
-.table-wrapper {
-  height: 651px; /* 表全体の高さ */
-  background: radial-gradient(circle at center, #5e5b54 0%, #423d2f 100%);
-  border: 5px solid #b58b4c;
-  overflow-y: scroll;
-  font-size: 21.6px;
-}
-
-.table-wrapper table {
-  border-collapse: separate; /* collapse をやめる */
-  border-spacing: 0; /* セル間の隙間を消す */
-  width: 100%;
-}
-
-/* thead を固定 */
-.table-wrapper thead th,
-.table-wrapper thead td {
-  border: 2px solid #b58b4c;
-  background: #f5deb3; /* 背景透け防止 */
-  position: sticky;
-  z-index: 5; /* 高めに設定 */
-  color: #3b2f1e;
-}
-
-/* 1行目の見出し固定 */
-.table-wrapper thead tr:first-child th {
-  height: 50px;
-  top: 0;
-  border-top: 2px solid #b58b4c;
-  z-index: 3;
-}
-
-/* 2行目（Lv）を固定 */
-.table-wrapper thead tr:nth-child(2) td {
-  top: 66px; /* 1行目の高さに合わせる */
-  border: 2px solid #b58b4c;
-  z-index: 5;
-}
-
-
-.clickable {
-  position: relative;
-  text-align: center;
-}
-.clickable_Attribute{
-  position: relative;
-  text-align: center;
-}
-.attr-cell {
-  height: 0px; /* 画像と文字の間隔 */
-  position: relative;
-  transform: translate(0%, 100%);
-}
-.clickable_Attribute.ready {
-  background-color: #f5deb3; /* 薄い緑 */
-  cursor: pointer;
-}
-.clickable_Attribute:not(.ready) {
-  background-color: #d3bf9b; /* 薄いグレー */
-  cursor: pointer;
-}
-
-.skill-cell { padding: 0; }
-.skill-inner {
-  display: grid;
-  grid-template-columns: 1fr; /* 名前のみ */
-  align-items: center;
-  border-left: 6px solid transparent; /* 色バー */
-  border-radius: 6px;
-}
-
-/* 行動ごとの色 */
-.type-a { background-color: rgba(255, 0, 0, 0.2); }   /* 赤系 */
-.type-s { background-color: rgba(255, 255, 0, 0.2); } /* 黄系 */
-.type-q { background-color: rgba(0, 255, 0, 0.2); }   /* 緑系 */
-
-.skill-name {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  font-weight: bold;
-}
-
-.skill-clickable {
-  cursor: pointer;
-  text-decoration: underline;
-}
-.skill-clickable:hover {
-  color: #ffcc00;
-}
-
-.skill-detail-box {
-  height: 192px;
-  margin-top: 4px;
-  font-size: 20px;
-  color: #ffeecc;
-  background-color: rgba(0, 0, 0, 0.6);
-  padding: 10px;
-  border-radius: 6px;
-}
-.skill-name-detail-box {
-  font-size: 30px;
-  height: 48px;
-  margin-top: 0px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  font-weight: bold;
-}
-.skill-header {
-  height: 45px;
-  display: grid;
-  grid-template-columns: 2fr 5.5fr 1.5fr 1fr; /* ルビ:名前:系統:行動 */
-  align-items: center;
-  gap: 4px;
   text-align: center;
 }
 
-.skill-ruby {
-  text-align: center;
-  font-size: 0.85em;
-}
-
-
-.skill-keito {
-  font-size: 30px;
-  text-align: center;
-}
-
-.skill-type {
-  font-size: 30px;
-  text-align: center;
-}
-.skill-power {
-  display: flex;
-  align-items: center;
-  height: 20px;
-  gap: 0.5em;
-}
-
-.skill-power .label {
-  min-width: 8em; /* 左のラベル部分を固定幅にする */
-  font-weight: bold;
-}
-
-.arrow {
-  font-size: 25px;
-  font-weight: bold;
-  line-height: 0;
-}
-.arrow.up1 {
-  color: #ff6600; /* 追加威力用の色 */
-}
-.arrow.up2 {
-  color: #ff0000; /* 判定用の色 */
-}
-
-.skill-description{
-  font-size: 23px;
-  display: flex;
-    /* align-items: center; */
-  height: 78px;
-  overflow-y: auto;
-}
-.skill-power {
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-}
-
-
-.separator {
-  display: inline-block;
-  width: 15px; /* 判定と追加威力の間隔 */
-}
 .name-and-button {
   width: 520px;
   display: flex;
   align-items: center;
   gap: 10px;
-}
-.name-and-button button {
-  margin-top: 15px;
-  margin-left: 20px;
-  margin-bottom: 0px;
 }
 
 .name-and-button input {
@@ -951,65 +874,210 @@ th {
 }
 
 .name-and-button button {
+  margin: 15px 0 0 20px;
   padding: 6px 12px;
   font-size: 1rem;
   white-space: nowrap;
 }
-button:disabled {
-  background-color: #888; /* 暗いグレー */
+
+
+/* ==================== 
+   ボタン 
+   ==================== */
+/* StatsTab コンポーネント専用スコープ */
+.container button {
+  background: linear-gradient(#fceabb, #f8b500);
+  border: 2px solid #b58b4c;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-weight: bold;
+  color: #5a3b12;
+  cursor: pointer;
+  margin: 0;
+  box-shadow: 0 2px 0 #a0722a;
+}
+
+.container button:hover {
+  filter: brightness(1.05);
+}
+
+.container button:disabled {
+  background-color: #888;
   cursor: not-allowed;
   opacity: 0.6;
 }
-.skill-keito {
-  display: inline-flex;
+
+/* レベルアップ専用 */
+.container .lvup-btn {
+  transition: transform 0.2s;
+}
+
+.container .lvup-active {
+  animation: bounceY 1.2s ease-in-out infinite;
+  filter: brightness(1.15);
+}
+
+/* アニメーション */
+@keyframes bounceY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+
+
+/* ==================== 
+   テーブル共通 
+   ==================== */
+.container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid #b58b4c;
+  padding: 6px;
+  text-align: center;
+  height: 33px;
+  box-sizing: border-box;
+}
+
+th {
+  background: #f5deb3;
+}
+
+/* 各列の幅を明確に固定 */
+.table-wrapper th:nth-child(1),
+.table-wrapper td:nth-child(1) {
+  width: 95px;
+  min-width: 95px;
+  max-width: 95px;
+}
+
+.table-wrapper th:nth-child(2),
+.table-wrapper td:nth-child(2) {
+  width: 60px;
+  min-width: 60px;
+  max-width: 60px;
+}
+
+.table-wrapper th:nth-child(3),
+.table-wrapper td:nth-child(3) {
+  width: 50px;
+  min-width: 50px;
+  max-width: 50px;
+}
+
+table thead tr:first-child {
+  /* height: var(--header-height); */
+  background: linear-gradient(#f8e0a0, #f5deb3);
+  height: 75px;
+  max-height: 75px;
+  min-height: 75px;
+}
+
+table thead th {
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+.role-header {
+  max-width: 120px;
+  min-width: 120px;
+  position: relative;
+  overflow: hidden;
+}
+
+.role-with-bg {
+  position: relative;
+  overflow: hidden;
+}
+
+.role-header-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
 }
-.skill-keito__icon {
-  width: 55x;
-  height: 55px;
-  object-fit: contain;
-  vertical-align: middle;
+
+.role-icon-bg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.15; /* 背景として薄く表示 */
+  z-index: 1;
 }
+/* 上半分を表示（画像の上半分を見せる） */
+.role-bg-top {
+  top: 0%;
+}
+
+/* 下半分を表示（画像の下半分が見える） */
+.role-bg-bottom {
+  top: 0%;           /* ← 下半分だけが枠に表示される */
+}
+.role-name-text {
+  position: relative;
+  z-index: 2;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8); /* 文字を読みやすく */
+}
+
+.role-lv-cell {
+  position: relative;
+}
+
+.role-lv-cell .lv-btn {
+  position: relative;
+  z-index: 2;
+
+  /* 透明を廃止してしっかりした金色系ボタンに */
+  background: linear-gradient(#fceabb, #f5c76b);
+  border: 2px solid #b58b4c;
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-weight: bold;
+  color: #5a3b12;
+  box-shadow: 0 2px 0 #a0722a;
+
+  font-size: 20px;
+  min-width: 68px;
+}
+.lv-btn-active {
+  background: linear-gradient(#ffe9a3, #ffce55);
+  border-color: #d9a84f;
+  color: #4c2f0a;
+  filter: brightness(1.15);
+  box-shadow: 0 2px 5px rgba(255, 210, 120, 0.6);
+}
+.lv-btn-inactive {
+  background: linear-gradient(#d2c7a1, #b8ab86);
+  border-color: #a89a7a;
+  color: #6a5a38;
+  box-shadow: none;
+  filter: brightness(0.95);
+}
+
+
+.role-total-Lv {
+  font-size: 28px;
+  font-weight: bold;
+  max-height: 40px;
+  padding: 0;
+}
+
 .role-list {
-  width: 75px;
+  min-width: 75px;
 }
 
 .all-list {
-  width: 50px;
+  min-width: 50px;
 }
 
 .passive-header {
-  width: 22px;
-}
-
-.attr-icon-wrap {
-  position: relative;   /* ← ルビ配置に必要 */
-  width: 50px;
-  height: 50px;
-
-  margin: 0 auto;       /* ← ★左右中央揃えの決め手 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.icon-Attribute-img {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-}
-/* 属性テーブル用 */
-.attr-cell-header {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 4px;
-}
-
-.icon-Attribute-header {
-  width: 32px;
-  height: 32px;
+  min-width: 22px;
 }
 
 .left-col {
@@ -1023,4 +1091,297 @@ button:disabled {
   padding: 6px 8px;
 }
 
+.exp-cell, 
+.exp-btn-cell {
+  padding: 5px;
+  border: 0 solid #b58b4c;
+}
+
+
+/* ==================== 
+   スクロール可能テーブル 
+   ==================== */
+.table-wrapper {
+  height: 635px;
+  max-width: 705px;
+  background: radial-gradient(circle at center, #5e5b54 0%, #423d2f 100%);
+  border: 5px solid #b58b4c;
+  overflow: auto;
+}
+
+.table-wrapper table {
+  width: auto;
+  border-collapse: separate; /* collapseからseparateに変更 */
+  border-spacing: 0; /* セル間の隙間をなくす */
+}
+
+/* ヘッダー行の固定（上方向） */
+.table-wrapper thead th,
+.table-wrapper thead td {
+  border: 1px solid #b58b4c; /* 2pxから1pxに統一 */
+  background: #f5deb3;
+  position: sticky;
+  color: #3b2f1e;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.header-row-1 th {
+  top: 0;
+  height: 50px;
+  z-index: 30;
+}
+
+.header-row-2 th {
+  top: 75px; /* 実測値に合わせて調整 */
+  height: 48px;
+  z-index: 30;
+}
+
+/* tbody のセルにもborderを個別に設定 */
+.table-wrapper tbody td {
+  border: 1px solid #b58b4c;
+  box-sizing: border-box;
+}
+
+/* 左3列の固定（横方向） */
+.table-wrapper tbody td:nth-child(1),
+.table-wrapper tbody td:nth-child(2),
+.table-wrapper tbody td:nth-child(3) {
+  position: sticky;
+  background: #f5deb3;
+  color: #3b2f1e;
+  font-weight: 800;
+  z-index: 10;
+}
+
+.table-wrapper tbody td:nth-child(1) {
+  left: 0;
+  border-right: 2px solid #b58b4c;
+}
+
+.table-wrapper tbody td:nth-child(2) {
+  left: 95px;
+  border-right: 2px solid #b58b4c;
+}
+
+.table-wrapper tbody td:nth-child(3) {
+  left: 155px;
+  border-right: 2px solid #b58b4c;
+}
+
+/* ヘッダーの左3列も固定 */
+.header-row-1 th:nth-child(1),
+.header-row-2 th:nth-child(1) {
+  left: 0;
+  z-index: 40;
+  border-right: 2px solid #b58b4c;
+}
+
+.header-row-1 th:nth-child(2),
+.header-row-2 th:nth-child(2) {
+  left: 95px;
+  z-index: 40;
+  border-right: 2px solid #b58b4c;
+}
+
+.header-row-1 th:nth-child(3),
+.header-row-2 th:nth-child(3) {
+  left: 155px;
+  z-index: 40;
+  border-right: 2px solid #b58b4c;
+}
+
+
+/* ==================== 
+   属性関連 
+   ==================== */
+.attr-cell {
+  height: 0;
+  position: relative;
+  transform: translate(0%, 100%);
+}
+
+.attr-icon-wrap {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-Attribute-img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+.attr-cell-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+.icon-Attribute-header {
+  width: 32px;
+  height: 32px;
+}
+
+.clickable_Attribute {
+  position: relative;
+  text-align: center;
+  cursor: pointer;
+}
+
+.clickable_Attribute.ready {
+  background-color: #f5deb3;
+}
+
+.clickable_Attribute:not(.ready) {
+  background-color: #d3bf9b;
+}
+
+
+/* ==================== 
+   スキル関連 
+   ==================== */
+.skill-cell {
+  padding: 0;
+}
+
+.skill-inner {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  border-left: 6px solid transparent;
+  border-radius: 6px;
+}
+
+.type-a { background-color: rgba(255, 0, 0, 0.2); }
+.type-s { background-color: rgba(255, 255, 0, 0.2); }
+.type-q { background-color: rgba(0, 255, 0, 0.2); }
+
+.skill-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: bold;
+}
+
+.skill-clickable {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.skill-clickable:hover {
+  color: #ffcc00;
+}
+
+.skill-detail-box {
+  height: 175px;
+  margin-top: 4px;
+  font-size: 20px;
+  color: #ffeecc;
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.skill-name-detail-box {
+  font-size: 30px;
+  height: 48px;
+  margin-top: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: bold;
+}
+
+.skill-header {
+  height: 45px;
+  display: grid;
+  grid-template-columns: 2fr 5.5fr 1.5fr 1fr;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.skill-ruby {
+  text-align: center;
+  font-size: 0.85em;
+}
+
+.skill-keito {
+  font-size: 30px;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.skill-keito__icon {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.skill-type {
+  font-size: 30px;
+  text-align: center;
+}
+
+.skill-power {
+  display: flex;
+  align-items: center;
+  height: 20px;
+  gap: 0.5em;
+}
+
+.skill-power .label {
+  min-width: 8em;
+  font-weight: bold;
+}
+
+.skill-description {
+  font-size: 23px;
+  display: flex;
+  height: 78px;
+  overflow-y: auto;
+}
+
+.arrow {
+  font-size: 25px;
+  font-weight: bold;
+  line-height: 0;
+}
+
+.arrow.up1 {
+  color: #ff6600;
+}
+
+.arrow.up2 {
+  color: #ff0000;
+}
+
+.separator {
+  display: inline-block;
+  width: 15px;
+}
+
+
+/* ==================== 
+   クリック可能要素 
+   ==================== */
+.clickable {
+  position: relative;
+  text-align: center;
+  cursor: pointer;
+  color: blue;
+  text-decoration: underline;
+}
 </style>
+

@@ -167,7 +167,7 @@
   </div>
 </template>
 
-<style>
+<style scoped>
 .skill-total-bar {
   display: flex;
   justify-content: space-between;
@@ -617,8 +617,6 @@ const totalCrit = computed(() => {
   color: #ffeb3b; /* 黄色 */
 }
 
-</style>
-<style>
 .selected-skill-bar {
   display: flex;
   justify-content: space-between;

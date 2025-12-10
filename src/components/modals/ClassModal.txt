@@ -6,7 +6,7 @@
         <h2 class="modal-header">種類を選ぶ</h2>
 
         <!-- タブ -->
-        <div class="tabs scroll-tabs" ref="tabsRef">
+        <div class="tabs">
           <button
             v-for="type in tabTypes"
             :key="type"
@@ -16,7 +16,6 @@
             {{ type }}
           </button>
         </div>
-
 
         <!-- 一覧 -->
         <ul class="Classe-list">
@@ -61,19 +60,19 @@
 
 
 <script setup>
-import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import ClasseDetailModal from '@/components/modals/ClasseDetailModal.vue'
 import { applyGlobalScale } from '@/components/useScale.js'
 import { allData } from '@/constants/statData.js';
 
+onMounted(() => {
+  applyGlobalScale('Classe-modal') // ← ここで ID を渡す
+})
 const emit = defineEmits(['select', 'close'])
 
-const tabTypes = ref(["戦士", "狩人", "魔道士", "神官"]);
+const tabTypes = ['戦士', '狩人', '魔道士','神官']
 const activeTab = ref('戦士')
 const selectedClasseCategory = ref('戦士')
-
-// ref for the scrollable tab element (enable drag-to-scroll)
-const tabsRef = ref(null)
 
 
 function handleTabClick(type) {
@@ -97,12 +96,8 @@ const ClasseDescriptions = {
 
 // src="getImageUrl(currentClasse.画像url)
 const allClasses = ref([])
-
-// 習得済みクラスの集合（重複排除用）
-const acquiredClasses = ref(new Set())
-
 const filteredClasses = computed(() =>
-  allClasses.value.filter(r => r.技能分類 === activeTab.value && !acquiredClasses.value.has(r.名前))
+  allClasses.value.filter(r => r.技能分類 === activeTab.value)
 )
 console.log("filteredClasses :")
 console.log(filteredClasses)
@@ -240,15 +235,15 @@ function createPlayerInfo(classMaster, playerData) {
 }
 
 
-/**
- * クラスデータを初期化し、タブ構成と習得済みクラスをセットアップ
- */
-function setupClassData() {
+onMounted(async () => {
   const data = allData.value;
+
+  // 種族名の取得
   const currentRace = props.selectedRace?.名前 || props.selectedRace;
 
-  console.log("== setupClassData ==", props);
+  console.log("== onMounted ==", props);
 
+  // ▼ 条件なし判定
   const isNoCondition = (c) => {
     return !c.取得分類 &&
            !c.条件分類Lv &&
@@ -259,11 +254,16 @@ function setupClassData() {
            !c.条件属性;
   };
 
+  // ▼ playerData が渡されているかどうか判定
   const hasPlayerData = !!props.playerData;
 
   let jobData = [];
 
   if (!hasPlayerData) {
+    // ---------------------------------------------
+    // ① キャラ作成時（playerDataなし）
+    //    → 初期クラスのみ表示
+    // ---------------------------------------------
     jobData = data.filter(c =>
       c.分類 === '職業' &&
       (
@@ -272,125 +272,24 @@ function setupClassData() {
       )
     );
   } else {
+    // 既存キャラ（条件付き）
     const playerInfo = createPlayerInfo(data, props.playerData);
+
     jobData = data.filter(c =>
       c.分類 === '職業' &&
       (isNoCondition(c) || meetsConditions(c, playerInfo))
     );
   }
 
-  if (hasPlayerData) {
-    const playerInfo = createPlayerInfo(data, props.playerData);
-    acquiredClasses.value = new Set(Object.keys(playerInfo.classLevels));
-  }
-
+  // ▼ タブ生成
   const uniqueTypes = [...new Set(jobData.map(c => c.技能分類))];
   tabTypes.value = uniqueTypes;
 
-  let maxTotalLv = -1;
-  let maxTypeIndex = 0;
-  if (hasPlayerData) {
-    const playerInfo = createPlayerInfo(data, props.playerData);
-    uniqueTypes.forEach((type, idx) => {
-      const totalLvForType = Object.entries(playerInfo.classLevels)
-        .filter(([className]) => {
-          const base = data.find(c => c.名前 === className);
-          return base && base.技能分類 === type;
-        })
-        .reduce((sum, [, lv]) => sum + lv, 0);
-      if (totalLvForType > maxTotalLv) {
-        maxTotalLv = totalLvForType;
-        maxTypeIndex = idx;
-      }
-    });
-  }
-
-  activeTab.value = uniqueTypes[maxTypeIndex];
-  selectedClasseCategory.value = uniqueTypes[maxTypeIndex];
-  console.log("== jobData ==", jobData);
-  console.log("== uniqueTypes ==", uniqueTypes);
-  console.log("== acquiredClasses ==", acquiredClasses.value);
+  activeTab.value = uniqueTypes[0];
+  selectedClasseCategory.value = uniqueTypes[0];
+  console.log("== jobData ==", jobData)
+  console.log("== uniqueTypes ==", uniqueTypes)
   allClasses.value = jobData;
-}
-
-/**
- * タブ要素にドラッグ→横スクロール機能を付与
- */
-function setupTabDragScroll() {
-  const el = tabsRef.value;
-  if (!el) return;
-
-  let isDown = false;
-  let startX = 0;
-  let scrollLeft = 0;
-  let didDrag = false;
-
-  const pointerDown = (e) => {
-    isDown = true;
-    didDrag = false;
-    startX = e.clientX;
-    scrollLeft = el.scrollLeft;
-
-    const startedOnInteractive = e.target && e.target.closest && e.target.closest('button, a, input, select, textarea');
-    pointerDown.startedOnInteractive = startedOnInteractive;
-    try {
-      if (e.pointerId != null && !startedOnInteractive) el.setPointerCapture(e.pointerId);
-    } catch (err) {}
-  };
-
-  const pointerMove = (e) => {
-    if (!isDown) return;
-    const x = e.clientX;
-    const walk = (x - startX);
-
-    if (!didDrag && Math.abs(walk) > 6) {
-      didDrag = true;
-      el.classList.add('dragging');
-    }
-
-    if (didDrag) {
-      el.scrollLeft = scrollLeft - walk;
-    }
-  };
-
-  const pointerUp = (e) => {
-    if (didDrag) {
-      const preventClick = (ev) => {
-        ev.stopImmediatePropagation();
-        ev.preventDefault();
-      };
-      document.addEventListener('click', preventClick, true);
-      setTimeout(() => document.removeEventListener('click', preventClick, true), 0);
-    }
-
-    isDown = false;
-    didDrag = false;
-    el.classList.remove('dragging');
-    try {
-      if (e.pointerId != null && !pointerDown.startedOnInteractive) {
-        el.releasePointerCapture && el.releasePointerCapture(e.pointerId);
-      }
-    } catch (err) {}
-  };
-
-  el.addEventListener('pointerdown', pointerDown);
-  el.addEventListener('pointermove', pointerMove);
-  el.addEventListener('pointerup', pointerUp);
-  el.addEventListener('pointerleave', pointerUp);
-
-  onBeforeUnmount(() => {
-    el.removeEventListener('pointerdown', pointerDown);
-    el.removeEventListener('pointermove', pointerMove);
-    el.removeEventListener('pointerup', pointerUp);
-    el.removeEventListener('pointerleave', pointerUp);
-  });
-}
-
-// 統合された onMounted フック
-onMounted(() => {
-  applyGlobalScale('Classe-modal');
-  setupClassData();
-  setupTabDragScroll();
 });
 
 
@@ -413,7 +312,6 @@ const getImageUrl = (relativePath) => {
 </script>
 
 <style scoped>
-/* ==================== モーダル ==================== */
 .modal-overlay {
   position: absolute;
   top: 0;
@@ -422,67 +320,45 @@ const getImageUrl = (relativePath) => {
   height: 100%;
   background: rgba(0,0,0,0.5);
   z-index: 2000;
+  
+  /* 中央に配置するための設定 */
   display: flex;
   justify-content: center;
   align-items: center;
+
   transform-origin: center center;
 }
 
 .modal-content {
-  min-width: 700px;
+  min-width: 700px ;
   min-height: 1200px;
-  max-width: 700px;
+  max-width: 700px ;
   max-height: 1200px;
+  
+  /* max-width: none !important; */
   font-size: 20px;
+
   background: #222;
   padding: 20px;
   border-radius: 10px;
+  /* max-width: 90%;
+  max-height: 90%; */
   overflow-y: auto;
-  overflow-x: visible;
+  overflow-x: hidden;
+}
+.modal-header{
+  color: #ffffff;;
 }
 
-.modal-header {
-  color: #ffffff;
-}
-
-/* ==================== タブ（横スクロール） ==================== */
 .tabs {
   display: flex;
-  flex-wrap: nowrap;
-  width: 660px;
-  max-width: 660px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  gap: 8px;
-  padding: 6px 4px;
+  justify-content: center;
   margin-bottom: 1rem;
-  
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
+  font-size: 30px;
+  font-weight: 600;
 }
-
-.tabs {
-  cursor: grab;
-}
-
-.tabs.dragging {
-  cursor: grabbing;
-  user-select: none;
-}
-
-/* タッチ操作で横スクロールを行いやすくする */
-.tabs {
-  touch-action: pan-y;
-}
-
-.tabs::-webkit-scrollbar {
-  display: none;
-}
-
 .tabs button {
-  flex: 0 0 150px;
-  width: 150px;
+  margin: 0 0.5rem;
   padding: 0.4rem 1rem;
   border: none;
   border-radius: 6px;
@@ -491,14 +367,12 @@ const getImageUrl = (relativePath) => {
   cursor: pointer;
   font-size: 30px;
   font-weight: 600;
-  white-space: nowrap;
 }
 
 .tabs .active {
   background-color: #0056b3;
 }
 
-/* ==================== クラス一覧 ==================== */
 .Classe-list {
   list-style: none;
   padding: 0;
@@ -509,6 +383,8 @@ const getImageUrl = (relativePath) => {
   font-size: 20px;
   max-height: 900px;
   overflow-y: auto;
+
+  /* 上寄せを強制 */
   align-content: start;
 }
 
@@ -525,11 +401,27 @@ const getImageUrl = (relativePath) => {
   font-size: 30px;
 }
 
+button {
+  font-size: 30px;
+  font-weight: 600;
+}
+
 .Classe-list button:hover {
   background-color: #ddd;
 }
 
-/* ==================== クラスボタン詳細 ==================== */
+.Classe-description {
+  position: absolute;
+  margin-top: 8px;
+  height: 13%;
+  font-size: 30px;
+  color: #ffeecc;
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 10px;
+  border-radius: 6px;
+  bottom: 15px;
+  width: 605px;
+}
 .Classe-button {
   display: flex;
   justify-content: flex-start;
@@ -559,41 +451,6 @@ const getImageUrl = (relativePath) => {
 
 .Classe-name {
   flex-grow: 1;
-}
-
-/* ==================== 説明エリア ==================== */
-.Classe-description {
-  position: absolute;
-  margin-top: 8px;
-  height: 13%;
-  font-size: 30px;
-  color: #ffeecc;
-  background-color: rgba(0, 0, 0, 0.3);
-  padding: 10px;
-  border-radius: 6px;
-  bottom: 15px;
-  width: 605px;
-}
-
-/* ==================== 閉じるボタン ==================== */
-.confirm-button {
-  margin-top: 1rem;
-  text-align: center;
-}
-
-.confirm {
-  display: inline-block;
-  padding: 0.6rem 2rem;
-  background-color: #28a745;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 30px;
-  font-weight: 600;
-}
-
-.confirm:hover {
-  background-color: #218838;
 }
 
 

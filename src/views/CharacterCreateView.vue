@@ -763,6 +763,7 @@ async function returnDashboard(){
   max-width: none !important;
   min-height: 1200px;
   /* background: rgba(255, 255, 255, 0.9); */
+  background-image: url('/src/assets/images/入力ホーム.jpg');
   border: 3px solid #b58b4c;
   border-radius: 16px;
   padding: 20px;

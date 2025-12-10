@@ -61,7 +61,7 @@ button {
   margin-bottom: 15px;
 }
 </style>
-<style>
+<style scoped>
 .container {
   /* これだけあれば中央配置される */
   max-width: 400px;

@@ -34,19 +34,39 @@ function watchExcelFile(filePath, callback) {
 // Excelデータを読み込む関数
 function loadExcelData(filePath, type) {
   try {
-    const workbook = XLSX.readFile(filePath); // Excelファイルを読み込む
-    const sheetNames = workbook.SheetNames; // シート名を取得
+    const workbook = XLSX.readFile(filePath);
+    const sheetNames = workbook.SheetNames;
 
     console.log(`${type} ファイルのシート名:`, sheetNames);
 
-    // 必要に応じて各シートを処理
     sheetNames.forEach((sheetName) => {
-      const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+      const sheet = workbook.Sheets[sheetName];
+
+      // ★★ 生ヘッダを先に作る（ここ重要） ★★
+      const rawHeader = XLSX.utils.sheet_to_json(sheet, { header: 1 })[0];
+
+      // JSON 行データ
+      const data = XLSX.utils.sheet_to_json(sheet);
 
       if (type === "game") {
+
+        // 最初にキャッシュへ格納
         excelCache[sheetName] = data;
+
+        // ★ "クラス" シートだけをチェックする
+        if (sheetName.trim() === "クラス") {
+
+          console.log("=== クラスシート RAW HEADER ===");
+          console.log(rawHeader); // ← ここで rawHeader が使える
+
+          if (data.length > 0) {
+            console.log("=== クラスシート JSON HEADER ===");
+            console.log(Object.keys(data[0]));
+          }
+        }
+
       } else if (type === "item") {
-        // data が null/undefined なら空配列にする
         const safeData = data || [];
         itemData[sheetName.trim()] = safeData;
 
@@ -59,9 +79,9 @@ function loadExcelData(filePath, type) {
               .map((key) => row[key])
               .filter((item) => item),
           }));
-
           console.log("ショップデータ:", shopData);
         }
+
       } else if (type === "area") {
         if (!data) return;
         areaData[sheetName] = data;
@@ -95,6 +115,12 @@ router.get("/classes", (req, res) => {
 
     if (!classData) {
       return res.status(404).json({ error: "クラスシートが見つかりません" });
+    }
+
+    // ★ 1件目のキーをサーバーコンソールに表示
+    if (classData.length > 0) {
+      console.log("=== クラスシートのヘッダ一覧 ===");
+      console.log(Object.keys(classData[0])); // ← これが内部ヘッダ
     }
 
     // 名前が空でないデータのみフィルタリング
@@ -144,17 +170,44 @@ router.get("/attributes", (req, res) => {
       return res.status(404).json({ error: "属性シートが見つかりません" });
     }
 
-    // 「魔法属性一覧」の列が空でないものだけ返す
-    const filteredData = attributeData.filter(
-      (row) => row["属性名"] && row["属性名"].trim() !== ""
-    );
+    // 「属性名」が空ではない行だけ処理
+    const filteredData = attributeData
+      .filter((row) => row["属性名"] && row["属性名"].trim() !== "")
+      .map((row) => {
+        // Lv_1〜Lv_30 を配列としてまとめる
+        const magicList = [];
+        for (let i = 1; i <= 30; i++) {
+          const key = `Lv_${i}`;
+          if (row[key] && row[key].trim() !== "") {
+            magicList.push(row[key].trim());
+          }
+        }
+
+        // 元データから Lv_x を削除し、新しい配列をくっつける
+        const newRow = { ...row };
+        deleteLvKeys(newRow);
+
+        return {
+          ...newRow,
+          魔法リスト: magicList
+        };
+      });
 
     res.json(filteredData);
+
   } catch (error) {
     console.error("Error fetching attribute data:", error);
     res.status(500).json({ error: "Failed to fetch attribute data" });
   }
 });
+
+// Lv_1〜Lv_30 を削除する補助関数
+function deleteLvKeys(obj) {
+  for (let i = 1; i <= 30; i++) {
+    delete obj[`Lv_${i}`];
+  }
+}
+
 
 // 「種族属性」シートからデータを取得するAPI
 router.get("/race_attributes", (req, res) => {

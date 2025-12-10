@@ -78,8 +78,6 @@ export default {
       return tab ? tab.component : null;
     });
 
-    console.log("currentCharacter")
-    console.log(currentCharacter.value)
 
     return {
       index, currentTab, tabs,
@@ -105,7 +103,7 @@ export default {
 }
 .modal-content {
   /* width: 720px; height: 1220px; */
-  width: 720px; height: 1220px;
+  width: 720px; height: 1240px;
   background: url('/src/assets/images/illust/帰巣本能.webp');
   background-size: cover;
   border: 12px solid #5b3a1a;
@@ -114,7 +112,7 @@ export default {
   font-family: "Georgia", serif;
   color: #2b1a0f;
   margin-bottom: 60px;
-  padding: 15px;
+  padding: 5px;
 }
 /* .modal-content::before {
   content: "";
@@ -166,7 +164,8 @@ export default {
 }
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .footer {
-  display: flex; justify-content: space-around; padding: 12px;
+  display: flex; justify-content: space-around; padding: 6px;
+  padding-bottom: 1px;
   background: #4d3216;
 }
 .btn {

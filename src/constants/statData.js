@@ -36,6 +36,15 @@ const dbEquipments = [
   { 名前: "鉄", 種別: "素材", 数量: 5 }
 ];
 
+function normalize(str) {
+  if (str == null) return "";
+  return String(str)
+    .replace(/\r?\n|\r/g, "")      // 改行削除
+    .replace(/[\u3000]/g, " ")     // 全角スペース → 半角
+    .trim();
+}
+
+
 // 初期全データ取得処理
 export async function loadGameData() {
   if (allData.value.length) return;
@@ -52,7 +61,36 @@ export async function loadGameData() {
 
   const res4 = await fetch("/api/excel/Skills");
   Skill_List.value = await res4.json();      // 技
-  // console.log("Skill_List.value =", Skill_List.value);
+
+  // --- Skill を Map 化（正規化して保存） ---
+  const skillMap = new Map();
+  Skill_List.value.forEach(skill => {
+    const key = normalize(skill["名前"]);
+    skillMap.set(key, skill);
+  });
+
+  // console.log("attributeList 前:", toRaw(attributeList.value));
+  // --- 魔法リストを SkillData に置き換え ---
+  attributeList.value = attributeList.value.map(attr => {
+    // console.log("Processing attribute:", attr);
+    const magicNames = attr["魔法リスト"] || [];
+
+    const magicDetails = magicNames
+      .map(name => {
+        const key = normalize(name);
+        return skillMap.get(key);
+      })
+      .filter(Boolean);
+
+    return {
+      ...attr,
+      魔法リスト: magicDetails
+    };
+  });
+
+  console.log("attributeList 完成:", toRaw(attributeList.value));
+
+
 
   // ===== 戦闘関連 =====
   const res5 = await fetch("/api/excel/weapons");
@@ -77,6 +115,31 @@ export async function loadGameData() {
 
   const res11 = await fetch("/api/excel/locations");
   locationList.value = await res11.json();   // 拠点・街・エリア
+}
+
+/**
+ * 行動/分類が X で「〇〇の接続」という名前のスキルから属性名を拾う
+ */
+function extractAttributeFromSkills(skills = []) {
+  if (!Array.isArray(skills)) return null;
+
+  for (const skill of skills) {
+    if (!skill) continue;
+
+    const isConnectionSkill =
+      skill.分類 === "X" ||
+      skill.行動 === "X";
+
+    if (!isConnectionSkill) continue;
+
+    const name = normalize(skill.名前);
+    const match = name.match(/^(.+?)の接続$/);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+
+  return null;
 }
 
 // ログの出し
@@ -225,7 +288,7 @@ export function buildPartyStats(partyRaw, context = {}) {
     // --- 種族分類の取得 ---
     const raceName = member.Role?.[0]?.roleName;  // Role[1] が種族
     const raceData = findRace(raceName);
-    console.log(raceName, raceData)
+    // console.log(raceName, raceData)
     char.race = raceData?.分類 ?? ""; 
 
     // ステータス・技反映
@@ -235,18 +298,45 @@ export function buildPartyStats(partyRaw, context = {}) {
     // char.stats.activePassives = member.stats?.activePassives ?? [];
     
     char.skills = collectSkillsFromRoles(member) || [];
-    console.log("char.skills", char.skills)
+    // console.log("char.skills", char.skills)
     char.magic  = member.magic  ?? [];
+    const attributeFromSkills = extractAttributeFromSkills(char.skills);
+    console.log("attributeFromSkills", attributeFromSkills);
 
     char.equipmentSlot = member.equipmentSlot ?? structuredClone(char.equipmentSlot);
-    char.attribute = member.attribute ?? null;
+
+    // メンバーの属性（string or array or null）
+    let memberAttribute = member.attribute;
+
+    // 1. 属性が文字列なら配列化する
+    if (typeof memberAttribute === "string") {
+      memberAttribute = memberAttribute.trim() !== "" ? [memberAttribute] : [];
+    }
+
+    // 2. null や undefined の場合 → 空配列化
+    if (!Array.isArray(memberAttribute)) {
+      memberAttribute = [];
+    }
+
+    // 3. attributeFromSkills がある場合は追加
+    if (attributeFromSkills) {
+      memberAttribute.push(attributeFromSkills);
+    }
+
+    // // 4. 重複削除
+    // memberAttribute = [...new Set(memberAttribute)];
+
+    // 5. 最終的に反映
+    char.attribute = memberAttribute.length > 0 ? memberAttribute : null;
+
+
     char.position  = member.position  ?? "前衛_1";
     
     char.inventory =
       Array.isArray(member.inventory) && member.inventory.length > 0
         ? member.inventory
         : dbEquipments;
-    console.log("インベントリ", char.inventory);
+    // console.log("インベントリ", char.inventory);
     //  props.character?.inventory?.length > 0 ? props.character.inventory : dbEquipments;
     // char.stats.totalStats = 
     // パッシブ適用（calcTotalStats の返却値を使う）
@@ -301,7 +391,7 @@ export function buildCharacterStats(rawData, context = {}) {
 
   // --- パーティ（各キャラを characterDataTemplate で補完） ---
   built.party = buildPartyStats(rawData.party || [], context);
-  console.log("built",built)
+  // console.log("built",built)
 
   return built;
 }
@@ -898,6 +988,47 @@ export async function statusUpdate(character) {
   return character;
 }
 
+// 次の経験値
+export function getExperience(type, Lv, maxLevel = 60) {
+  if (Lv < 1 || Lv > maxLevel) {
+    throw new Error(`レベルは1から${maxLevel}の間で指定してください。`);
+  }
+  const experienceTable = generateExperienceTable(type, maxLevel);
+  return experienceTable[Lv - 1]; // 指定されたレベルの経験値を返す
+}
+export function generateExperienceTable(type, Lv ,maxLevel=40) {
+  const experienceTable = [0]; // レベル1は0経験値
+  let growthRate;
+
+  for (let level = 1; level <= maxLevel; level++) {
+    switch (type) {
+      case "魔族":
+        // レベル15までは急速成長、16以降は停滞
+        growthRate = level <= 15
+          ? 100 + level * 3  // レベル15までは速い
+          : 300 + level * 10; // レベル16以降は急増
+        break;
+      case "亜人":
+        // 一貫して安定した成長
+        growthRate = 150 + level * 5; // 一定の増加
+        break;
+      case "人族":
+        // レベル15までは遅い、16以降は急成長
+        growthRate = level <= 15
+          ? 200 + level * 8  // レベル15までは遅い
+          : 50 + level * 3; // レベル16以降は速い
+        break;
+      default:
+        growthRate = 150 + level * 5; // 一定の増加
+        throw new Error("無効なタイプです");
+    }
+    experienceTable.push(experienceTable[level - 1] + growthRate); // 累積経験値
+  }
+
+  return experienceTable;
+}
+
+
 // ==== ギルドランクスタイル ====
 export const rankStyles = {
   7: { name: "赤鉄", color: "darkred", symbol: "❖", outline: "white" },
@@ -943,4 +1074,132 @@ export function fitTextToWidth(className, maxWidth, text, fontSize = 30) {
       `fitTextToWidth: '${text}' len=${len}, charWidth=${charWidth}px`
     );
   });
+}
+/**
+ * 1つのDOM要素に対して、横幅に収まるように文字サイズを調整する
+ * 
+ * @param {HTMLElement} el        - 対象のDOM要素
+ * @param {number} maxWidth       - 許容する最大幅(px)
+ * @param {string} text           - 表示文字列
+ * @param {number} maxFontSize    - 最大フォントサイズ
+ * @param {number} minFontSize    - 最小フォントサイズ
+ */
+export function fitTextForElement(
+  {el, maxWidth, text, maxFontSize = 30, minFontSize = 10}) {
+  if (!el) return;
+
+  // 表示文字列セット
+  el.textContent = text ?? "";
+
+  // 計算用の初期フォントサイズ
+  let size = maxFontSize;
+
+  // 一時的に適用して width を計測
+  el.style.fontSize = `${size}px`;
+
+  // 実測値が maxWidth を超える間、小さくしていく
+  while (el.scrollWidth > maxWidth && size > minFontSize) {
+    size -= 1;
+    el.style.fontSize = `${size}px`;
+  }
+
+  // デバッグ
+  console.log(
+    `fitTextForElement: text='${text}', width=${el.scrollWidth}, fontSize=${size}px`
+  );
+}
+const displayRuby = (val) => {
+  return val === 0 ? '' : val;
+};
+
+/**
+ * 技詳細をHTMLでレンダリングする
+ * @param {object} selectedSkillDetail - 技データオブジェクト
+ * @returns {string} HTML文字列
+ */
+export function renderSkillHtml(selectedSkillDetail) {
+  console.log("renderSkillHtml called:", "selectedSkillDetail.value:", selectedSkillDetail);
+  const d = selectedSkillDetail;
+
+  // if (!d) {
+  //   return selectedKey.value
+  //     ? (statDescriptions[selectedKey.value] || "説明がありません")
+  //     : "項目を選択すると説明が表示されます";
+  // }
+
+  // 攻撃手段アイコン
+  const icon = (d.攻撃手段 && getAttackIcon(d.攻撃手段))
+    ? `<img 
+          src="${getAttackIcon(d.攻撃手段)}" 
+          alt="${d.攻撃手段}" 
+          style="width:55px; height:55px; object-fit:contain; vertical-align:middle;"
+      >`
+    : "";
+
+  // 行動タイプに応じたスタイル
+  const getActionStyle = (action) => {
+    if (action === 'A') return 'background-color: rgba(255, 0, 0, 0.2);';
+    if (action === 'S') return 'background-color: rgba(255, 255, 0, 0.2);';
+    if (action === 'Q') return 'background-color: rgba(0, 255, 0, 0.2);';
+    return '';
+  };
+  
+  const actionStyle = d.行動 ? getActionStyle(d.行動) : '';
+
+  // 判定と追加威力
+  const judgeHtml = (() => {
+    let html = "";
+    if (d.判定) {
+      html += `${d.判定}<span style="font-size:25px; font-weight:bold; line-height:0; color:#ff0000;">⬆⬆</span>`;
+    }
+    if (d.判定 && d.追加威力) {
+      html += `<span style="display:inline-block; width:15px;"></span>`;
+    }
+    if (d.追加威力) {
+      html += `${d.追加威力}<span style="font-size:25px; font-weight:bold; line-height:0; color:#ff6600;">⬆</span>`;
+    }
+    if (!d.判定 && !d.追加威力) {
+      html = "なし";
+    }
+    return html;
+  })();
+
+  return `
+    <div>
+      <div style="height:45px; display:grid; grid-template-columns:2fr 5.5fr 1.5fr 1fr; align-items:center; gap:4px; text-align:center;">
+        <span style="font-size:30px; text-align:center; display:inline-flex; align-items:center; gap:6px;">
+          ${icon}
+          <span style="white-space:nowrap;">${d.攻撃手段 || ""}</span>
+        </span>
+
+        <ruby style="font-size:30px; height:48px; margin-top:0; padding-bottom: 3px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-weight:bold; ${actionStyle}">
+          ${d.名前}
+          <rt>${displayRuby(d.ルビ)}</rt>
+        </ruby>
+
+        <span style="font-size:30px; text-align:center;">
+          ${d.系統 === 0 ? "" : d.系統}
+        </span>
+
+        <span style="font-size:30px; text-align:center; ${actionStyle}">
+          ${d.行動 || ""}
+        </span>
+      </div>
+
+      <hr style="margin:4px 0;">
+
+      <div style="display:flex; align-items:center; height:20px; gap:0.5em;">
+        <span style="min-width:8em; font-weight:bold;">使用するステータス:</span>
+        <span style="display:flex; align-items:center; gap:4px;">
+          ${judgeHtml}
+        </span>
+      </div>
+
+      <hr style="margin:4px 0;">
+
+      <div style="font-size:23px; display:flex; height:78px; overflow-y:auto;">
+        ${d.説明 || ""}
+      </div>
+    </div>
+  `;
 }

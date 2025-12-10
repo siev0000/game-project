@@ -28,21 +28,12 @@
         </div>
 
         <!-- ステータス表示 -->
-        <div class="stat-list-wrapper">
-          <!-- ステータスは1列 -->
-          <ul class="stat-list" v-if="activeTab === 'ステータス'">
-            <li
-              v-for="key in statKeys"
-              :key="key"
-              @click="selectKey(key)"
-              :class="{ selected: selectedKey === key }"
-            >
-              {{ getDisplayValue(key) }}
-            </li>
-          </ul>
+        <!-- ステータス・技能・耐性（特徴以外） -->
+        <div class="stat-list-wrapper" v-if="activeTab !== '特徴'">
 
-          <!-- 技能・耐性は2列表示 -->
-          <div class="columns" v-else>
+          <div class="columns">
+
+            <!-- 左列：通常ステータス -->
             <ul class="stat-list">
               <li
                 v-for="key in leftKeys"
@@ -53,6 +44,8 @@
                 {{ getDisplayValue(key) }}
               </li>
             </ul>
+
+            <!-- 右列：スキル + 特徴 -->
             <ul class="stat-list">
               <li
                 v-for="key in rightKeys"
@@ -60,10 +53,34 @@
                 @click="selectKey(key)"
                 :class="{ selected: selectedKey === key }"
               >
-                {{ getDisplayValue(key) }}
+
+                <!-- スキル表示 → Skill1 を使う -->
+                <template v-if="key === 'スキル'">
+                  <div class="skill-block">
+                    <div class="skill-name" >
+                      技：{{ selectedSkillDetail.名前 || 'なし' }}
+                    </div>
+                    <div class="skill-effect">
+                      {{ selectedSkillDetail.効果概要 || '説明なし' }}
+                    </div>
+                  </div>
+                </template>
+
+                <!-- 特徴 -->
+                <template v-else-if="key === '特徴'">
+                  特徴：{{ currentClasse.特徴 || 'なし' }}
+                </template>
+
+                <!-- 通常表示（例外時） -->
+                <template v-else>
+                  {{ getDisplayValue(key) }}
+                </template>
+
               </li>
             </ul>
+
           </div>
+
         </div>
 
 
@@ -90,8 +107,8 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { statMap, statDescriptions } from '@/constants/statData.js';
+import { ref, computed, watch, onMounted } from 'vue'
+import { statMap, statDescriptions, Skill_List } from '@/constants/statData.js';
 
 // 画像取得
 const imageMap = import.meta.glob('@/assets/images/**/*', { eager: true, import: 'default' })
@@ -124,25 +141,63 @@ const TechniqueKeys = statMap['技能']
 const resistanceKeys = statMap['耐性']
 const TechniqueSplitIndex = TechniqueKeys.indexOf('装置')
 const resistSplitIndex = resistanceKeys.indexOf('毒耐性')
+const selectedSkillDetail = ref({
+  名前: '',
+  説明: '',
+  系統: '',
+  分類: '',
+  行動: '',
+  攻撃手段: '',
+  追加威力: '',
+  判定: '',
+  ルビ: '',
+  効果概要:''
+})
+    // ルビ: skill.ルビ || '',
+    // 名前: skill.名前 || '',
+    // 系統: skill.系統 || '',
+    // 分類: skill.分類 || '',
+    // 行動: skill.行動 || '',
+    // 攻撃手段: skill.攻撃手段 || '',
+    // 追加威力: skill.追加威力 || '',
+    // 判定: skill.判定 || '',
+    // 説明: skill.説明 || ''
 
 // const currentClasse = computed(() => props.classeList[currentIndex.value])
 const currentClasse = computed(() => {
   if (!props.classeList || !Array.isArray(props.classeList)) return null
   return props.classeList[currentIndex.value] || null
 })
-const statKeys = computed(() => statMap[activeTab.value])
-console.log("ステータス:"+ currentClasse)
-console.log(currentClasse)
+const statKeys = computed(() => {
+  const base = statMap[activeTab.value] || [];
+  if (activeTab.value === 'ステータス') {
+    return [...base, 'スキル', '特徴'];
+  }
+  return base;
+});
+console.log("ステータス:", currentClasse.value.代表スキル)
+console.log(currentClasse.value)
+// onSkillSelect(currentClasse.value.代表スキル)
+
 const leftKeys = computed(() => {
+  if (activeTab.value === 'ステータス') {
+    // 通常ステータス（スキル・特徴以外）
+    return statMap['ステータス'].filter(k => k !== 'スキル' && k !== '特徴')
+  }
   if (activeTab.value === '技能') return TechniqueKeys.slice(0, TechniqueSplitIndex)
   if (activeTab.value === '耐性') return resistanceKeys.slice(0, resistSplitIndex)
-  return statKeys.value
+  return []
 })
+
 const rightKeys = computed(() => {
+  if (activeTab.value === 'ステータス') {
+    return ['スキル', '特徴']
+  }
   if (activeTab.value === '技能') return TechniqueKeys.slice(TechniqueSplitIndex)
   if (activeTab.value === '耐性') return resistanceKeys.slice(resistSplitIndex)
   return []
 })
+
 
 const selectedKey = ref('')
 const selectKey = (key) => {
@@ -213,6 +268,54 @@ function getDisplayValue(key) {
     return `${key}: ${baseValue}`;
   }
 }
+// 技選択時処理
+const onSkillSelect = (skillName) => {
+  if (!skillName) return;
+  // console.log(Skill_List.value)
+
+  const skill = Skill_List.value.find(s => s.名前 === skillName);
+  if (!skill) {
+    selectedSkillDetail.value = null;
+    return;
+  }
+
+  selectedSkillDetail.value = {
+    ルビ: skill.ルビ || '',
+    名前: skill.名前 || '',
+    系統: skill.系統 || '',
+    分類: skill.分類 || '',
+    行動: skill.行動 || '',
+    攻撃手段: skill.攻撃手段 || '',
+    追加威力: skill.追加威力 || '',
+    判定: skill.判定 || '',
+    説明: skill.説明 || '',
+    効果概要: skill.効果概要 || ''
+  };
+
+  console.log("選択スキル詳細:", skill, selectedSkillDetail.value);
+};
+
+// クラス切替・タブ切替時にスキルを自動取得
+watch(
+  () => currentClasse.value?.代表スキル,
+  (newSkill) => {
+    if (newSkill) onSkillSelect(newSkill)
+  }
+)
+
+watch(
+  () => activeTab.value,
+  () => {
+    if (currentClasse.value?.代表スキル) onSkillSelect(currentClasse.value.代表スキル)
+  }
+)
+
+// モーダル開いた時点でスキルを取得
+onMounted(() => {
+  console.log("-- モーダル開いた時点でスキルを取得 --")
+  console.log(currentClasse.value)
+  if (currentClasse.value?.代表スキル) onSkillSelect(currentClasse.value.代表スキル)
+})
 
 // 決定→閉じる
 function confirmSelection() {
@@ -223,28 +326,33 @@ function confirmSelection() {
 
 </script>
 
-<style>
-.modal {
+<style scoped>
+.modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
-  height: 100%;
   z-index: 1000;
+}
+
+.modal {
+  position: relative;
+  display: inline-block; /* shrink-wrap to content so overlay centering works */
+  vertical-align: middle;
+  z-index: 1001;
+  width: 730px;
+  overflow: hidden;
 }
 
 .modal-content {
   background: #222;
   color: white;
-  padding: 0 45px;
+  padding: 0 50px;
   border-radius: 8px;
   width: 630px;
-  height: 1190px;
-    width: 100%;
-  height: 100%;
+  height: 1220px;
   /* max-width: 600px;
   max-height: 90vh; */
   overflow-x: hidden;
@@ -282,7 +390,7 @@ function confirmSelection() {
 
 .tabs button {
   padding: 6px 6px;
-  font-size: 30px;
+  font-size: 27px;
   border: none;
   border-radius: 6px;
   background: #444;
@@ -305,7 +413,7 @@ function confirmSelection() {
 
 .stat-list li {
   padding: 6px;
-  font-size: 30px;
+  font-size: 27px;
   border-bottom: 1px solid #555;
   cursor: pointer;
 }
@@ -366,6 +474,8 @@ function confirmSelection() {
 
 .nav-buttons {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
@@ -375,7 +485,7 @@ function confirmSelection() {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background-color: #564d3c1c;
+  background-color: rgba(86,77,60,0.14);
   color: white;
   padding: 12px 9px;
   border-radius: 8px;
@@ -384,14 +494,15 @@ function confirmSelection() {
   user-select: none;
   transition: background-color 0.2s;
   pointer-events: auto;
+  z-index: 20;
 }
 
 .side-arrow.left {
-  left: -15px;
+  left: -0px;
 }
 
 .side-arrow.right {
-  right: -15px;
+  right: -0px;
 }
 
 .confirm-button {
@@ -424,5 +535,15 @@ function confirmSelection() {
 .confirm:hover {
   background-color: #6e6049;
 }
+
+.feature-wrapper {
+  padding: 12px;
+  font-size: 28px;
+}
+
+.feature-item {
+  margin-bottom: 18px;
+}
+
 
 </style>
