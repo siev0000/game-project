@@ -301,7 +301,7 @@ export function buildPartyStats(partyRaw, context = {}) {
     // console.log("char.skills", char.skills)
     char.magic  = member.magic  ?? [];
     const attributeFromSkills = extractAttributeFromSkills(char.skills);
-    console.log("attributeFromSkills", attributeFromSkills);
+    console.log("attributeFromSkills", attributeFromSkills, char.skills);
 
     char.equipmentSlot = member.equipmentSlot ?? structuredClone(char.equipmentSlot);
 
@@ -907,17 +907,32 @@ function getSkillsByLevelFromEntry(entry, uptoLv) {
       .filter(Boolean)
       .forEach(n => names.push(n));
   }
-  // Skill_List から詳細解決 & 重複除去（名前キー）
-  const seen = new Set();
-  const resolved = [];
-  for (const n of names) {
-    if (seen.has(n)) continue;
-    const s = Skill_List.value.find(x => x?.名前 === n);
-    if (s) {
-      resolved.push({ ...s });
-      seen.add(n);
-    }
+// Skill_List から詳細解決 & 重複除去（名前キー）
+const seen = new Set();
+const resolved = [];
+
+for (const n of names) {
+
+  // ▼ 魔法取得◯ は重複可 → seen を無視して全部残す
+  const match = n.match(/^魔法取得(\d+)$/);
+  if (match) {
+    resolved.push({ 名前: n, value: Number(match[1]) });
+    continue; // ← seen を使わない！
   }
+
+  // ▼ 通常スキルは重複排除
+  if (seen.has(n)) continue;
+
+  const s = Skill_List.value.find(x => x?.名前 === n);
+  if (s) {
+    resolved.push({ ...s });
+  } else {
+    resolved.push({ 名前: n });
+  }
+
+  seen.add(n);
+}
+  // console.log(`[getSkillsByLevelFromEntry] ${names}  ${entry.名前} Lv${uptoLv} →`, resolved);
   return resolved;
 }
 
@@ -945,10 +960,24 @@ export function collectSkillsFromRoles(mainChar) {
 
   // 名前重複を最終的にも除去
   const mapByName = new Map();
+  const result = [];
+
   for (const s of acquired) {
-    if (!mapByName.has(s.名前)) mapByName.set(s.名前, s);
+
+    // 魔法取得◯ は重複OK
+    if (/^魔法取得(\d+)$/.test(s.名前)) {
+      result.push(s);
+      continue;
+    }
+
+    // 通常スキルは重複排除
+    if (!mapByName.has(s.名前)) {
+      mapByName.set(s.名前, s);
+      result.push(s);
+    }
   }
-  return Array.from(mapByName.values());
+
+  return result;
 }
 
 // レベルアップ

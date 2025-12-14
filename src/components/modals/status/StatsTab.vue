@@ -262,7 +262,7 @@ import {
 
 import { playerGlobalData } from '@/scripts/characterData.js'
 
-import { autoAcquireMagic } from "@/constants/magicData.js";
+import { autoAcquireMagic, getMagicPointFromSkills } from "@/constants/magicData.js";
 
 
 const router = useRouter()
@@ -406,13 +406,23 @@ onMounted(async () => {
   await loadGameData();
   console.log("== ステータスタブ ==");
   console.log(props.character);
+  console.log(props.character.skills);
+
+  props.character.attribute = ["力場","炎", "水"];
+  console.log(props.character.attribute);
+  const magicPoint = getMagicPointFromSkills(props.character.skills);
+
 
   console.log("-- currentCharacter --")
   console.log(props.character, attributeList.value)
   console.log(autoAcquireMagic(props.character, attributeList.value, 6))
-  console.log(autoAcquireMagic(props.character, attributeList.value, 7))
   console.log(autoAcquireMagic(props.character, attributeList.value, 8))
-  console.log(autoAcquireMagic(props.character, attributeList.value, 9))
+  console.log(autoAcquireMagic(props.character, attributeList.value, 10))
+  console.log(autoAcquireMagic(props.character, attributeList.value, 12))
+  console.log("Point :",
+      magicPoint,
+      autoAcquireMagic(props.character, attributeList.value, magicPoint)
+  )
 
   recalcStats();
 
