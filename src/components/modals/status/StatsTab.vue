@@ -726,13 +726,6 @@ for (const magic of conditionalList) {
     continue;
   }
 
-  // ★ ここで「条件達成」をログ出力
-  console.log(
-    "【条件達成 魔法取得候補】",
-    magic.名前,
-    magic.取得条件_parsed
-  );
-
   const already =
     normalAll.some(m => m.名前 === magic.名前) ||
     character.bonusMagicList.some(m => m.名前 === magic.名前);
@@ -740,12 +733,6 @@ for (const magic of conditionalList) {
   if (!already) {
     character.bonusMagicList.push(magic);
     newlyAcquiredConditional.push(magic);
-
-    // ★ 実際に追加された瞬間のログ（任意）
-    console.log(
-      "【条件魔法 取得】",
-      magic.名前
-    );
   }
 }
 console.log("=== Acquired 条件あり Magic ===");
@@ -866,7 +853,7 @@ function acquireConditionalMagicIfMet(character, conditionalByAttr, normalAll = 
       if (!checkMagicConditionParsed(parsed, character)) continue;
 
       // ★ 条件を満たしたログ
-      console.log("【条件達成】", `[${attr}]`, magic.名前, parsed);
+      // console.log("【条件達成】", `[${attr}]`, magic.名前, parsed);
 
       // 重複は追加しない
       if (owned.has(magic.名前)) continue;
@@ -877,7 +864,7 @@ function acquireConditionalMagicIfMet(character, conditionalByAttr, normalAll = 
       owned.add(magic.名前);
 
       // ★ 取得ログ
-      console.log("【条件魔法 取得】", `[${attr}]`, magic.名前);
+      // console.log("【条件魔法 取得】", `[${attr}]`, magic.名前);
     }
   }
 
