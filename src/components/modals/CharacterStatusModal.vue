@@ -138,10 +138,12 @@ export default {
 .level-tag { 
   width: 95px; background: #d9c087; padding: 2px 6px; border-radius: 6px; 
   flex-shrink: 0;
-  font-size: 35px;
+  font-size: 30px;
   font-weight: 600;
+  /* 改行させない */
+  white-space: nowrap;
   /* 黒縁取り（上下左右4方向に影を付ける） */
-  -webkit-text-stroke: 2px #000;
+  -webkit-text-stroke: 2px #867d00;
 }
 .tab-bar {
   font-size: 25px;
@@ -156,7 +158,7 @@ export default {
   color: #e6d5a3; font-size: 14px; cursor: pointer;
 }
 .tab-btn.active { color: #fff; font-weight: bold; text-shadow: 0 0 6px #ffd700; }
-.tab-content { flex: 1; padding: 8px 0; overflow-y: auto; }
+.tab-content { flex: 1; padding: 5px 7px; overflow-y: auto; }
 .tab-panel {
   background: rgba(255,255,240,0.9);
   border: 2px solid #8b5a2b;

@@ -58,9 +58,9 @@ const { character, player } = defineProps({
 
 console.log("=========== 基本タブ st ==========");
 console.log(player);
-console.log(character);
-console.log(character.guild);
-console.log(character.guild.rank);
+// console.log(character);
+// console.log(character.guild);
+// console.log(character.guild.rank);
 console.log("=========== 基本タブ ed ==========");
 </script>
 

@@ -105,7 +105,7 @@ export default {
         await Promise.all(
           selected.party.map(async member => {
             member.inventory = await rebuildInventory(member.inventory);
-            console.log("== inventory ==", toRaw(member.inventory))
+            // console.log("== inventory ==", toRaw(member.inventory))
             member = await statusUpdate(member)
             // 装備合計スキルを生成
             // const { equipStats, equipSkills } = await createEquipTotalSkill(member.inventory);
@@ -124,13 +124,13 @@ export default {
         );
       }
 
-      console.log("全キャラクター:", this.characters);
+      // console.log("全キャラクター:", this.characters);
       this.selectedCharacter = selected;
-      console.log("キャラクター選択:", toRaw(this.selectedCharacter));
+      // console.log("キャラクター選択:", toRaw(this.selectedCharacter));
     },
 
     handleOk(data) {
-      console.log("OKで返ってきたデータ:", data);
+      // console.log("OKで返ってきたデータ:", data);
       this.selectedCharacter = null; // モーダルを閉じる
     },
   },

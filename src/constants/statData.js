@@ -72,13 +72,18 @@ export async function loadGameData() {
   // console.log("attributeList 前:", toRaw(attributeList.value));
   // --- 魔法リストを SkillData に置き換え ---
   attributeList.value = attributeList.value.map(attr => {
-    // console.log("Processing attribute:", attr);
     const magicNames = attr["魔法リスト"] || [];
 
     const magicDetails = magicNames
       .map(name => {
         const key = normalize(name);
-        return skillMap.get(key);
+        const magic = skillMap.get(key);
+        if (!magic) return null;
+
+        return {
+          ...magic,
+          取得条件_parsed: parseMagicCondition(magic["取得条件"])
+        };
       })
       .filter(Boolean);
 
@@ -301,7 +306,7 @@ export function buildPartyStats(partyRaw, context = {}) {
     // console.log("char.skills", char.skills)
     char.magic  = member.magic  ?? [];
     const attributeFromSkills = extractAttributeFromSkills(char.skills);
-    console.log("attributeFromSkills", attributeFromSkills, char.skills);
+    // console.log("attributeFromSkills", attributeFromSkills, char.skills);
 
     char.equipmentSlot = member.equipmentSlot ?? structuredClone(char.equipmentSlot);
 
@@ -681,7 +686,7 @@ export function applySizeBonus(value, key, siz = 170) {
       const mult = 1 + bonusPercent / 100;
       newValue = Math.round(baseValue * mult);
     }
-    console.log("[applySizeBonus] ▶ プラス補正", trimmedKey, newValue);
+    // console.log("[applySizeBonus] ▶ プラス補正", trimmedKey, newValue);
   }
 
   // ------ マイナス補正 ------
@@ -693,7 +698,7 @@ export function applySizeBonus(value, key, siz = 170) {
       const mult = 1 + bonusPercent / 100;
       newValue = Math.round(baseValue * (1 / mult));
     }
-    console.log("[applySizeBonus] ▶ マイナス補正", trimmedKey, newValue);
+    // console.log("[applySizeBonus] ▶ マイナス補正", trimmedKey, newValue);
   }
   return newValue;
 }
@@ -789,7 +794,7 @@ export function calcTotalStats(baseStats,skills = [],context = {}) {
  */
 export async function createEquipTotalSkill(equippedItems) {
   const equippedItem = getEquippedItems(equippedItems);
-  console.log("== createEquipTotalSkill ==",equippedItem)
+  // console.log("== createEquipTotalSkill ==",equippedItem)
   const EQUIP_KEYS = [
     ...statMap.ステータス,
     ...statMap.技能,
@@ -850,7 +855,7 @@ export async function createEquipTotalSkill(equippedItems) {
   // 装備スキル一覧（能力から抽出）
   const useSkills = await collectEquipSkills(equippedItem);
 
-  console.log("== createEquipTotalSkill skill==", equipSkill, useSkills)
+  // console.log("== createEquipTotalSkill skill==", equipSkill, useSkills)
   return {
       equipStats: equipSkill,   // Pスキル（装備合計効果）
       equipSkills: useSkills    // 装備スキル一覧
@@ -1011,8 +1016,8 @@ export async function statusUpdate(character) {
   // 装備の能力値を追加
   character.stats.activePassives.push(equipStats);
 
-  console.log('== equipStats ==', equipStats, character.stats.activePassives)
-  console.log('== equipSkill ==', equipSkills, character.skills)
+  // console.log('== equipStats ==', equipStats, character.stats.activePassives)
+  // console.log('== equipSkill ==', equipSkills, character.skills)
 
   return character;
 }
@@ -1231,4 +1236,62 @@ export function renderSkillHtml(selectedSkillDetail) {
       </div>
     </div>
   `;
+}
+
+/*
+  ===== 取得条件パーサ =====
+*/
+function parseMagicCondition(conditionText) {
+  if (!conditionText || typeof conditionText !== "string") {
+    return {
+      属性: [],
+      ロール: [],
+      スキル: [],
+      能力値: []
+    };
+  }
+
+  const result = {
+    属性: [],
+    ロール: [],
+    スキル: [],
+    能力値: []
+  };
+
+  // ,（半角・全角）で分割
+  const parts = conditionText.split(/[,\uFF0C]/);
+
+  for (const part of parts) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+
+    const [rawKey, rawValue] = trimmed.split(":");
+    if (!rawKey || !rawValue) continue;
+
+    const key = rawKey.trim();
+    const value = rawValue.trim();
+
+    // 能力値（比較式）
+    if (key === "能力値") {
+      const match = value.match(/^(.+?)(>=|<=|>|<|=)(\d+)$/);
+      if (!match) continue;
+
+      const [, stat, op, num] = match;
+      result.能力値.push({
+        key: stat.trim(),
+        op,
+        value: Number(num)
+      });
+      continue;
+    }
+
+    // 通常条件（| 区切り対応）
+    const values = value.split("|").map(v => v.trim());
+
+    if (key === "属性") result.属性.push(...values);
+    else if (key === "ロール") result.ロール.push(...values);
+    else if (key === "スキル") result.スキル.push(...values);
+  }
+
+  return result;
 }

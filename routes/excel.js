@@ -135,7 +135,10 @@ router.get("/classes", (req, res) => {
   }
 });
 
-// 「技」シートからデータを取得するAPI
+
+/*
+  「技」シートからデータを取得するAPI
+*/
 router.get("/Skills", (req, res) => {
   try {
     console.log("技シートをキャッシュから取得:", excelCache["Technique"]);
@@ -160,8 +163,41 @@ router.get("/Skills", (req, res) => {
     res.status(500).json({ error: "Failed to fetch Technique data" });
   }
 });
+/*
+  取得条件をパースする補助関数
+*/
+// router.get("/Skills", (req, res) => {
+//   try {
+//     const TechniqueData = excelCache["技"];
+//     if (!TechniqueData) {
+//       return res.status(404).json({ error: "技シートが見つかりません" });
+//     }
 
-// 「属性」シートからデータを取得するAPI
+//     const filteredData = TechniqueData
+//       .filter(row => row && row["名前"] !== undefined)
+//       .map(row => {
+//         // ★ 取得条件を分解して付与
+//         const rawCondition = row["取得条件"];
+
+//         return {
+//           ...row,
+//           取得条件_parsed: parseMagicCondition(rawCondition)
+//         };
+//       });
+
+//     res.json(filteredData);
+
+//     console.log(`「技」シートからデータを取得するAPI:実行完了`);
+//   } catch (error) {
+//     console.error("Error fetching Technique data:", error);
+//     res.status(500).json({ error: "Failed to fetch Technique data" });
+//   }
+// });
+
+
+/*
+  「属性」シートからデータを取得するAPI
+*/
 router.get("/attributes", (req, res) => {
   try {
     const attributeData = excelCache["属性"]; // シート名「属性」を取得
@@ -232,15 +268,16 @@ router.get("/race_attributes", (req, res) => {
 
 
 // 「アイテム」シートからデータを取得するAPI
+// 「アイテム」シートからデータを取得するAPI
 router.get("/items", (req, res) => {
   try {
-    const itemData2 = itemData["アイテム"]; // シート名「アイテム」を取得
+    const itemData2 = itemData["アイテム"];
 
     if (!itemData2) {
       console.error("アイテムシートが見つかりません");
       return res.status(404).json({ error: "アイテムシートが見つかりません" });
     }
-    // 名前が空白、未定義、または "-" のデータを除外する
+
     const filteredItemData = itemData2.filter(
       (Technique) =>
         Technique["名前"] &&
@@ -248,14 +285,18 @@ router.get("/items", (req, res) => {
         Technique["名前"].trim() !== ""
     );
 
-    res.json(filteredItemData);
-    console.log('取得したアイテムデータ:', itemData2.map(Technique => Technique['名前'] || '名前が未定義'));
-    res.json(itemData2);
+    console.log(
+      "取得したアイテム名:",
+      filteredItemData.map(t => t["名前"])
+    );
+
+    return res.json(filteredItemData); // ★ ここ1回だけ
   } catch (error) {
     console.error("Error fetching Technique data:", error);
-    res.status(500).json({ error: "Failed to fetch Technique data" });
+    return res.status(500).json({ error: "Failed to fetch Technique data" });
   }
 });
+
 
 // 「作製品」シートからデータを取得するAPI 作製品 アイテム
 router.get("/equipments", (req, res) => {
@@ -733,5 +774,62 @@ function parseConditions(conditionString) {
   // カンマで分割してトリムされたリストを返す
   return conditionString.split(",").map((item) => item.trim());
 }
+
+// ===== 取得条件パーサ =====
+function parseMagicCondition(conditionText) {
+  if (!conditionText || typeof conditionText !== "string") {
+    return {
+      属性: [],
+      ロール: [],
+      スキル: [],
+      能力値: []
+    };
+  }
+
+  const result = {
+    属性: [],
+    ロール: [],
+    スキル: [],
+    能力値: []
+  };
+
+  // ,（半角・全角）で分割
+  const parts = conditionText.split(/[,\uFF0C]/);
+
+  for (const part of parts) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+
+    const [rawKey, rawValue] = trimmed.split(":");
+    if (!rawKey || !rawValue) continue;
+
+    const key = rawKey.trim();
+    const value = rawValue.trim();
+
+    // 能力値（比較式）
+    if (key === "能力値") {
+      const match = value.match(/^(.+?)(>=|<=|>|<|=)(\d+)$/);
+      if (!match) continue;
+
+      const [, stat, op, num] = match;
+      result.能力値.push({
+        key: stat.trim(),
+        op,
+        value: Number(num)
+      });
+      continue;
+    }
+
+    // 通常条件（| 区切り対応）
+    const values = value.split("|").map(v => v.trim());
+
+    if (key === "属性") result.属性.push(...values);
+    else if (key === "ロール") result.ロール.push(...values);
+    else if (key === "スキル") result.スキル.push(...values);
+  }
+
+  return result;
+}
+
 
 module.exports = router;

@@ -21,28 +21,24 @@ export function getMagicPointFromSkills(skills) {
   return total;
 }
 
-// 取得条件をチェック（簡易版：本実装に合わせて後で拡張）
-function checkMagicCondition(magic, char) {
-  if (!magic.取得条件 || magic.取得条件 === "") return true;
-  // ここにクラス判定・種族判定・属性Lv判定など追加予定
-  return true;
-}
 
-/*
-Lv 1: 0 pt  → 初期状態
-Lv10: 3 pt  → Rank2 到達ライン　1 2
-Lv20: 7 pt  → Rank3 到達ライン  2 2 3
-Lv30: 14 pt → Rank4 到達ライン  2 3 3
-Lv40: 23 pt → Rank5 到達ライン  4 5 5
-Lv50: 36 pt → Rank6 到達ライン 
-Lv60: 51 pt → Rank7 到達ライン 
-*/
+
+
+const RANK_POINT_TABLE = [
+  { rank: 1, min: 0,  max: 3 },
+  { rank: 2, min: 4,  max: 8 },
+  { rank: 3, min: 9,  max: 15 },
+  { rank: 4, min: 16, max: 25 },
+  { rank: 5, min: 25, max: 35 },
+  { rank: 6, min: 36, max: 50 },
+  { rank: 7, min: 51, max: Infinity }
+];
 // 魔法ポイント → 解禁Rank
 function getUnlockedRank(magicPoint) {
-  if (magicPoint <= 2) return 1;
-  if (magicPoint <= 6) return 2;
-  if (magicPoint <= 13) return 3;
-  if (magicPoint <= 22) return 4;
+  if (magicPoint <= 3) return 1;
+  if (magicPoint <= 8) return 2;
+  if (magicPoint <= 15) return 3;
+  if (magicPoint <= 25) return 4;
   if (magicPoint <= 35) return 5;
   if (magicPoint <= 50) return 6; // 仮の値
   return 7; // Rank7 を解禁
@@ -56,6 +52,15 @@ function getRankLimit(attributeCount) {
   if (attributeCount === 3) return 2;
   if (attributeCount === 4) return 1.5;
   return 1; // 4つ以上
+}
+/**
+ * attrIndex : 属性順（0 = 1つ目）
+ * rank      : 対象魔法Rank（1..unlocked）
+ * unlocked  : 魔法最大Rank
+ */
+function getAcquireLimit(attrIndex, rank, unlocked) {
+  const d = unlocked - rank;
+  return Math.max(3 - Math.max(attrIndex, d), 0);
 }
 
 // 魔法配列初期化
@@ -141,24 +146,33 @@ export function acquireMagicByPoint(character, attributeList, usedPoint) {
   return mp.Attributes;
 }
 
+function getRankState(point) {
+  for (let i = 0; i < RANK_POINT_TABLE.length; i++) {
+    const { rank, min, max } = RANK_POINT_TABLE[i];
+    if (point >= min && point <= max) {
+      const range = max - min;
+      const progress = range > 0 ? (point - min) / range : 1;
+      return { baseRank: rank, progress };
+    }
+  }
+  return { baseRank: 1, progress: 0 };
+}
 
-// 魔法ポイントに基づいて魔法取得情報を構築
+
 export function autoAcquireMagic(
   character,
   attributeList,
   totalPoint
 ) {
-  // 初期化
   const attrs = Array.isArray(character.attribute)
     ? character.attribute
     : (character.attribute ? [character.attribute] : []);
 
+  const { baseRank, progress } = getRankState(totalPoint);
+
   const Attributes = {};
   for (const attr of attrs) {
-    Attributes[attr] = {
-      point: 0,
-      magics: []
-    };
+    Attributes[attr] = { magics: [] };
   }
 
   character.magicPoint = {
@@ -166,79 +180,25 @@ export function autoAcquireMagic(
     Attributes
   };
 
-  // ★ 戻り値を受け取る
-  const distributed = autoDistributeMagicPoint(character);
-  const acquired = acquireMagicByPoint(character, attributeList, totalPoint);
-
-  return {
-    // distributed,
-    // acquired,
-    magicPoint: character.magicPoint
-  };
-}
-
-
-
-export function autoAcquireMagic2(char, attributeList, magicPoint = 0) {
-
-  const attributes = Array.isArray(char.attribute)
-    ? char.attribute
-    : (char.attribute ? [char.attribute] : []);
-
-  const unlockedRank = getUnlockedRank(magicPoint);
-  const perRankLimit = getRankLimit(attributes.length || 0);
-  const baseRankLimit = Math.floor(perRankLimit);
-  const bonusSlotsPerRank = Math.floor((perRankLimit - baseRankLimit) * (attributes.length || 0));
-  const rankCounts = new Map();
-  const rankBonusUsed = new Map();
-
-  
-  // 取得できる魔法総数（ポイントそのままでもいい）
-  let remainingSlots = magicPoint;
-
-  let acquiredMagic = [];
-
-  for (const attr of attributes) {
+  attrs.forEach((attr, attrIndex) => {
     const attrData = attributeList.find(a => a?.属性名 === attr);
-    if (!attrData || !Array.isArray(attrData.魔法リスト)) continue;
+    if (!attrData || !Array.isArray(attrData.魔法リスト)) return;
 
-    // Rank順に並べて候補を取る
-    const candidates = attrData.魔法リスト
-      .filter(m => m.Rank <= unlockedRank)
-      .sort((a, b) => a.Rank - b.Rank);
+    // baseRank + 1 まで見る（途中解禁のため）
+    for (let rank = 1; rank <= baseRank + 1; rank++) {
+      let limit = getAcquireLimit(attrIndex, rank, baseRank);
 
-    // ポイント分だけ取得
-    for (const magic of candidates) {
-      if (remainingSlots <= 0) break;
-      if (magic?.Rank == null) continue;
+      // progress を反映
+      limit = applyProgressBonus(limit, rank, baseRank, progress);
+      if (limit <= 0) continue;
 
-      const currentRankCount = rankCounts.get(magic.Rank) || 0;
-      const bonusUsed = rankBonusUsed.get(magic.Rank) || 0;
-      const canUseBase = currentRankCount < baseRankLimit;
-      const canUseBonus = !canUseBase && bonusUsed < bonusSlotsPerRank && currentRankCount < baseRankLimit + 1;
-      if (!canUseBase && !canUseBonus) continue;
+      const candidates = attrData.魔法リスト
+        .filter(m => m.Rank === rank);
 
-      acquiredMagic.push(magic);
-      if (canUseBonus) {
-        rankBonusUsed.set(magic.Rank, bonusUsed + 1);
-      }
-      rankCounts.set(magic.Rank, currentRankCount + 1);
-      remainingSlots--;
+      character.magicPoint.Attributes[attr].magics
+        .push(...candidates.slice(0, limit));
     }
-  }
+  });
 
-  // 重複排除
-  const unique = [];
-  const used = new Set();
-
-  for (const m of acquiredMagic) {
-    if (!m?.名前) continue;
-    if (!used.has(m.名前)) {
-      unique.push(m);
-      used.add(m.名前);
-    }
-  }
-
-  char.magicList = unique;
-  return unique;
+  return { magicPoint: character.magicPoint };
 }
