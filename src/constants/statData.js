@@ -452,14 +452,33 @@ export function getCharIllust(name) {
   return name && CHAR_ILLUSTS[name] ? CHAR_ILLUSTS[name] : "";
 }
 
-// 種族/クラスアイコン (Excelの画像url利用)
+// ロールアイコン
+const roleIconMods = import.meta.glob(
+  "/src/assets/images/role/*.webp",
+  { eager: true, as: "url" }
+);
+export const ROLE_ICONS = mapIcons(roleIconMods);
+
+// ロールアイコン
 export function getRollIcon(name) {
-  if (!name || !allData.value.length) return "";
   const entry = allData.value.find(c => c.名前 === name);
-  return entry?.画像url
-    ? `/src/assets/images/${entry.画像url}`
-    : "";
+  console.log("[getRollIcon] called with:", entry.画像url);
+  console.log("[getRollIcon] ROLE_ICONS keys:", Object.keys(ROLE_ICONS));
+
+  const result = entry.画像url && ROLE_ICONS[entry.画像url] ? ROLE_ICONS[entry.画像url] : "";
+
+  console.log("[getRollIcon] result:", result);
+  return result;
 }
+// 種族/クラスアイコン (Excelの画像url利用)
+// export function getRollIcon(name) {
+//   if (!name || !allData.value.length) return "";
+//   const entry = allData.value.find(c => c.名前 === name);
+//   return entry?.画像url
+//     ? `/src/assets/images/${entry.画像url}`
+//     : "";
+// }
+
 /**
  * 武器データを名前で取得
  * @param {string} name - 攻撃手段名（例: "素手", "爪", "牙"）

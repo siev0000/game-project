@@ -48,8 +48,8 @@
                   >
                     <div class="attr-cell">
                       <img
-                        v-if="selectedAttribute && getAttrIcon(selectedAttribute)"
-                        :src="getAttrIcon(selectedAttribute)"
+                        v-if="selectedAttribute"
+                        :src="getAttrIcon(selectedAttribute.属性名)"
                         :alt="selectedAttribute.属性名"
                         class="icon-Attribute-img"
                       />
@@ -62,7 +62,7 @@
                   <th @click="showRaceModal = true" class="clickable">
                     <img
                       v-if="selectedRace?.画像url"
-                      :src="getImageUrl(selectedRace.画像url)"
+                      :src="getRollIcon(selectedRace.名前)"
                       :alt="selectedRace.名前"
                       class="icon-img"
                     />
@@ -71,7 +71,7 @@
                   <th @click="showClassModal = true" class="clickable">
                     <img
                       v-if="selectedClass?.画像url"
-                      :src="getImageUrl(selectedClass.画像url)"
+                      :src="getRollIcon(selectedClass.名前)"
                       :alt="selectedClass.名前"
                       class="icon-img"
                     />
@@ -206,7 +206,10 @@ import RaceModal from '@/components/modals/RaceModal.vue'
 import ClassModal from '@/components/modals/ClassModal.vue'
 import AttributeModal from '@/components/modals/AttributeModal.vue'
 // 必ず使う
-import { loadGameData, statMap, statDescriptions, allData, attributeList, race_attributes, Skill_List } from '@/constants/statData.js';
+import { loadGameData, statMap, statDescriptions, allData, attributeList, 
+  race_attributes, Skill_List ,
+  getAttrIcon, getAttackIcon, getCharIllust, getRollIcon
+} from '@/constants/statData.js';
 import { playerGlobalData } from '@/scripts/characterData.js'
 
 const router = useRouter()
@@ -258,73 +261,6 @@ onMounted(async () => {
   await loadGameData();
   console.log(allData.value, attributeList.value, Skill_List.value);
 })
-
-const imageMap = import.meta.glob('@/assets/images/**/*', { eager: true, import: 'default' })
-const getImageUrl = (relativePath) => {
-  try {
-    const match = Object.entries(imageMap).find(([key]) => key.endsWith(relativePath))
-    // console.log("getImageUrl : ", match, relativePath)
-
-    return match ? match[1] : ''
-  } catch {
-    return ''
-  }
-}
-
-const attrIconMods = import.meta.glob(
-  "/src/assets/images/属性アイコン/100/*.webp",
-  { eager: true, as: "url" }
-);
-const ATTR_ICONS = {};
-for (const [path, url] of Object.entries(attrIconMods)) {
-  const filename = path.split("/").pop().replace(/\.webp$/i, "");
-  ATTR_ICONS[filename] = url; // 例：ATTR_ICONS["力場"] = "blob:..."
-}
-const getAttrIcon = (attr)=> {
-  const name = (attr?.属性名 || attr?.name || "").trim();
-  return name && ATTR_ICONS[name] ? ATTR_ICONS[name] : "";
-}
-
-const selectedKey = ref('')
-const selectKey = (key, detail) => {
-  selectedKey.value = key;
-  selectedSkillDetail.value = detail; // クリックした方のデータを直接代入
-};
-
-// 攻撃手段アイコン一括取り込み（/src/assets/images/攻撃手段/<名前>.webp）
-const attackIconMods = import.meta.glob(
-  "/src/assets/images/攻撃手段/*.webp",
-  { eager: true, as: "url" }
-);
-
-// { "剣技": "blob:...", "魔法": "blob:..." } の形に整形（JS）
-/** @type {{[k: string]: string}} */
-const ATTACK_ICONS = Object.create(null);
-
-for (const [path, url] of Object.entries(attackIconMods)) {
-  const last = (path.split("/")?.pop() || "");          // ← 非TSで安全に
-  const filename = last.replace(/\.webp$/i, "");        // 拡張子除去
-  ATTACK_ICONS[filename] = /** @type {string} */ (url); // 型はJSDocで補助
-}
-
-// 表記ゆらぎにある程度強い取得関数（全角カッコ等を吸収）
-const getAttackIcon = (method) => {
-  const raw = (method ?? "").toString().trim();
-  if (!raw) return "";
-
-  const noSpace = raw.replace(/\s+/g, "");
-  const noParen = raw.replace(/[（(].*?[)）]/g, "").trim();
-  const noParenNoSpace = noParen.replace(/\s+/g, "");
-
-  return (
-    ATTACK_ICONS[raw] ||
-    ATTACK_ICONS[noSpace] ||
-    ATTACK_ICONS[noParen] ||
-    ATTACK_ICONS[noParenNoSpace] ||
-    ATTACK_ICONS["default"] || // あればフォールバック
-    ""
-  );
-};
 
 
 // Lvや選択が変わるたびに再計算

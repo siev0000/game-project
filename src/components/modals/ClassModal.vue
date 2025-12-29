@@ -27,7 +27,7 @@
             <button @click="openDetail(index)" class="Classe-button">
               <span class="Classe-content">
                 <img
-                  :src="getImageUrl(Classe.画像url)"
+                  :src="getRollIcon(Classe.名前)"
                   :alt="Classe.名前"
                   class="Classe-image"
                 />
@@ -64,7 +64,9 @@
 import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import ClasseDetailModal from '@/components/modals/ClasseDetailModal.vue'
 import { applyGlobalScale } from '@/components/useScale.js'
-import { allData } from '@/constants/statData.js';
+import { allData,
+  getAttrIcon, getAttackIcon, getCharIllust, getRollIcon
+ } from '@/constants/statData.js';
 
 const emit = defineEmits(['select', 'close'])
 
@@ -394,21 +396,6 @@ onMounted(() => {
 });
 
 
-
-
-
-
-const imageMap = import.meta.glob('@/assets/images/**/*', { eager: true, import: 'default' })
-const getImageUrl = (relativePath) => {
-  try {
-    const match = Object.entries(imageMap).find(([key]) => key.endsWith(relativePath))
-    // console.log("getImageUrl : ", match, relativePath)
-
-    return match ? match[1] : ''
-  } catch {
-    return ''
-  }
-}
 
 </script>
 

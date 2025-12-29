@@ -26,7 +26,7 @@
             <button @click="openDetail(index)" class="race-button">
               <span class="race-content">
                 <img
-                  :src="getImageUrl(race.画像url)"
+                  :src="getRollIcon(race.名前)"
                   :alt="race.名前"
                   class="race-image"
                 />
@@ -63,7 +63,8 @@
 import { ref, onMounted, computed } from 'vue'
 import RaceDetailModal from '@/components/modals/RaceDetailModal.vue'
 import { applyGlobalScale } from '@/components/useScale.js'
-
+import { getAttrIcon, getAttackIcon, getCharIllust, getRollIcon
+} from '@/constants/statData.js';
 onMounted(() => {
   applyGlobalScale('race-modal') // ← ここで ID を渡す
 })

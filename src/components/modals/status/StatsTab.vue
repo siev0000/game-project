@@ -269,7 +269,7 @@ import AttributeModal from '@/components/modals/AttributeModal.vue'
 import { 
   loadGameData, statMap, statDescriptions, allData,  
   calcRoleStat, Skill_List , applySizeBonus, statusUpdate,
-  getAttrIcon, getRollIcon , getExperience, renderSkillHtml, magicGetData
+  getAttrIcon , getRollIcon, getExperience, renderSkillHtml
 } from '@/constants/statData.js';
 
 
@@ -361,60 +361,11 @@ const magicMaxRows = computed(() => {
 //   }
 // }
 
-const attrIconMods = import.meta.glob(
-  "/src/assets/images/属性アイコン/100/*.webp",
-  { eager: true, as: "url" }
-);
-const ATTR_ICONS = {};
-for (const [path, url] of Object.entries(attrIconMods)) {
-  const filename = path.split("/").pop().replace(/\.webp$/i, "");
-  ATTR_ICONS[filename] = url; // 例：ATTR_ICONS["力場"] = "blob:..."
-}
-// const getAttrIcon = (attr)=> {
-//   const name = (attr?.属性名 || attr?.name || "").trim();
-//   return name && ATTR_ICONS[name] ? ATTR_ICONS[name] : "";
-// }
-
 const selectedKey = ref('')
 const selectKey = (key, detail) => {
   selectedKey.value = key;
   selectedSkillDetail.value = detail; // クリックした方のデータを直接代入
 };
-
-// 攻撃手段アイコン一括取り込み（/src/assets/images/攻撃手段/<名前>.webp）
-const attackIconMods = import.meta.glob(
-  "/src/assets/images/攻撃手段/*.webp",
-  { eager: true, as: "url" }
-);
-
-// { "剣技": "blob:...", "魔法": "blob:..." } の形に整形（JS）
-/** @type {{[k: string]: string}} */
-const ATTACK_ICONS = Object.create(null);
-
-for (const [path, url] of Object.entries(attackIconMods)) {
-  const last = (path.split("/")?.pop() || "");          // ← 非TSで安全に
-  const filename = last.replace(/\.webp$/i, "");        // 拡張子除去
-  ATTACK_ICONS[filename] = /** @type {string} */ (url); // 型はJSDocで補助
-}
-
-// 表記ゆらぎにある程度強い取得関数（全角カッコ等を吸収）
-// const getAttackIcon = (method) => {
-//   const raw = (method ?? "").toString().trim();
-//   if (!raw) return "";
-
-//   const noSpace = raw.replace(/\s+/g, "");
-//   const noParen = raw.replace(/[（(].*?[)）]/g, "").trim();
-//   const noParenNoSpace = noParen.replace(/\s+/g, "");
-
-//   return (
-//     ATTACK_ICONS[raw] ||
-//     ATTACK_ICONS[noSpace] ||
-//     ATTACK_ICONS[noParen] ||
-//     ATTACK_ICONS[noParenNoSpace] ||
-//     ATTACK_ICONS["default"] || // あればフォールバック
-//     ""
-//   );
-// };
 
 
 // 役割: Role[] ベースで totalStats を再計算

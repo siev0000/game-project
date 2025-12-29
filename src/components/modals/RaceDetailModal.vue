@@ -4,7 +4,7 @@
       <div class="modal-content" id="race-modal">
         <!-- 種族画像と名前 -->
         <div class="race-info" >
-          <img @click="emit('close')" :src="getImageUrl(currentRace.画像url)" :alt="currentRace.名前" class="race-image" />
+          <img @click="emit('close')" :src="getRollIcon(currentRace.名前)" :alt="currentRace.名前" class="race-image" />
           <img
             v-if="(currentRace?.初期系統 || '').trim()"
             @click="emit('close')"
@@ -92,37 +92,9 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { statMap, statDescriptions } from '@/constants/statData.js';
-
-// 画像取得
-const imageMap = import.meta.glob('@/assets/images/**/*', { eager: true, import: 'default' })
-const getImageUrl = (relativePath) => {
-  try {
-    const match = Object.entries(imageMap).find(([key]) => key.endsWith(relativePath))
-    return match ? match[1] : ''
-  } catch {
-    return ''
-  }
-}
-// 属性アイコン/100 フォルダだけを対象にする
-const attrIconMap = import.meta.glob(
-  "/src/assets/images/属性アイコン/100/*.webp",
-  { eager: true, as: "url" }
-);
-
-// ファイル名をキーにした辞書を作成
-const ATTR_ICONS = {};
-for (const [path, url] of Object.entries(attrIconMap)) {
-  const filename = path.split("/").pop().replace(/\.webp$/i, "");
-  ATTR_ICONS[filename] = url;
-}
-
-// 取得関数：currentRace.初期系統 をキーに探す
-const getAttrIcon = (name) => {
-  const key = (name || "").trim();
-  return key && ATTR_ICONS[key] ? ATTR_ICONS[key] : "";
-};
-
+import { statMap, statDescriptions,
+  getAttrIcon, getAttackIcon, getCharIllust, getRollIcon
+} from '@/constants/statData.js';
 
 const props = defineProps({
   raceList: Array,

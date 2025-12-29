@@ -4,11 +4,11 @@
       <div class="modal-content" id="classe-modal">
         <!-- 種族画像と名前 -->
         <div class="classe-info" >
-          <img @click="emit('close')" :src="getImageUrl(currentClasse.画像url)" :alt="currentClasse.名前" class="classe-image" />
+          <img @click="emit('close')" :src="getRollIcon(currentClasse.名前)" :alt="currentClasse.名前" class="classe-image" />
           <img
-            v-if="(currentClasse?.初期系統 || '').trim()"
+            v-if="(currentClasse?.名前 || '').trim()"
             @click="emit('close')"
-            :src="getImageUrl(`${(currentClasse.初期系統 || '').trim()}.webp`)"
+            :src="getRollIcon(currentClasse.名前)"
             :alt="currentClasse.名前"
             class="classe-image2"
           />
@@ -108,7 +108,9 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { statMap, statDescriptions, Skill_List } from '@/constants/statData.js';
+import { statMap, statDescriptions, Skill_List,
+  getAttrIcon, getAttackIcon, getCharIllust, getRollIcon
+} from '@/constants/statData.js';
 
 // 画像取得
 const imageMap = import.meta.glob('@/assets/images/**/*', { eager: true, import: 'default' })
