@@ -298,6 +298,7 @@ export default {
 .attribute-image, .detail-image {
   width: 55px;
   height: 55px;
+  margin-top: -10px;
   object-fit: contain;
   border-radius: 8px;
   flex: 0 0 auto;

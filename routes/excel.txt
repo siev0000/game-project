@@ -1,0 +1,835 @@
+const express = require("express");
+const router = express.Router();
+const XLSX = require("xlsx");
+const path = require("path");
+const fs = require("fs");
+const chokidar = require("chokidar");
+
+// Excelファイルのパス
+const filePath = path.join(__dirname, "../data/excel/game-data.xlsx");
+const filePathItem = path.join(__dirname, "../data/excel/item-data.xlsx");
+const filePathArea = path.join(__dirname, "../data/excel/area-data.xlsx");
+
+console.log(filePath);
+console.log(filePathItem);
+console.log(filePathArea);
+
+// キャッシュ用変数 (シート名ごとにデータを保持)
+let excelCache = {};
+let shopData = [];
+let itemData = {};
+let areaData = {};
+
+// ファイル監視と再読み込み処理
+function watchExcelFile(filePath, callback) {
+  console.log(`Watching for changes in ${filePath}...`);
+  const watcher = chokidar.watch(filePath, { persistent: true });
+
+  watcher.on("change", () => {
+    console.log(`${filePath} has been updated.`);
+    callback(filePath);
+  });
+}
+
+// Excelデータを読み込む関数
+function loadExcelData(filePath, type) {
+  try {
+    const workbook = XLSX.readFile(filePath);
+    const sheetNames = workbook.SheetNames;
+
+    console.log(`${type} ファイルのシート名:`, sheetNames);
+
+    sheetNames.forEach((sheetName) => {
+
+      const sheet = workbook.Sheets[sheetName];
+
+      // ★★ 生ヘッダを先に作る（ここ重要） ★★
+      const rawHeader = XLSX.utils.sheet_to_json(sheet, { header: 1 })[0];
+
+      // JSON 行データ
+      const data = XLSX.utils.sheet_to_json(sheet);
+
+      if (type === "game") {
+
+        // 最初にキャッシュへ格納
+        excelCache[sheetName] = data;
+
+        // ★ "クラス" シートだけをチェックする
+        if (sheetName.trim() === "クラス") {
+
+          console.log("=== クラスシート RAW HEADER ===");
+          console.log(rawHeader); // ← ここで rawHeader が使える
+
+          if (data.length > 0) {
+            console.log("=== クラスシート JSON HEADER ===");
+            console.log(Object.keys(data[0]));
+          }
+        }
+
+      } else if (type === "item") {
+        const safeData = data || [];
+        itemData[sheetName.trim()] = safeData;
+
+        if (sheetName.trim() === "ショップ") {
+          shopData = safeData.map((row) => ({
+            店名: row["店名"],
+            ルビ: row["ルビ"],
+            商品: Object.keys(row)
+              .filter((key) => key.startsWith("商品"))
+              .map((key) => row[key])
+              .filter((item) => item),
+          }));
+          console.log("ショップデータ:", shopData);
+        }
+
+      } else if (type === "area") {
+        if (!data) return;
+        areaData[sheetName] = data;
+      }
+    });
+  } catch (error) {
+    console.error(`Failed to load Excel data from ${filePath}:`, error);
+  }
+}
+
+// ファイル監視を開始
+watchExcelFile(filePath, (path) => loadExcelData(path, "game"));
+watchExcelFile(filePathItem, (path) => loadExcelData(path, "item"));
+watchExcelFile(filePathArea, (path) => loadExcelData(path, "area"));
+
+// 起動時にデータを読み込む
+loadExcelData(filePath, "game");
+loadExcelData(filePathItem, "item");
+loadExcelData(filePathArea, "area");
+
+// 定期更新 (1時間ごと)
+setInterval(() => loadExcelData(filePath, "game"), 60 * 60 * 1000);
+setInterval(() => loadExcelData(filePathItem, "item"), 60 * 60 * 1000);
+setInterval(() => loadExcelData(filePathArea, "area"), 60 * 60 * 1000);
+
+// 「クラス」シートからデータを取得するAPI
+router.get("/classes", (req, res) => {
+  try {
+    // キャッシュから「クラス」シートのデータを取得
+    const classData = excelCache["クラス"]; // シート名「クラス」を取得
+
+    if (!classData) {
+      return res.status(404).json({ error: "クラスシートが見つかりません" });
+    }
+
+    // ★ 1件目のキーをサーバーコンソールに表示
+    if (classData.length > 0) {
+      console.log("=== クラスシートのヘッダ一覧 ===");
+      console.log(Object.keys(classData[0])); // ← これが内部ヘッダ
+    }
+
+    // 名前が空でないデータのみフィルタリング
+    const filteredData = classData.filter(
+      (row) => row["名前"] && row["名前"].trim() !== ""
+    );
+
+    res.json(filteredData);
+  } catch (error) {
+    console.error("Error fetching class data:", error);
+    res.status(500).json({ error: "Failed to fetch class data" });
+  }
+});
+
+
+/*
+  「技」シートからデータを取得するAPI
+*/
+router.get("/Skills", (req, res) => {
+  try {
+    console.log("技シートをキャッシュから取得:", excelCache["Technique"]);
+    const TechniqueData = excelCache["技"]; // シート名「技」を取得
+
+    if (!TechniqueData) {
+      console.error("技シートが見つかりません");
+      return res.status(404).json({ error: "技シートが見つかりません" });
+    }
+
+    // console.log('取得した技データ:', TechniqueData);
+
+    // 名前が空白や未定義でないデータのみフィルタリング
+    const filteredData = TechniqueData.filter(
+      (row) => row && row["名前"] !== undefined
+    );
+
+    res.json(filteredData);
+    // res.json(TechniqueData);
+  } catch (error) {
+    console.error("Error fetching Technique data:", error);
+    res.status(500).json({ error: "Failed to fetch Technique data" });
+  }
+});
+/*
+  取得条件をパースする補助関数
+*/
+// router.get("/Skills", (req, res) => {
+//   try {
+//     const TechniqueData = excelCache["技"];
+//     if (!TechniqueData) {
+//       return res.status(404).json({ error: "技シートが見つかりません" });
+//     }
+
+//     const filteredData = TechniqueData
+//       .filter(row => row && row["名前"] !== undefined)
+//       .map(row => {
+//         // ★ 取得条件を分解して付与
+//         const rawCondition = row["取得条件"];
+
+//         return {
+//           ...row,
+//           取得条件_parsed: parseMagicCondition(rawCondition)
+//         };
+//       });
+
+//     res.json(filteredData);
+
+//     console.log(`「技」シートからデータを取得するAPI:実行完了`);
+//   } catch (error) {
+//     console.error("Error fetching Technique data:", error);
+//     res.status(500).json({ error: "Failed to fetch Technique data" });
+//   }
+// });
+
+
+/*
+  「属性」シートからデータを取得するAPI
+*/
+router.get("/attributes", (req, res) => {
+  try {
+    const attributeData = excelCache["属性"]; // シート名「属性」を取得
+
+    if (!attributeData) {
+      return res.status(404).json({ error: "属性シートが見つかりません" });
+    }
+
+    // 「属性名」が空ではない行だけ処理
+    const filteredData = attributeData
+      .filter((row) => row["属性名"] && row["属性名"].trim() !== "")
+      .map((row) => {
+        // Lv_1〜Lv_30 を配列としてまとめる
+        const magicList = [];
+        for (let i = 1; i <= 30; i++) {
+          const key = `Lv_${i}`;
+          if (row[key] && row[key].trim() !== "") {
+            magicList.push(row[key].trim());
+          }
+        }
+
+        // 元データから Lv_x を削除し、新しい配列をくっつける
+        const newRow = { ...row };
+        deleteLvKeys(newRow);
+
+        return {
+          ...newRow,
+          魔法リスト: magicList
+        };
+      });
+
+    res.json(filteredData);
+
+  } catch (error) {
+    console.error("Error fetching attribute data:", error);
+    res.status(500).json({ error: "Failed to fetch attribute data" });
+  }
+});
+
+// Lv_1〜Lv_30 を削除する補助関数
+function deleteLvKeys(obj) {
+  for (let i = 1; i <= 30; i++) {
+    delete obj[`Lv_${i}`];
+  }
+}
+
+
+// 「種族属性」シートからデータを取得するAPI
+router.get("/race_attributes", (req, res) => {
+  try {
+    const raceAttributeData = excelCache["種族属性"]; // シート名「種族属性」を取得
+
+    if (!raceAttributeData) {
+      return res.status(404).json({ error: "種族属性シートが見つかりません" });
+    }
+
+    // 「種族名」が空でないものだけ返す
+    const filteredRaceAttributes = raceAttributeData.filter(
+      (row) => row["種族名"] && row["種族名"].trim() !== ""
+    );
+
+    res.json(filteredRaceAttributes);
+  } catch (error) {
+    console.error("Error fetching race attribute data:", error);
+    res.status(500).json({ error: "Failed to fetch race attribute data" });
+  }
+});
+
+
+// 「アイテム」シートからデータを取得するAPI
+// 「アイテム」シートからデータを取得するAPI
+router.get("/items", (req, res) => {
+  try {
+    const itemData2 = itemData["アイテム"];
+
+    if (!itemData2) {
+      console.error("アイテムシートが見つかりません");
+      return res.status(404).json({ error: "アイテムシートが見つかりません" });
+    }
+
+    const filteredItemData = itemData2.filter(
+      (Technique) =>
+        Technique["名前"] &&
+        Technique["名前"].trim() !== "-" &&
+        Technique["名前"].trim() !== ""
+    );
+
+    console.log(
+      "取得したアイテム名:",
+      filteredItemData.map(t => t["名前"])
+    );
+
+    return res.json(filteredItemData); // ★ ここ1回だけ
+  } catch (error) {
+    console.error("Error fetching Technique data:", error);
+    return res.status(500).json({ error: "Failed to fetch Technique data" });
+  }
+});
+
+
+// 「作製品」シートからデータを取得するAPI 作製品 アイテム
+router.get("/equipments", (req, res) => {
+  try {
+    const equipmentData = itemData["作製品"]; // シート名「作製品」を取得
+
+    if (!equipmentData) {
+      console.error("装備シートが見つかりません");
+      return res.status(404).json({ error: "装備シートが見つかりません" });
+    }
+    // 名前が空白、未定義、または "-" のデータを除外する
+    const filteredItemData = equipmentData.filter(
+      (Technique) =>
+        Technique["名前"] &&
+        Technique["名前"].trim() !== "-" &&
+        Technique["名前"].trim() !== ""
+    );
+
+    res.json(filteredItemData);
+    //console.log('取得した装備データ:', equipmentData.map(Technique => Technique['名前'] || '名前が未定義'));
+    // res.json(equipmentData);
+  } catch (error) {
+    console.error("Error fetching Technique data:", error);
+    res.status(500).json({ error: "Failed to fetch Technique data" });
+  }
+});
+
+// 「装備品」シートからデータを取得するAPI
+// router.get("/weapons", (req, res) => {
+//   try {
+//     const weaponData = itemData["装備品"]; // シート名「装備品」を取得
+
+//     if (!weaponData) {
+//       console.error("装備品シートが見つかりません");
+//       return res.status(404).json({ error: "装備品シートが見つかりません" });
+//     }
+
+//     // 名前が空白や未定義でないデータのみ返す
+//     const filteredData = weaponData.filter(
+//       (row) => row["名前"] && row["名前"].trim() !== ""
+//     );
+
+//     res.json(filteredData);
+//   } catch (error) {
+//     console.error("Error fetching weapon data:", error);
+//     res.status(500).json({ error: "Failed to fetch weapon data" });
+//   }
+// });
+router.get("/weapons", (req, res) => {
+  try {
+    const weaponData = itemData["装備品"];
+    if (!Array.isArray(weaponData)) {
+      console.error("装備品シートが不正:", typeof weaponData, weaponData);
+      return res.status(500).json({ error: "装備品シートが不正です" });
+    }
+
+    const filteredData = weaponData.filter(
+      (row) => row?.["名前"] && row["名前"].trim() !== ""
+    );
+
+    res.json(filteredData);
+  } catch (error) {
+    console.error("Error fetching weapon data:", error);
+    res.status(500).json({ error: "Failed to fetch weapon data" });
+  }
+});
+
+// 「素材」シートからデータを取得するAPI
+router.get("/materials", (req, res) => {
+  try {
+    const materialData = itemData["素材"];
+
+    if (!materialData) {
+      console.error("素材シートが見つかりません");
+      return res.status(404).json({ error: "素材シートが見つかりません" });
+    }
+
+    const filteredData = materialData.filter(
+      (row) => row["名前"] && row["名前"].trim() !== ""
+    );
+
+    res.json(filteredData);
+  } catch (error) {
+    console.error("Error fetching material data:", error);
+    res.status(500).json({ error: "Failed to fetch material data" });
+  }
+});
+
+// 「付与」シートからデータを取得するAPI
+router.get("/equipment-enhancements", (req, res) => {
+  try {
+    const enhancementData = itemData["付与"];
+
+    if (!enhancementData) {
+      console.error("付与シートが見つかりません");
+      return res.status(404).json({ error: "付与シートが見つかりません" });
+    }
+
+    const filteredData = enhancementData
+      .filter((row) => row["名前"] && row["名前"].trim() !== "")
+      .map((row) => {
+        const newRow = { ...row };
+        if (typeof newRow["付与対象"] === "string") {
+          // カンマ区切りを配列に変換
+          newRow["付与対象"] = newRow["付与対象"]
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+        }
+        return newRow;
+      });
+
+    res.json(filteredData);
+  } catch (error) {
+    console.error("Error fetching enhancement data:", error);
+    res.status(500).json({ error: "Failed to fetch enhancement data" });
+  }
+});
+
+
+
+// 「エリア」シートからデータを取得するAPI 作製品 アイテム
+router.get("/locations", (req, res) => {
+  try {
+    const locationData = areaData["エリア"]; // シート名「作製品」を取得
+
+    if (!locationData) {
+      console.error("エリアシートが見つかりません");
+      return res.status(404).json({ error: "エリアシートが見つかりません" });
+    }
+
+    console.log(
+      "取得したエリアデータ:",
+      locationData.map((Technique) => Technique["名前"] || "名前が未定義")
+    );
+    res.json(locationData);
+  } catch (error) {
+    console.error("Error fetching location data:", error);
+    res.status(500).json({ error: "Failed to fetch location data" });
+  }
+});
+
+// 特定のショップデータを返すAPI
+router.get("/shop", (req, res) => {
+  const shopName = req.query.name; // クエリパラメータ `name` からショップ名を取得
+
+  console.log("取得したショップデータ:", shopName);
+
+  if (shopName) {
+    // 指定されたショップ名に一致するデータを取得
+    const shop = shopData.find((shop) => shop["店名"] === shopName);
+
+    if (shop) {
+      res.json(shop);
+    } else {
+      res
+        .status(404)
+        .json({ error: `ショップ「${shopName}」が見つかりませんでした。` });
+    }
+  } else {
+    // ショップ名が指定されていない場合、すべてのショップデータを返す
+    res.json(shopData);
+  }
+});
+
+// ギルド名から特定のクエストデータを返すAPI
+// router.get("/quests", (req, res) => {
+//   const guildName = req.query.name; // クエリパラメータ `name` からギルド名を取得
+
+//   console.log("取得したギルドデータ:", guildName);
+
+//   // Excelデータをキャッシュから取得してフィルタリング
+//   const quests = areaData["クエスト"]
+//     .filter((row) => row["依頼場所"] === guildName) // ギルド名でフィルタリング
+//     .map((row) => ({
+//       questId: row["クエストID"],
+//       type: row["種別"],
+//       questName: row["クエスト名"],
+//       description: row["クエスト内容"],
+//       targets: parseTargets(row["対象"]), // 必要なら分割処理を追加
+//       conditions: {
+//         rank: row["条件ランク"],
+//         status: parseStatusConditions(row["条件ステータス"]),
+//         Skill: parseConditions(row["条件アビリティ"]),
+//         quest: parseConditions(row["条件クエスト"]),
+//       },
+//       rewards: row["報酬"].split(",").map((reward) => reward.trim()),
+//       exp: Number(row["経験値"]),
+//       relatedNpc: row["関連NPC"],
+//       location: row["場所"],
+//     }));
+
+//   // フィルタリング結果を返却
+//   if (quests.length > 0) {
+//     res.status(200).json({ success: true, quests });
+//   } else {
+//     res
+//       .status(404)
+//       .json({ success: false, message: "該当するクエストが見つかりません。" });
+//   }
+// });
+
+// 複数のクエストIDでクエストデータを取得するAPI
+// 「クエスト」シートから全データを返すAPI
+router.get("/quests", (req, res) => {
+  try {
+    const questData = areaData["クエスト"]; // シート名「クエスト」
+
+    if (!questData) {
+      return res.status(404).json({ error: "クエストシートが見つかりません" });
+    }
+
+    // 名前が空白や未定義でないデータのみフィルタリング
+    const filteredData = questData.filter(
+      (row) => row["クエスト名"] && row["クエスト名"].trim() !== ""
+    );
+
+    res.json(filteredData);
+  } catch (error) {
+    console.error("Error fetching quest data:", error);
+    res.status(500).json({ error: "Failed to fetch quest data" });
+  }
+});
+
+
+router.post("/quests/by-ids", (req, res) => {
+  const questIds = req.body.questIds; // クエストIDの配列をリクエストボディから取得
+
+  if (!Array.isArray(questIds)) {
+    return res.status(400).json({ success: false, message: "クエストIDの配列を提供してください。" });
+  }
+
+  console.log("取得したクエストIDリスト:", questIds);
+
+  // クエストIDの配列に基づいてクエストをフィルタリング
+  const quests = areaData["クエスト"].filter((row) => questIds.includes(row["クエストID"]));
+
+  if (quests.length > 0) {
+    // 一致するクエストが見つかった場合のレスポンス
+    const formattedQuests = quests.map((quest) => ({
+      questId: quest["クエストID"],
+      type: quest["種別"],
+      questName: quest["クエスト名"],
+      description: quest["クエスト内容"],
+      targets: parseTargets(quest["対象"]), // 必要なら分割処理を追加
+      conditions: {
+        rank: quest["条件ランク"],
+        status: parseStatusConditions(quest["条件ステータス"]),
+        Skill: parseConditions(quest["条件アビリティ"]),
+        quest: parseConditions(quest["条件クエスト"]),
+      },
+      rewards: quest["報酬"].split(",").map((reward) => reward.trim()),
+      exp: Number(quest["経験値"]),
+      relatedNpc: quest["関連NPC"],
+      location: quest["場所"],
+    }));
+
+    res.status(200).json({ success: true, quests: formattedQuests });
+  } else {
+    // 一致するクエストが見つからない場合のレスポンス
+    res.status(404).json({ success: false, message: "該当するクエストが見つかりません。" });
+  }
+});
+
+
+
+
+// 特定のダンジョンデータを返すAPI
+router.get("/dungeon", (req, res) => {
+  const guildName = req.query.name; // クエリパラメータ `name` からダンジョン名を取得
+
+  // Excelデータをキャッシュから取得してフィルタリング
+  const dungeons = areaData["ダンジョン"];
+
+  // 名前でフィルタリング
+  const originalDungeon = dungeons.find((d) => d.名前 === guildName);
+
+  console.log("取得したダンジョン名:", guildName, originalDungeon);
+
+  if (originalDungeon) {
+    // 元データを変更せずにコピーを作成
+    const dungeon = { ...originalDungeon };
+
+    // 感知アイテムをパースする
+    if (dungeon.感知アイテム) {
+      dungeon.感知アイテム = parseSensedItems(dungeon.感知アイテム);
+    }
+
+    // 他のフィールドも同様にパースする
+    if (dungeon.確率) {
+      dungeon.確率 = parseKeyValuePairs(dungeon.確率);
+    }
+    if (dungeon.出現する敵) {
+      dungeon.出現する敵 = parseKeyValuePairs(dungeon.出現する敵);
+    }
+    if (dungeon.罠) {
+      dungeon.罠 = parseKeyValuePairs(dungeon.罠);
+    }
+    if (dungeon.固定イベント) {
+      dungeon.固定イベント = parseKeyValuePairs(dungeon.固定イベント);
+    }
+    if (dungeon.隠しダンジョン条件) {
+      dungeon.隠しダンジョン条件 = parseKeyValuePairs(
+        dungeon.隠しダンジョン条件
+      );
+    }
+
+    // ダンジョンデータが見つかった場合、JSON形式で返す
+    res.json({
+      success: true,
+      data: dungeon,
+    });
+  } else {
+    // ダンジョンが見つからない場合のエラーハンドリング
+    res.status(404).json({
+      success: false,
+      message: "指定されたダンジョンが見つかりませんでした。",
+    });
+  }
+});
+
+// 特定のエネミーデータを返すAPI
+router.get("/enemy", (req, res) => {
+  // const guildName = req.query.name; // クエリパラメータ `name` からダンジョン名を取得
+
+  try {
+    const enemys = areaData["エネミー"];
+
+    if (!enemys) {
+      return res.status(404).json({ error: "enemyシートが見つかりません" });
+    }
+
+    // 名前が空でないデータのみフィルタリング
+    const filteredData = enemys.filter(
+      (row) => row["名前"] && row["名前"].trim() !== ""
+    );
+
+    res.json(filteredData);
+  } catch (error) {
+    console.error("Error fetching class data:", error);
+    res.status(500).json({ error: "Failed to fetch class data" });
+  }
+});
+
+// ====　整理用　=====================================================================
+// 汎用的なパース関数: "キー:値,キー:値" をオブジェクトに変換
+function parseKeyValuePairs(inputString) {
+  const result = {};
+  if (!inputString || typeof inputString !== "string") {
+    return result; // 入力が無効な場合は空オブジェクトを返す
+  }
+
+  console.log("解析対象の文字列:", inputString);
+
+  // 入力をコロンで区切って、各ペアを解析
+  const pairs = [];
+  let currentPair = "";
+  let insideBracket = false;
+
+  for (const char of inputString) {
+    if (char === "[") {
+      insideBracket = true;
+    } else if (char === "]") {
+      insideBracket = false;
+    }
+
+    if (char === "," && !insideBracket) {
+      // カンマがペアを区切るタイミング（角括弧外の場合）
+      pairs.push(currentPair.trim());
+      currentPair = "";
+    } else {
+      currentPair += char;
+    }
+  }
+
+  // 最後のペアを追加
+  if (currentPair) {
+    pairs.push(currentPair.trim());
+  }
+
+  // 各ペアを解析
+  pairs.forEach((pair) => {
+    const lastColonIndex = pair.lastIndexOf(":"); // 最後のコロン位置を特定
+    if (lastColonIndex === -1) {
+      console.warn(`無効なペア: ${pair}`);
+      return;
+    }
+
+    // 最後のコロンを基準にキーと値を分割
+    const key = pair.slice(0, lastColonIndex).trim();
+    const value = pair.slice(lastColonIndex + 1).trim();
+
+    // 余分な角括弧を削除
+    const cleanKey = key.replace(/^\[|\]$/g, "").trim(); // "[" と "]" を削除
+
+    // 値を数値に変換可能なら変換
+    const probSkill = isNaN(Number(value)) ? value : Number(value);
+
+    // 結果を格納
+    result[cleanKey] = probSkill;
+  });
+
+  console.log("解析結果:", result);
+  return result;
+}
+
+
+
+
+
+
+
+function parseSensedItems(inputString) {
+  const result = [];
+  if (!inputString || typeof inputString !== "string") {
+    return result; // 入力が無効な場合は空配列を返す
+  }
+
+  inputString.split(",").forEach((item) => {
+    const [name, detail] = item.split(":").map((s) => s.trim()); // "力核:鑑定90" -> ["力核", "鑑定90"]
+
+    if (detail) {
+      // 必要技能と難易度を分解
+      const TechniqueMatch = detail.match(/^([^\d]+)(\d+)$/); // 正規表現で技能と難易度を抽出
+      if (TechniqueMatch) {
+        const [, Technique, difficulty] = TechniqueMatch; // Technique = "鑑定", difficulty = "90"
+        result.push({
+          name: name,
+          Technique: Technique,
+          difficulty: Number(difficulty),
+        });
+      }
+    }
+  });
+
+  return result;
+}
+
+// "対象" をパースする関数
+function parseTargets(targetString) {
+  if (!targetString) return [];
+
+  return targetString.split(",").map((target) => {
+    const [name, count] = target.split(":").map((part) => part.trim());
+    return {
+      name, // モンスター名や対象の名前
+      count: Number(count) || 0, // 対象の数
+    };
+  });
+}
+
+function parseStatusConditions(statusString) {
+  if (!statusString) {
+    // console.log("空のステータス文字列が渡されました");
+    return {};
+  }
+
+  return statusString.split(",").reduce((acc, item) => {
+    const [key, value] = item.split(":").map((i) => i.trim());
+    if (key && value) {
+      acc[key] = Number(value);
+    } else {
+      // console.log("不正なステータス項目:", item);
+    }
+    return acc;
+  }, {});
+}
+
+function parseConditions(conditionString) {
+  if (!conditionString) {
+    // console.log("空の条件文字列が渡されました");
+    return [];
+  }
+
+  // カンマで分割してトリムされたリストを返す
+  return conditionString.split(",").map((item) => item.trim());
+}
+
+// ===== 取得条件パーサ =====
+function parseMagicCondition(conditionText) {
+  if (!conditionText || typeof conditionText !== "string") {
+    return {
+      属性: [],
+      ロール: [],
+      スキル: [],
+      能力値: []
+    };
+  }
+
+  const result = {
+    属性: [],
+    ロール: [],
+    スキル: [],
+    能力値: []
+  };
+
+  // ,（半角・全角）で分割
+  const parts = conditionText.split(/[,\uFF0C]/);
+
+  for (const part of parts) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+
+    const [rawKey, rawValue] = trimmed.split(":");
+    if (!rawKey || !rawValue) continue;
+
+    const key = rawKey.trim();
+    const value = rawValue.trim();
+
+    // 能力値（比較式）
+    if (key === "能力値") {
+      const match = value.match(/^(.+?)(>=|<=|>|<|=)(\d+)$/);
+      if (!match) continue;
+
+      const [, stat, op, num] = match;
+      result.能力値.push({
+        key: stat.trim(),
+        op,
+        value: Number(num)
+      });
+      continue;
+    }
+
+    // 通常条件（| 区切り対応）
+    const values = value.split("|").map(v => v.trim());
+
+    if (key === "属性") result.属性.push(...values);
+    else if (key === "ロール") result.ロール.push(...values);
+    else if (key === "スキル") result.スキル.push(...values);
+  }
+
+  return result;
+}
+
+
+module.exports = router;

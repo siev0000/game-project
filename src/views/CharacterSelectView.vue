@@ -75,7 +75,7 @@ export default {
 
         if (res.ok) {
           // サーバーから取得したキャラクターをビルド
-          this.characters = (data.characters || []).map((c) => buildCharacterStats(c));
+          this.characters = await Promise.all((data.characters || []).map(async (c) => await buildCharacterStats(c)));
           console.log("🎯 最新キャラクター一覧取得:", this.characters);
         } else {
           console.error("取得失敗:", data.error);

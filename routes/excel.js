@@ -5,12 +5,13 @@ const path = require("path");
 const fs = require("fs");
 const chokidar = require("chokidar");
 
-// Excelファイルのパス
-const filePath = path.join(__dirname, "../data/excel/game-data.xlsx");
+// JSONファイルのディレクトリパス (game-dataのみJSON)
+const jsonDir = path.join(__dirname, "../data/excel/game-data");
+// Excelファイルのパス (item-dataとarea-dataはExcel)
 const filePathItem = path.join(__dirname, "../data/excel/item-data.xlsx");
 const filePathArea = path.join(__dirname, "../data/excel/area-data.xlsx");
 
-console.log(filePath);
+console.log(jsonDir);
 console.log(filePathItem);
 console.log(filePathArea);
 
@@ -21,6 +22,16 @@ let itemData = {};
 let areaData = {};
 
 // ファイル監視と再読み込み処理
+function watchJsonDir(dirPath, callback) {
+  console.log(`Watching for changes in ${dirPath}...`);
+  const watcher = chokidar.watch(dirPath, { persistent: true });
+
+  watcher.on("change", (filePath) => {
+    console.log(`${filePath} has been updated.`);
+    callback(dirPath);
+  });
+}
+
 function watchExcelFile(filePath, callback) {
   console.log(`Watching for changes in ${filePath}...`);
   const watcher = chokidar.watch(filePath, { persistent: true });
@@ -31,7 +42,36 @@ function watchExcelFile(filePath, callback) {
   });
 }
 
-// Excelデータを読み込む関数
+// JSONデータを読み込む関数 (game-data用)
+function loadJsonData(dirPath, type) {
+  try {
+    const files = fs.readdirSync(dirPath).filter(file => file.endsWith('.json'));
+    console.log(`${type} ディレクトリのJSONファイル:`, files);
+
+    files.forEach((file) => {
+      const sheetName = path.basename(file, '.json');
+      const filePath = path.join(dirPath, file);
+      const rawData = fs.readFileSync(filePath, 'utf8');
+      // BOMを除去
+      const cleanData = rawData.replace(/^\uFEFF/, '');
+      const data = JSON.parse(cleanData);
+
+      if (type === "game") {
+        excelCache[sheetName] = data;
+        if (sheetName === "クラス") {
+          console.log("=== クラスJSONのヘッダ ===");
+          if (data.length > 0) {
+            console.log(Object.keys(data[0]));
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error(`Failed to load JSON data from ${dirPath}:`, error);
+  }
+}
+
+// Excelデータを読み込む関数 (item-dataとarea-data用)
 function loadExcelData(filePath, type) {
   try {
     const workbook = XLSX.readFile(filePath);
@@ -40,33 +80,10 @@ function loadExcelData(filePath, type) {
     console.log(`${type} ファイルのシート名:`, sheetNames);
 
     sheetNames.forEach((sheetName) => {
-
       const sheet = workbook.Sheets[sheetName];
-
-      // ★★ 生ヘッダを先に作る（ここ重要） ★★
-      const rawHeader = XLSX.utils.sheet_to_json(sheet, { header: 1 })[0];
-
-      // JSON 行データ
       const data = XLSX.utils.sheet_to_json(sheet);
 
-      if (type === "game") {
-
-        // 最初にキャッシュへ格納
-        excelCache[sheetName] = data;
-
-        // ★ "クラス" シートだけをチェックする
-        if (sheetName.trim() === "クラス") {
-
-          console.log("=== クラスシート RAW HEADER ===");
-          console.log(rawHeader); // ← ここで rawHeader が使える
-
-          if (data.length > 0) {
-            console.log("=== クラスシート JSON HEADER ===");
-            console.log(Object.keys(data[0]));
-          }
-        }
-
-      } else if (type === "item") {
+      if (type === "item") {
         const safeData = data || [];
         itemData[sheetName.trim()] = safeData;
 
@@ -81,9 +98,7 @@ function loadExcelData(filePath, type) {
           }));
           console.log("ショップデータ:", shopData);
         }
-
       } else if (type === "area") {
-        if (!data) return;
         areaData[sheetName] = data;
       }
     });
@@ -93,17 +108,17 @@ function loadExcelData(filePath, type) {
 }
 
 // ファイル監視を開始
-watchExcelFile(filePath, (path) => loadExcelData(path, "game"));
+watchJsonDir(jsonDir, (path) => loadJsonData(path, "game"));
 watchExcelFile(filePathItem, (path) => loadExcelData(path, "item"));
 watchExcelFile(filePathArea, (path) => loadExcelData(path, "area"));
 
 // 起動時にデータを読み込む
-loadExcelData(filePath, "game");
+loadJsonData(jsonDir, "game");
 loadExcelData(filePathItem, "item");
 loadExcelData(filePathArea, "area");
 
 // 定期更新 (1時間ごと)
-setInterval(() => loadExcelData(filePath, "game"), 60 * 60 * 1000);
+setInterval(() => loadJsonData(jsonDir, "game"), 60 * 60 * 1000);
 setInterval(() => loadExcelData(filePathItem, "item"), 60 * 60 * 1000);
 setInterval(() => loadExcelData(filePathArea, "area"), 60 * 60 * 1000);
 
@@ -163,37 +178,6 @@ router.get("/Skills", (req, res) => {
     res.status(500).json({ error: "Failed to fetch Technique data" });
   }
 });
-/*
-  取得条件をパースする補助関数
-*/
-// router.get("/Skills", (req, res) => {
-//   try {
-//     const TechniqueData = excelCache["技"];
-//     if (!TechniqueData) {
-//       return res.status(404).json({ error: "技シートが見つかりません" });
-//     }
-
-//     const filteredData = TechniqueData
-//       .filter(row => row && row["名前"] !== undefined)
-//       .map(row => {
-//         // ★ 取得条件を分解して付与
-//         const rawCondition = row["取得条件"];
-
-//         return {
-//           ...row,
-//           取得条件_parsed: parseMagicCondition(rawCondition)
-//         };
-//       });
-
-//     res.json(filteredData);
-
-//     console.log(`「技」シートからデータを取得するAPI:実行完了`);
-//   } catch (error) {
-//     console.error("Error fetching Technique data:", error);
-//     res.status(500).json({ error: "Failed to fetch Technique data" });
-//   }
-// });
-
 
 /*
   「属性」シートからデータを取得するAPI

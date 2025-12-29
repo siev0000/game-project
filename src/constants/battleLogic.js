@@ -1,5 +1,26 @@
 // battleLogic.js
 // 戦闘計算処理まとめ
+// ===== 集計キー定義 =====
+
+// 威力系
+const POWER_KEYS = [
+  "切断",  "貫通",  "打撃",  "威力",  "全力",  "ダメージ幅",
+];
+
+// 守り系
+const DEFENSE_KEYS = [ "物理ガード",  "魔法ガード",];
+
+// 属性ダメージ系
+const ATTRIBUTE_KEYS = [
+  "炎",  "氷",  "雷",  "酸",
+  "音",  "光",  "闇",  "善",  "悪",
+];
+
+// 状態異常系
+const STATUS_KEYS = [
+  "精神攻撃",  "毒",  "盲目",  "幻覚",  "石化",  "怯み",
+  "拘束",  "呪い",  "即死",  "時間",  "出血",  "疲労",  "体幹",
+];
 
 /**
  * 基本威力計算
@@ -69,11 +90,28 @@ export function applyCritical(damage, attacker) {
   return Math.floor(damage * (1.5 + bonus / 100)); // 1.5倍 + 補正
 }
 
+const num = (v) => {
+  if (v === null || v === undefined || v === "") return 0;
+  return Number(String(v).replace(/^\+/, "")) || 0;
+};
+
+function buildBreakdown(skill, keys) {
+  const breakdown = {};
+  for (const key of keys) {
+    breakdown[key] = num(skill[key]);
+  }
+  return breakdown;
+}
+
+function sumValues(obj) {
+  return Object.values(obj).reduce((a, b) => a + b, 0);
+}
+
 
 /**
  * 技データをまとめてステータス補正込みで返す
- * @param {object} skill - Skill_List の1件
- * @param {object} attacker - 攻撃側キャラデータ
+ * @param {object} skill
+ * @param {object} attacker
  * @returns {object}
  */
 export function summarizeSkill(skill, attacker) {
@@ -82,72 +120,36 @@ export function summarizeSkill(skill, attacker) {
       威力: { 合計: 0, 内訳: {} },
       守り: { 合計: 0, 内訳: {} },
       属性: { 合計: 0, 内訳: {} },
-      回復量: { 内訳: {} },
+      回復量: { 合計: 0 },
       状態: { 合計: 0, 内訳: {} },
       クリティカル: { 率: 0, 威力: 0 },
       連撃: { 回数: 0, 追加: 0 },
     };
   }
 
-  const num = (v) => Number(v) || 0;
-
   // ===== 威力 =====
-  const 威力内訳 = {
-    切断: num(skill.切断),
-    貫通: num(skill.貫通),
-    打撃: num(skill.打撃),
-    威力: num(skill.威力),
-    全力: num(skill.全力),
-    ダメージ幅: num(skill.ダメージ幅),
-  };
-  let 威力合計 = Object.values(威力内訳).reduce((a, b) => a + b, 0);
-  威力合計 = calcPower(威力合計, attacker, skill);
+  const 威力内訳 = buildBreakdown(skill, POWER_KEYS);
+  let 威力合計 = calcPower(sumValues(威力内訳), attacker, skill);
 
   // ===== 守り =====
-  const 守り内訳 = {
-    物理ガード: num(skill.物理ガード),
-    魔法ガード: num(skill.魔法ガード),
-  };
-  let 守り合計 = Math.max(...Object.values(守り内訳));
-  守り合計 = calcPower(守り合計, attacker, skill);
+  const 守り内訳 = buildBreakdown(skill, DEFENSE_KEYS);
+  let 守り合計 = calcPower(
+    Math.max(...Object.values(守り内訳)),
+    attacker,
+    skill
+  );
 
   // ===== 属性 =====
-  const 属性内訳 = {
-    炎: num(skill.炎),
-    氷: num(skill.氷),
-    雷: num(skill.雷),
-    酸: num(skill.酸),
-    音: num(skill.音),
-    光: num(skill.光),
-    闇: num(skill.闇),
-    善: num(skill.善),
-    悪: num(skill.悪),
-  };
-  let 属性合計 = Object.values(属性内訳).reduce((a, b) => a + b, 0);
-  属性合計 = calcPower(属性合計, attacker, skill);
+  const 属性内訳 = buildBreakdown(skill, ATTRIBUTE_KEYS);
+  let 属性合計 = calcPower(sumValues(属性内訳), attacker, skill);
 
   // ===== 回復量 =====
-  const 回復量内訳 = { 回復量: num(skill.回復量) };
-  回復量内訳.回復量 = calcPower(回復量内訳.回復量, attacker, skill);
+  const 回復量内訳 = buildBreakdown(skill, ["回復"]);
+  let 回復合計 = calcPower(sumValues(回復量内訳), attacker, skill);
 
   // ===== 状態 =====
-  const 状態内訳 = {
-    精神攻撃: num(skill.精神攻撃),
-    毒: num(skill.毒),
-    盲目: num(skill.盲目),
-    幻覚: num(skill.幻覚),
-    石化: num(skill.石化),
-    怯み: num(skill.怯み),
-    拘束: num(skill.拘束),
-    呪い: num(skill.呪い),
-    即死: num(skill.即死),
-    時間: num(skill.時間),
-    出血: num(skill.出血),
-    疲労: num(skill.疲労),
-    体幹: num(skill.体幹),
-  };
-  let 状態合計 = Object.values(状態内訳).reduce((a, b) => a + b, 0);
-  状態合計 = calcPower(状態合計, attacker, skill);
+  const 状態内訳 = buildBreakdown(skill, STATUS_KEYS);
+  let 状態合計 = calcPower(sumValues(状態内訳), attacker, skill);
 
   // ===== クリティカル =====
   const クリティカル = {
@@ -161,16 +163,20 @@ export function summarizeSkill(skill, attacker) {
     追加: num(skill.攻撃追加),
   };
 
+  console.log("summarizeSkill:", {
+    威力合計, 守り合計, 属性合計, 状態合計, 回復合計, クリティカル, 連撃, skill
+  });
   return {
     威力: { 合計: 威力合計, 内訳: 威力内訳 },
     守り: { 合計: 守り合計, 内訳: 守り内訳 },
     属性: { 合計: 属性合計, 内訳: 属性内訳 },
-    回復量: { 内訳: 回復量内訳 },
+    回復量: { 合計: 回復合計 },
     状態: { 合計: 状態合計, 内訳: 状態内訳 },
     クリティカル,
     連撃,
   };
 }
+
 /**
  * 効果概要から不要な部分を削除する
  * @param {string} overview - skill.効果概要

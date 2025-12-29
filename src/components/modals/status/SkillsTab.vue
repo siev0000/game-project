@@ -18,8 +18,14 @@
   <!-- 合計表示 -->
   <div class="skill-total-bar">
     <div class="total-left">
-      威力: {{ totalPower }}
+      威力: {{ totalPower + totalAttribute }}
+      <!-- 属性: {{ totalAttribute }} -->
+      状態: {{ totalStates }}
+      守り: {{ totalDefense }}
     </div>
+    <!-- <div class="total-left">
+      属性: {{ totalAttribute }}
+    </div> -->
     <div class="total-right">
       <span v-if="totalHits > 0">x{{ totalHits }}</span>
       <span v-if="totalCrit.率"> Cr率 {{ totalCrit.率 }}%</span>
@@ -29,18 +35,33 @@
 <!-- サブタブバーの下に選択枠 -->
 <div class="selected-skill-bar">
 
-  <div class="selected-skill-slot A">
-    <span v-if="selectedSkills.A">{{ selectedSkills.A.名前 }} ({{ selectedSkills.A.威力?.合計 || 0 }})</span>
+  <div class="selected-skill-slot A"
+    @click="clearSelectedSkill('A')">
+    <span v-if="selectedSkills.A">
+      {{ selectedSkills.A.名前 }} 
+      ({{ selectedSkills.A.威力?.合計 || 0  + selectedSkills.A.属性?.合計 || 0 +  selectedSkills.A.状態?.合計 || 0 }}
+       / {{ selectedSkills.A.守り?.合計 || 0  + selectedSkills.A.回復量?.合計 }})
+    </span>
     <span v-else>未選択</span>
   </div>
 
-  <div class="selected-skill-slot S">
-    <span v-if="selectedSkills.S">{{ selectedSkills.S.名前 }} ({{ selectedSkills.S.威力?.合計 || 0 }})</span>
+  <div class="selected-skill-slot S"
+  @click="clearSelectedSkill('S')">
+    <span v-if="selectedSkills.S">
+      {{ selectedSkills.S.名前 }} 
+      ({{ selectedSkills.S.威力?.合計 || 0  + selectedSkills.S.属性?.合計 || 0 +  selectedSkills.S.状態?.合計 || 0 }}
+       / {{ selectedSkills.S.守り?.合計 || 0  + selectedSkills.S.回復量?.合計 }})
+    </span>
     <span v-else>未選択</span>
   </div>
 
-  <div class="selected-skill-slot Q">
-    <span v-if="selectedSkills.Q">{{ selectedSkills.Q.名前 }} ({{ selectedSkills.Q.威力?.合計 || 0 }})</span>
+  <div class="selected-skill-slot Q"
+  @click="clearSelectedSkill('Q')">
+    <span v-if="selectedSkills.Q">
+      {{ selectedSkills.Q.名前 }} 
+      ({{ selectedSkills.Q.威力?.合計 || 0  + selectedSkills.Q.属性?.合計 || 0 +  selectedSkills.Q.状態?.合計 || 0 }}
+       / {{ selectedSkills.Q.守り?.合計 || 0  + selectedSkills.Q.回復量?.合計 }})
+    </span>
     <span v-else>未選択</span>
   </div>
 </div>
@@ -197,6 +218,21 @@
 import { ref, computed } from "vue";
 import { getAttackIcon, fitTextToWidth } from "@/constants/statData";
 import { summarizeSkill, cleanEffectOverview } from "@/constants/battleLogic";
+import { toRaw } from "vue";
+
+function flattenMagicByAttr(magicByAttr) {
+  if (!magicByAttr) return [];
+
+  return Object.entries(toRaw(magicByAttr)).flatMap(
+    ([attr, list]) =>
+      (list || []).map(m => ({
+        ...toRaw(m),
+        // ★ スキルと同じUI構造に寄せる
+        種別: "魔法",
+        属性: attr,
+      }))
+  );
+}
 
 const props = defineProps({
   character: { type: Object, required: true },
@@ -216,9 +252,19 @@ const selectedSkills = ref({
   Q: null
 });
 
+const allDisplaySkills = computed(() => {
+  const skills = props.character.skills || [];
+
+  const magics = flattenMagicByAttr(
+    props.character.magic?.magicListByAttr
+  );
+
+  return [...skills, ...magics];
+});
+
 const filteredSkills = computed(() => {
-  return (props.character.skills || []).filter(
-    (s) => s.行動 === currentSkillType.value
+  return allDisplaySkills.value.filter(
+    s => s.行動 === currentSkillType.value
   );
 });
 
@@ -278,38 +324,48 @@ const toggleDetail = () => {
   showDetail.value = !showDetail.value;
 };
 
-// 合計威力（A+S+Q）
-const totalPower = computed(() => {
-  return ["A","S","Q"].reduce((sum, t) => {
-    return sum + (selectedSkills.value[t]?.威力?.合計 || 0);
-  }, 0);
-});
+// 選択中の技をクリア（確認あり）
+const clearSelectedSkill = (type) => {
+  if (!['A', 'S', 'Q'].includes(type)) return;
+  if (!selectedSkills.value[type]) return;
 
-// 攻撃回数合計
-const totalHits = computed(() => {
-  return ["A","S","Q"].reduce((sum, t) => {
-    return sum + (selectedSkills.value[t]?.連撃?.回数 || 0);
-  }, 0);
-});
+  const skillName = selectedSkills.value[type].名前;
 
-// クリティカル合計
-const totalCrit = computed(() => {
-  return ["A","S","Q"].reduce(
-    (acc, t) => {
-      acc.率 += selectedSkills.value[t]?.クリティカル?.率 || 0;
-      acc.威力 += selectedSkills.value[t]?.クリティカル?.威力 || 0;
-      return acc;
-    },
-    { 率: 0, 威力: 0 }
+  const ok = window.confirm(
+    `「${skillName}」を解除しますか？`
   );
-});
-</script>
 
-<script>
+  if (ok) {
+    selectedSkills.value[type] = null;
+  }
+};
+
+
 // 合計威力（A+S+Q）
 const totalPower = computed(() => {
   return ["A","S","Q"].reduce((sum, t) => {
     return sum + (selectedSkills.value[t]?.威力?.合計 || 0);
+  }, 0);
+});
+
+// 合計属性（A+S+Q）
+const totalAttribute = computed(() => {
+  return ["A","S","Q"].reduce((sum, t) => {
+    return sum + (selectedSkills.value[t]?.属性?.合計 || 0);
+  }, 0);
+});
+
+// 合計守り（A+S+Q）
+const totalDefense = computed(() => {
+  return ["A","S","Q"].reduce((sum, t) => {
+    return sum + (selectedSkills.value[t]?.守り?.合計 || 0);
+  }, 0);
+});
+
+// 合計状態（A+S+Q）
+const totalStates = computed(() => {
+  return ["A","S","Q"].reduce((sum, t) => {
+    return sum + (selectedSkills.value[t]?.状態?.合計 || 0);
   }, 0);
 });
 
