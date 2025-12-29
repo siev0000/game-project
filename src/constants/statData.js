@@ -558,8 +558,10 @@ export function applyRoleData(mainChar) {
 
   });
 
+  // console.log(`[applyRoleData] ${mainChar.name} のステータス計算完了`, mainChar.stats.baseStats);
   return mainChar;
 }
+
 // 耐性計算
 function sumFlatResistances(key, roles) {
   return roles.reduce((sum, role) => {
@@ -575,7 +577,10 @@ function calcBodyMax(key, roles) {
   let max = 0;
 
   for (const role of roles) {
-    const base = role?.[key] ?? 0;          // クラスの基礎値
+    if (!role?.roleName) continue;
+
+    const data = selectStatsData(role.roleName);
+    const base = Number(data?.[key] || 0);
     max += base;
   }
 

@@ -717,7 +717,7 @@ function roundTo(val, digit = 0) {
    本文（色を付けない）
 ================================ */
 .magic-table-wrapper[data-v-c6fc30c5] {
-    height: 635px;
+    height: 630px;
     max-width: 705px;
     background: radial-gradient(circle at center, #5e5b54 0%, #423d2f 100%);
     border: 5px solid #b58b4c;
@@ -1129,7 +1129,7 @@ table thead th {
    スクロール可能テーブル 
    ==================== */
 .table-wrapper {
-  height: 635px;
+  height: 630px;
   max-width: 705px;
   background: radial-gradient(circle at center, #5e5b54 0%, #423d2f 100%);
   border: 5px solid #b58b4c;

@@ -103,7 +103,7 @@ export default {
 }
 .modal-content {
   /* width: 720px; height: 1220px; */
-  width: 720px; height: 1240px;
+  width: 720px; height: 1200px;
   background: url('/src/assets/images/illust/帰巣本能.webp');
   background-size: cover;
   border: 12px solid #5b3a1a;
@@ -113,6 +113,7 @@ export default {
   color: #2b1a0f;
   margin-bottom: 60px;
   padding: 5px;
+  margin-top: -15px;
 }
 /* .modal-content::before {
   content: "";
