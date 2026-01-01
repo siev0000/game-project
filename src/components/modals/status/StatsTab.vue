@@ -2,37 +2,49 @@
     <div class="container">
       <form @submit.prevent="openLevelModal">
         
-      <td class="exp-btn-cell">
-        <button 
-          class="lvup-btn"
-          :class="{ 'lvup-active': character.stats.experience >= character.stats.nextLevelExp }"
-          :disabled="character.stats.experience < character.stats.nextLevelExp"
-          @click="levelUpMode = !levelUpMode"
-        >
-          Lvアップ
-        </button>
-      </td>
-      <td class="exp-btn-cell">
-        <button
-          class="addclass-btn"
-          :class="{ 'lvup-active': character.stats.experience >= character.stats.nextLevelExp }"
-          :disabled="character.stats.experience < character.stats.nextLevelExp"
-          @click="openAddClassModal"
-        >
-          新規取得
-        </button>
-      </td>
-      <td class="exp-cell">
-        EXP {{ character.stats.experience }} / {{ character.stats.nextLevelExp }}
-        （残り: {{ character.stats.nextLevelExp - character.stats.experience }}）
-      </td>
-        <!-- ★ テスト用：EXP増減ボタン -->
-      <td class="exp-cell">
-        <button @click="addExp(-500)" class="exp-btn minus">-500</button>
-      </td>
-      <td class="exp-cell">
-        <button @click="addExp(500)"  class="exp-btn plus">+500</button>
-      </td>
+      <div v-if="activeTab !== '魔法'" class="exp-div">
+        <td class="exp-btn-cell">
+          <button 
+            class="lvup-btn"
+            :class="{ 'lvup-active': character.stats.experience >= character.stats.nextLevelExp }"
+            :disabled="character.stats.experience < character.stats.nextLevelExp"
+            @click="levelUpMode = !levelUpMode"
+          >
+            Lvアップ
+          </button>
+        </td>
+        <td class="exp-btn-cell">
+          <button
+            class="addclass-btn"
+            :class="{ 'lvup-active': character.stats.experience >= character.stats.nextLevelExp }"
+            :disabled="character.stats.experience < character.stats.nextLevelExp"
+            @click="openAddClassModal"
+          >
+            新規取得
+          </button>
+        </td>
+        <td class="exp-cell">
+          EXP {{ character.stats.experience }} / {{ character.stats.nextLevelExp }}
+          （残り: {{ character.stats.nextLevelExp - character.stats.experience }}）
+        </td>
+          <!-- ★ テスト用：EXP増減ボタン -->
+        <td class="exp-cell">
+          <button @click="addExp(-500)" class="exp-btn minus">-500</button>
+        </td>
+        <td class="exp-cell">
+          <button @click="addExp(500)"  class="exp-btn plus">+500</button>
+        </td>
+      </div>
+      <div v-else class="magic-exp-row">
+        <td class="exp-cell">
+          <button
+          :class="{ 'lvup-active': props.character.attribute.selected.length < props.character.magic.magicRank }"
+          :disabled="!(props.character.attribute.selected.length < props.character.magic.magicRank)"
+          @click="openAttributeModal">
+          属性を追加する
+          </button>
+        </td>
+      </div>
 
         <!-- タブ切り替え -->
         <div class="tabs">
@@ -61,9 +73,9 @@
                   {{ props.character?.attribute?.[0] || "属" }}
                 </span> -->
                 <img
-                  v-if="props.character?.attribute && getAttrIcon(props.character.attribute)"
-                  :src="getAttrIcon(props.character.attribute)"
-                  :alt="props.character.attribute"
+                  v-if="props.character?.attribute.selected[0] && getAttrIcon(props.character.attribute.selected)"
+                  :src="getAttrIcon(props.character.attribute.selected[0])"
+                  :alt="props.character.attribute.selected[0]"
                   class="icon-Attribute-img"
                 />
               </div>
@@ -252,7 +264,7 @@
       
 
       <!-- モーダル -->
-      <RaceModal v-if="showRaceModal" @close="showRaceModal = false" @select="selectRace" />
+      <!-- <RaceModal v-if="showRaceModal" @close="showRaceModal = false" @select="selectRace" /> -->
       <ClassModal v-if="showClassModal" :playerData="character" @close="showClassModal = false" @select="selectClass" />
       <AttributeModal v-if="showAttributeModal" :attributes="availableAttributes" @close="showAttributeModal = false" @select="selectAttribute" />
 
@@ -265,24 +277,26 @@ import { useRouter } from 'vue-router'
 import RaceModal from '@/components/modals/RaceModal.vue'
 import ClassModal from '@/components/modals/ClassModal.vue'
 import AttributeModal from '@/components/modals/AttributeModal.vue'
+
 // 必ず使う
 import { 
-  loadGameData, statMap, statDescriptions, allData,  
+  loadGameData, statMap, statDescriptions, allData, attributeList,
   calcRoleStat, Skill_List , applySizeBonus, statusUpdate,
-  getAttrIcon , getRollIcon, getExperience, renderSkillHtml
+  getAttrIcon , getRollIcon, getExperience, renderSkillHtml,
+  checkAttributeConditionOR
 } from '@/constants/statData.js';
 
 
 
-const router = useRouter()
+// const router = useRouter()
+// const characterName = ref('')
+// const nameConfirmed = ref(false)
+// const lookAttribute= ref(null)
 
-const characterName = ref('')
-const nameConfirmed = ref(false)
 const selectedRace = ref(null)
 const selectedClass = ref(null)
 const selectedAttribute= ref(null)
 const availableAttributes = ref([]);
-const lookAttribute= ref(null)
 const showRaceModal = ref(false)
 const showClassModal = ref(false)
 const showAttributeModal = ref(false)
@@ -407,6 +421,9 @@ const recalcStats = async () => {
   // const allSkills = collectSkillsFromRoles(props.character) || [];  // 重複排除のためSet使用
   const characterData = await statusUpdate(props.character)
   props.character = characterData
+  // ★ 合計Lvの計算を追加
+  props.character.stats.allLv = props.character.Role.reduce((sum, r) => sum + (r?.Lv || 0), 0);
+
   // Set → Array に変換
   // props.character.skills = Array.from(allSkills);
 
@@ -436,7 +453,7 @@ const openAddClassModal = () => {
 };
 
 // ClassModal で選択されたクラス名を受け取る
-const selectClass = (className) => {
+const selectClass = async (className) => {
   if (!className) return;
 
   // 新しいクラスを Role に追加（Lv1からスタート）
@@ -448,9 +465,13 @@ const selectClass = (className) => {
   console.log(`新規クラス取得: ${className}`);
 
   // ステータス再計算
-  if (typeof recalcStats === "function") recalcStats();
+  if (typeof recalcStats === "function") await recalcStats();
 
   showClassModal.value = false;
+  const setLv = props.character.stats.allLv
+  console.log("allLv:", setLv);
+  // レベルアップ後の更新処理
+  updateAfterLevelChange(setLv);
 };
 
 // データ全体を検索して返す
@@ -459,11 +480,31 @@ const selectStatsData = (name) => {
   return statsDataObj
 };
 
-const selectAttribute = (selectAttributes) => {
-  // Attribute
-  selectedAttribute.value = selectAttributes
+// 属性選択時処理
+const selectAttribute = async (attr) => {
+  // 確認ダイアログ
+  const ok = window.confirm(
+    `属性「${attr.属性名}」を追加しますか？`
+  );
+
+  if (!ok) return;
+
+  // 念のため初期化
+  if (!Array.isArray(props.character.attribute.selected)) {
+    props.character.attribute.selected = [];
+  }
+
+  // 重複防止
+  if (!props.character.attribute.selected.includes(attr.属性名)) {
+    props.character.attribute.selected.push(attr.属性名);
+  }
+
+  const characterData = await statusUpdate(props.character);
+  props.character = characterData;
+
   showAttributeModal.value = false;
 };
+
 
 /**
  * パッシブアビリティの合計値を返す
@@ -513,22 +554,24 @@ const onSkillSelect = (skillName) => {
   };
 };
 
-function openAttributeModal() {
-  // console.log("openAttributeModal チェック:", selectedRace, selectedClass)
-  // 固定されているか確認
-  if(lookAttribute.value == true){
+// 属性追加モーダルを開く
+async function openAttributeModal() {
+  // 取得属性数が最大魔法rankより低い場合は取得できる。違う場合はreturnで戻す
+  if (props.character.attribute.selected.length >= props.character.magic.magicRank) {
     return;
   }
 
-  // 種族未選択チェック
-  if (!selectedRace.value.名前) {
-    return;
-  }
+  // 利用可能な属性一覧を生成（未取得・未習得の属性のみ）
+  const acquired = new Set([
+    ...props.character.attribute.selected,
+    ...Object.keys(props.character.attribute.skill || {})
+  ]);
 
-  // クラス未選択チェック
-  if (!selectedClass.value.名前) {
-    return;
-  }
+  availableAttributes.value = attributeList.value.filter(attr =>
+    !acquired.has(attr.属性名) &&
+    checkAttributeConditionOR(attr, acquired)
+  );
+  console.log("acquired attributes:", acquired, attributeList.value);
 
   // 条件を満たしたらモーダル表示
   showAttributeModal.value = true;
@@ -543,7 +586,7 @@ const totalLevel = computed(() =>
     .reduce((sum, r) => sum + (r.Lv || 0), 0)
 );
 
-
+// レベルアップ処理
 async function levelUpRole(role) {
   if (!role || !role.roleName) return;
   if (role.Lv >= 10) {
@@ -560,31 +603,44 @@ async function levelUpRole(role) {
   // ステータス更新
   const characterData = await statusUpdate(props.character);
   props.character = characterData;
+  const setLv = props.character.stats.allLv
+  console.log("allLv:", setLv);
+  // レベルアップ後の更新処理
+  updateAfterLevelChange(setLv);
+}
+// レベルアップ後の更新処理
+async function updateAfterLevelChange(allLv) {
 
+  const setLv = allLv
+  // 成長タイプ
   // -------------------------
-  // 2. 成長タイプの取得
+  // 1. 成長タイプの取得
   // -------------------------
   // 例：種族 or クラスに growthType を置く
-  const type = props.character.raceType || "人族";
+  const type = props.character.race || "人族";
 
   // -------------------------
-  // 3. 累積必要経験値（nextLevelExp）の再計算
+  // 2. 累積必要経験値（nextLevelExp）の再計算
   // -------------------------
-  const nextExp = getExperience(type, role.Lv + 1);
+  const nextExp = await getExperience(type, setLv + 1);
 
   // experience は累積なので変更しない
   props.character.stats.nextLevelExp = nextExp;
 
   console.log(
-    `次のレベル(Lv${role.Lv + 1}) までの累積必要経験値 = `,
+    `次のレベル(Lv${setLv + 1}) までの累積必要経験値 = `,
     nextExp
   );
 
   // -------------------------
   // 4. レベルアップモード終了
   // -------------------------
-  levelUpMode.value = false;
+  if (props.character.stats.experience < props.character.stats.nextLevelExp) {
+    levelUpMode.value = false;
+  }
 }
+
+
 const addExp = (amount) => {
   props.character.stats.experience =
     Math.max(0, props.character.stats.experience + amount);
@@ -634,6 +690,19 @@ function roundTo(val, digit = 0) {
 
 </script>
 <style scoped>
+
+.exp-div  {
+  height: 40px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+.magic-exp-row {
+  height: 40px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
 /* ================================
    魔法タブ専用テーブル（完全隔離）
 ================================ */

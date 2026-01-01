@@ -91,7 +91,11 @@
           />
           
           <span ref="labelEl" class="skill-name">
+            <ruby class="skill-name-detail-box">
             {{ skill.名前 }}
+            <rt>{{ displayRuby(skill?.ルビ) }}</rt>
+          </ruby>
+            <!-- {{ skill.名前 }} -->
             <!-- <rt>{{ displayRuby(skill?.ルビ) }}</rt> -->
           </span>
         </li>
@@ -148,32 +152,20 @@
 
         <!-- 説明 or 詳細を切り替え -->
         <div class="skill-description" @click="toggleDetail">
-          <!-- 通常: 説明 -->
+          <!-- 通常: 説明（なければ概要） -->
           <template v-if="!showDetail">
-            {{ selectedSkill.説明 }}
+            <template v-if="selectedSkill.説明 && selectedSkill.説明.trim()">
+              {{ selectedSkill.説明 }}
+            </template>
+            <template v-else>
+              {{ cleanEffectOverview(selectedSkill.効果概要) }}
+            </template>
           </template>
 
           <!-- クリックで切り替え: 詳細 -->
           <template v-else>
             <div class="skill-summary">
               {{ cleanEffectOverview(selectedSkill.効果概要) }}
-              <!-- <div>威力: {{ selectedSkill.総合威力 }}</div>
-              <div v-if="selectedSkill.守り">守り: {{ selectedSkill.守り }}</div>
-              <div v-if="selectedSkill.属性">属性: {{ selectedSkill.属性 }}</div>
-              <div v-if="selectedSkill.回復量">回復: {{ selectedSkill.回復量 }}</div>
-              <div v-if="selectedSkill.状態">状態: {{ selectedSkill.状態 }}</div>
-
-              <div v-if="selectedSkill.クリティカル.率 || selectedSkill.クリティカル.威力">
-                Cr: 
-                <span v-if="selectedSkill.クリティカル.率">率 {{ selectedSkill.クリティカル.率 }}%</span>
-                <span v-if="selectedSkill.クリティカル.威力"> 威力+{{ selectedSkill.クリティカル.威力 }}</span>
-              </div>
-
-              <div v-if="selectedSkill.連撃.回数 || selectedSkill.連撃.追加">
-                攻撃: 
-                <span v-if="selectedSkill.連撃.回数">回数 {{ selectedSkill.連撃.回数 }}</span>
-                <span v-if="selectedSkill.連撃.追加"> 追加 {{ selectedSkill.連撃.追加 }}</span>
-              </div> -->
             </div>
           </template>
         </div>

@@ -75,12 +75,23 @@
             <p class="section-text">{{ displayTheme(selected) }}</p>
           </section>
 
-          <!-- 取得魔法内容（例を分割して箇条書き） -->
-          <section class="detail-section" v-if="exampleList(selected).length">
-            <!-- <ul class="example-list">
-              <li v-for="(ex, idx) in exampleList(selected)" :key="idx">{{ ex }}</li>
-            </ul> -->
-            <p class="example-list">取得魔法:{{ exampleList(selected) }}</p>
+          <!-- 取得魔法内容（テーブル表示） -->
+          <section class="detail-section" v-if="exampleMagicList(selected).length">
+            <div class="magic-table">
+              <div class="magic-row magic-header">
+                <div class="magic-col name">Rank</div>
+                <div class="magic-col desc">名前</div>
+              </div>
+
+              <div
+                v-for="magic in exampleMagicList(selected)"
+                :key="magic.名前"
+                class="magic-row"
+              >
+                <div class="magic-col desc">{{ magic.Rank }}</div>
+                <div class="magic-col name">{{ magic.名前 }}</div>
+              </div>
+            </div>
           </section>
         </div>
         <!-- ▲ 差し替えここまで -->
@@ -151,6 +162,7 @@ export default {
     },
     // 決定ボタンで確定（emit→次tickでクローズ）
     confirm() {
+      // console.log("confirm", this.selected);
       if (!this.selected) return;
       this.$emit("select", this.selected);
       this.$nextTick(() => this.onClose());
@@ -175,17 +187,26 @@ export default {
       // あなたのデータ構造 { テーマ, 属性名, 分類, 例（技や特徴） } に対応
       return a?.取得魔法内容 ?? "";
     },
-    exampleList(a) {
-      // 「取得魔法内容」または旧仕様「例（技や特徴）」を配列化
-      const raw = a?.取得魔法内容 
-              ?? a?.["例（技や特徴）"] 
-              ?? a?.examples 
-              ?? "";
-      if (!raw) return [];
-      return raw
-        .split(/[、,／・]\s*/g)
-        .map(s => s.trim())
-        .filter(Boolean);
+    // exampleList(a) {
+    //   // 「取得魔法内容」または旧仕様「例（技や特徴）」を配列化
+    //   const raw = a?.取得魔法内容 
+    //           ?? a?.["例（技や特徴）"] 
+    //           ?? a?.examples 
+    //           ?? "";
+    //   if (!raw) return [];
+    //   return raw
+    //     .split(/[、,／・]\s*/g)
+    //     .map(s => s.trim())
+    //     .filter(Boolean);
+    // },
+     exampleMagicList(attr, max = 5) {
+      const list = attr?.魔法リスト;
+      if (!Array.isArray(list)) return [];
+      const result = list
+        .filter(m => m?.名前 && m?.効果概要)
+        .slice(0, max);
+
+      return result;
     },
 
     // 画像解決：属性名と一致するファイルをマップから引く
@@ -422,6 +443,7 @@ export default {
 
 /* 下部本文（テーマ / 取得魔法内容） */
 .detail-body {
+  height: 450px;
   overflow-y: auto;          /* 長文でもスクロール */
   padding-right: 2px;        /* スクロールバー時の見切れ防止 */
   display: grid;
@@ -464,5 +486,40 @@ export default {
 .example-list li {
   margin: 0.1em 0;
 }
+.magic-table {
+  border: 1px solid #b58b4c;
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 23px;
+}
+
+.magic-row {
+  display: grid;
+  grid-template-columns: 80px 1fr; /* Rank / 名前 */
+  border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.magic-row:first-child {
+  border-top: none;
+}
+
+.magic-header {
+  background: rgba(0,0,0,0.08);
+  font-weight: 600;
+}
+
+.magic-col {
+  padding: 6px 8px;
+  text-align: left;       /* ← 左寄せ */
+}
+
+.magic-col.rank {
+  text-align: center;
+}
+
+.magic-col.name {
+  white-space: nowrap;
+}
+
 
 </style>

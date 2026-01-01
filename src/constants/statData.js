@@ -305,35 +305,44 @@ export function buildPartyStats(partyRaw, context = {}) {
     char.skills = collectSkillsFromRoles(member) || [];
     // console.log("char.skills", char.skills)
     char.magic  = member.magic  ?? [];
-    const attributeFromSkills = extractAttributeFromSkills(char.skills);
-    // console.log("attributeFromSkills", attributeFromSkills, char.skills);
+    // const attributeFromSkills = extractAttributeFromSkills(char.skills);
+    // // console.log("attributeFromSkills", attributeFromSkills, char.skills);
 
+    // char.equipmentSlot = member.equipmentSlot ?? structuredClone(char.equipmentSlot);
+
+    // // メンバーの属性（string or array or null）
+    // let memberAttribute = member.attribute;
+
+    // // 1. 属性が文字列なら配列化する
+    // if (typeof memberAttribute === "string") {
+    //   memberAttribute = memberAttribute.trim() !== "" ? [memberAttribute] : [];
+    // }
+
+    // // 2. null や undefined の場合 → 空配列化
+    // if (!Array.isArray(memberAttribute)) {
+    //   memberAttribute = [];
+    // }
+
+    // // 3. attributeFromSkills がある場合は追加
+    // if (attributeFromSkills) {
+    //   memberAttribute.push(attributeFromSkills);
+    // }
+
+    // // 4. 最終的に反映
+    // char.attribute = memberAttribute.length > 0 ? memberAttribute : null;
+    
+    // スキルから取得した属性（string | string[] | null）
+    const attributeFromSkills = extractAttributeFromSkills(char.skills);
+
+    // equipmentSlot は既存のまま
     char.equipmentSlot = member.equipmentSlot ?? structuredClone(char.equipmentSlot);
 
-    // メンバーの属性（string or array or null）
-    let memberAttribute = member.attribute;
+    // 属性データの構築
+    const attr = buildCharacterAttribute(member, char.skills);
+    char.attribute = attr;
 
-    // 1. 属性が文字列なら配列化する
-    if (typeof memberAttribute === "string") {
-      memberAttribute = memberAttribute.trim() !== "" ? [memberAttribute] : [];
-    }
-
-    // 2. null や undefined の場合 → 空配列化
-    if (!Array.isArray(memberAttribute)) {
-      memberAttribute = [];
-    }
-
-    // 3. attributeFromSkills がある場合は追加
-    if (attributeFromSkills) {
-      memberAttribute.push(attributeFromSkills);
-    }
-
-    // 4. 重複削除
-
-
-    // 5. 最終的に反映
-    char.attribute = memberAttribute.length > 0 ? memberAttribute : null;
     // character.attribute = ["地", "炎", "光", "風", "水"];
+    //5. 魔法データの取得
     char.magic = await magicGetData(char)
 
     char.position  = member.position  ?? "前衛_1";
@@ -404,26 +413,6 @@ export async function buildCharacterStats(rawData, context = {}) {
 
 // ===== アイコン・イラストの一括読み込み =====
 
-// 属性アイコン
-const attrIconMods = import.meta.glob(
-  "/src/assets/images/属性アイコン/100/*.webp",
-  { eager: true, as: "url" }
-);
-export const ATTR_ICONS = mapIcons(attrIconMods);
-
-// 攻撃手段アイコン
-const attackIconMods = import.meta.glob(
-  "/src/assets/images/攻撃手段/*.webp",
-  { eager: true, as: "url" }
-);
-export const ATTACK_ICONS = mapIcons(attackIconMods);
-
-// キャラクターイラスト
-const charIllustMods = import.meta.glob(
-  "/src/assets/images/illust/*.webp",
-  { eager: true, as: "url" }
-);
-export const CHAR_ILLUSTS = mapIcons(charIllustMods);
 
 // 共通マッピング関数
 function mapIcons(mods) {
@@ -438,15 +427,44 @@ function mapIcons(mods) {
 /* =====================================
    取得ヘルパー
 ===================================== */
+// 属性アイコン
+const attrIconMods = import.meta.glob(
+  "/src/assets/images/属性アイコン/100/*.webp",
+  { eager: true, as: "url" }
+);
+export const ATTR_ICONS = mapIcons(attrIconMods);
 // 属性
 export function getAttrIcon(name) {
   return name && ATTR_ICONS[name] ? ATTR_ICONS[name] : "";
 }
+// 属性500アイコン
+const attrIcon500Mods = import.meta.glob(
+  "/src/assets/images/属性アイコン/500/*.webp",
+  { eager: true, as: "url" }
+);
+export const ATTR_ICONS_500 = mapIcons(attrIcon500Mods);
+// 属性500 
+export function getAttrIcon500(name) {
+  return name && ATTR_ICONS_500[name] ? ATTR_ICONS_500[name] : "";
+}
 
+// 攻撃手段アイコン
+const attackIconMods = import.meta.glob(
+  "/src/assets/images/攻撃手段/*.webp",
+  { eager: true, as: "url" }
+);
+export const ATTACK_ICONS = mapIcons(attackIconMods);
 // 攻撃手段
 export function getAttackIcon(name) {
   return name && ATTACK_ICONS[name] ? ATTACK_ICONS[name] : "";
 }
+
+// キャラクターイラスト
+const charIllustMods = import.meta.glob(
+  "/src/assets/images/illust/*.webp",
+  { eager: true, as: "url" }
+);
+export const CHAR_ILLUSTS = mapIcons(charIllustMods);
 // キャラクター
 export function getCharIllust(name) {
   return name && CHAR_ILLUSTS[name] ? CHAR_ILLUSTS[name] : "";
@@ -462,23 +480,11 @@ export const ROLE_ICONS = mapIcons(roleIconMods);
 // ロールアイコン
 export function getRollIcon(name) {
   const entry = allData.value.find(c => c.名前 === name);
-  console.log("[getRollIcon] called with:", entry.画像url);
-  console.log("[getRollIcon] ROLE_ICONS keys:", Object.keys(ROLE_ICONS));
-
   const result = entry.画像url && ROLE_ICONS[entry.画像url] ? ROLE_ICONS[entry.画像url] : "";
-
-  console.log("[getRollIcon] result:", result);
   return result;
 }
-// 種族/クラスアイコン (Excelの画像url利用)
-// export function getRollIcon(name) {
-//   if (!name || !allData.value.length) return "";
-//   const entry = allData.value.find(c => c.名前 === name);
-//   return entry?.画像url
-//     ? `/src/assets/images/${entry.画像url}`
-//     : "";
-// }
 
+//★=== 戦闘関連ヘルパー ==============================================================================
 /**
  * 武器データを名前で取得
  * @param {string} name - 攻撃手段名（例: "素手", "爪", "牙"）
@@ -540,6 +546,61 @@ export function findClass(name) {
 export function findRace(name) {
   return allData.value.find(c => c.名前 === name) || null;
 }
+
+
+/**
+ * キャラクターの属性構造を構築する
+ * - selected : 選択した属性（順序あり）
+ * - skill    : スキル由来属性（属性名 → 個数）
+ *
+ * @param {object} member - メンバー情報（attribute を含む）
+ * @param {any[]} skills - キャラのスキル一覧
+ * @returns {{ selected: string[], skill: Record<string, number> }}
+ */
+export function buildCharacterAttribute(member, skills) {
+  // ================================
+  // 初期化
+  // ================================
+  const result = {
+    selected: [],
+    skill: {},
+  };
+
+  // ================================
+  // 選択した属性（member.attribute）
+  // ================================
+  let memberAttribute = member?.attribute;
+
+  if (typeof memberAttribute === "string") {
+    memberAttribute = memberAttribute.trim() ? [memberAttribute] : [];
+  }
+
+  if (!Array.isArray(memberAttribute)) {
+    memberAttribute = [];
+  }
+
+  // 順序を保ったまま格納
+  result.selected = memberAttribute;
+
+  // ================================
+  // スキル由来属性
+  // ================================
+  const attributeFromSkills = extractAttributeFromSkills(skills);
+
+  if (attributeFromSkills) {
+    const skillAttrs = Array.isArray(attributeFromSkills)
+      ? attributeFromSkills
+      : [attributeFromSkills];
+
+    for (const attr of skillAttrs) {
+      if (!attr) continue;
+      result.skill[attr] = (result.skill[attr] ?? 0) + 1;
+    }
+  }
+
+  return result;
+}
+
 //★=== キャラクターステータス ==============================================================================
 /**
  * characterData にステータスと技を付与する
@@ -1055,33 +1116,39 @@ export function getExperience(type, Lv, maxLevel = 60) {
   if (Lv < 1 || Lv > maxLevel) {
     throw new Error(`レベルは1から${maxLevel}の間で指定してください。`);
   }
-  const experienceTable = generateExperienceTable(type, maxLevel);
+  const experienceTable = generateExperienceTable(type, Lv, maxLevel);
   return experienceTable[Lv - 1]; // 指定されたレベルの経験値を返す
 }
-export function generateExperienceTable(type, Lv ,maxLevel=40) {
+// 経験値テーブル生成
+export function generateExperienceTable(type, Lv, maxLevel = 100) {
   const experienceTable = [0]; // レベル1は0経験値
   let growthRate;
+  console.log("generateExperienceTable", type, Lv, maxLevel)
 
   for (let level = 1; level <= maxLevel; level++) {
     switch (type) {
       case "魔族":
         // レベル15までは急速成長、16以降は停滞
         growthRate = level <= 15
-          ? 100 + level * 3  // レベル15までは速い
-          : 300 + level * 10; // レベル16以降は急増
+          ? 100 + level * 5  // レベル15までは速い
+          : 200 + level * 10; // レベル16以降は急増
         break;
       case "亜人":
         // 一貫して安定した成長
-        growthRate = 150 + level * 5; // 一定の増加
+        growthRate = level <= 15
+          ? 150 + level * 5  // レベル15までは速い
+          : 150 + level * 9; // レベル16以降は急増
         break;
       case "人族":
         // レベル15までは遅い、16以降は急成長
         growthRate = level <= 15
-          ? 200 + level * 8  // レベル15までは遅い
-          : 50 + level * 3; // レベル16以降は速い
+          ? 175 + level * 5  // レベル15までは遅い
+          : 150 + level * 8; // レベル16以降は速い
         break;
       default:
-        growthRate = 150 + level * 5; // 一定の増加
+        growthRate = level <= 15
+          ? 150 + level * 5  // レベル15までは速い
+          : 150 + level * 9; // レベル16以降は急増
         throw new Error("無効なタイプです");
     }
     experienceTable.push(experienceTable[level - 1] + growthRate); // 累積経験値
@@ -1089,6 +1156,27 @@ export function generateExperienceTable(type, Lv ,maxLevel=40) {
 
   return experienceTable;
 }
+
+// 属性条件チェック（OR条件）
+export function checkAttributeConditionOR(attr, acquiredSet) {
+  // acquiredSet が Set でなければ保険
+  if (!(acquiredSet instanceof Set)) return false;
+
+  const conds = [attr.条件1, attr.条件2]
+    .filter(c => typeof c === "string" && c.trim() !== "");
+
+  // 条件なし → OK
+  if (conds.length === 0) return true;
+
+  const needAttrs = conds
+    .flatMap(c => c.split(","))
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  // OR条件
+  return needAttrs.some(a => acquiredSet.has(a));
+}
+
 
 
 // ==== ギルドランクスタイル ====
@@ -1332,18 +1420,28 @@ function parseMagicCondition(conditionText) {
   ★★★★
   ===== 魔法自動取得ロジック =====
 */
+  // デバッグフラグ
+  const DEBUG_MAGIC = true;
 
   // 魔法取得数のテーブル
   const BASE_TABLE = [
     [3,3,3,3,3,3,3], // Rank1
     [3,3,3,3,3,2,2], // Rank2
     [3,3,3,2,2,1,1], // Rank3
-    [3,3,2,2,1,1,0], // Rank4
-    [3,2,2,1,1,0,0], // Rank5
+    [3,3,2,2,1,1,1], // Rank4
+    [3,2,2,1,1,1,1], // Rank5
     [2,2,1,1,0,0,0], // Rank6
     [2,1,1,0,0,0,0], // Rank7
   ];
-
+  const BASE_SKILL_TABLE = [
+    [3,3,3], // Rank1
+    [3,3,3], // Rank2
+    [3,3,3], // Rank3
+    [3,3,3], // Rank4
+    [3,3,3], // Rank5
+    [2,2,3], // Rank6
+    [1,2,3], // Rank7
+  ];
   const BASE_TABLE_OVER = [
     [3,3,3,3,3,3,3], // Rank1
     [3,3,3,3,3,2,2], // Rank2
@@ -1371,18 +1469,14 @@ const RANK_POINT_TABLE = [
 
   // 魔法ランク解除判定
   function getUnlockedRank(magicPoint) {
-  for (const row of RANK_POINT_TABLE) {
-    if (magicPoint >= row.min && magicPoint <= row.max) {
-      return row.rank;
+    for (const row of RANK_POINT_TABLE) {
+      if (magicPoint >= row.min && magicPoint <= row.max) {
+        return row.rank;
+      }
     }
+    return 1;
   }
-  return 1;
-}
 
-
-
-  // デバッグフラグ
-  const DEBUG_MAGIC = false;
 
   // ▼ スキルから魔法ポイントを計算する関数
   export function getMagicPointFromSkills(skills) {
@@ -1410,7 +1504,7 @@ const RANK_POINT_TABLE = [
   // 魔法を取得
   export async function magicGetData(character){
     console.log(" == magicGetData == ",character);
-    const magicPoint = getMagicPointFromSkills(character.skills);
+    let magicPoint = getMagicPointFromSkills(character.skills);
     
     const conditionalAcquired = splitAttributeMagicByCondition(
       attributeList.value
@@ -1425,12 +1519,16 @@ const RANK_POINT_TABLE = [
     if (DEBUG_MAGIC) {
       console.log("conditionalByAttr", conditionalByAttr);
       console.log("p=1.0", buildProgressedMagicLearnTable(6, 1.0));
+      console.log("skillTable", buildSkillLearnTable(6, character.skills));
+      // character.attribute.selected = ["地","炎","光","水"];
+      // magicPoint = 23; // デバッグ用強制値
     }
+
 
     const magicData = autoAcquireMagic(
       character,
       attributeList.value,
-      13, // ← magicPoint
+      magicPoint, // ← magicPoint
       conditionalByAttr
     )
 
@@ -1442,20 +1540,7 @@ const RANK_POINT_TABLE = [
 
 
 
-  // maxRankを入れるだけで、せり上げ後の表を返す
-  function buildMagicLearnTable(maxRank) {
-    const table = {};
-    const start = 7 - maxRank; // 下から切り出す開始位置
 
-    for (let r = 1; r <= 7; r++) {
-      if (r <= maxRank) {
-        table[`Rank${r}`] = BASE_TABLE[start + (r - 1)].slice();
-      } else {
-        table[`Rank${r}`] = [0,0,0,0,0,0,0];
-      }
-    }
-    return table;
-  }
   // 魔法取得の進捗計算
   function calcProgressedDiff(diff, progress) {
     if (diff <= 0) return 0;
@@ -1474,6 +1559,51 @@ const RANK_POINT_TABLE = [
     // 四捨五入して整数化、かつ 0〜diff にクランプ
     return Math.max(0, Math.min(diff, Math.round(value)));
   }
+
+  // maxRankを入れるだけで、せり上げ後の表を返す
+  // 例: maxRank=3 なら Rank1〜3 は通常、Rank4〜7 は0
+  function buildMagicLearnTable(maxRank) {
+    const table = {};
+    const start = 7 - maxRank; // 下から切り出す開始位置
+
+    for (let r = 1; r <= 7; r++) {
+      if (r <= maxRank) {
+        table[`Rank${r}`] = BASE_TABLE[start + (r - 1)].slice();
+      } else {
+        table[`Rank${r}`] = [0,0,0,0,0,0,0];
+      }
+    }
+    return table;
+  }
+
+// スキル別取得数テーブル作成
+function buildSkillLearnTable(baseRank, skill) {
+  console.log("buildSkillLearnTable called:", skill, "baseRank:", baseRank);
+
+  const result = {};
+  if (!skill || typeof skill !== "object") return result;
+
+  const start = 7 - baseRank; // ★ ここが重要（せり上げ）
+
+  for (const [skillName, rawLevel] of Object.entries(skill)) {
+    const level = Number(rawLevel);
+    const colIndex = Math.max(0, Math.min(2, level - 1)); // 右にずれる
+
+    result[skillName] = {};
+
+    for (let rank = 1; rank <= 7; rank++) {
+      if (rank <= baseRank) {
+        const row = BASE_SKILL_TABLE[start + (rank - 1)] || [0,0,0];
+        result[skillName][`Rank${rank}`] = row[colIndex] ?? 0;
+      } else {
+        result[skillName][`Rank${rank}`] = 0;
+      }
+    }
+  }
+
+  return result;
+}
+
   /**
    * from=buildMagicLearnTable(baseRank)
    * to  =buildMagicLearnTable(baseRank+1)
@@ -1482,34 +1612,55 @@ const RANK_POINT_TABLE = [
    * @param {number} progress   0.0〜1.0
    * @returns {{Rank1:number[],Rank2:number[],...,Rank7:number[]}}
    */
-function buildProgressedMagicLearnTable(baseRank, progress) {
+function buildProgressedMagicLearnTable(
+  baseRank,
+  progress,
+  attribute,
+) {
+  const skillObj = attribute?.skill || [];
+  const attributeSelected = attribute?.selected || [];
+  // ① まずは今まで通り「生テーブル」を作る
   const fromTable = buildMagicLearnTable(baseRank - 1);
   const toTable   = buildMagicLearnTable(baseRank);
 
-  const result = {};
+  const rawTable = {};
 
   for (let rank = 1; rank <= 7; rank++) {
     const fromRow = [...(fromTable[`Rank${rank}`] || [0,0,0,0,0,0,0])];
     const toRow   = toTable[`Rank${rank}`] || [0,0,0,0,0,0,0];
 
-    // ★ ここが核心：進行中ランクの開始保証
+    // 進行中ランクの開始保証（元ロジック維持）
     if (rank === baseRank && fromRow[0] === 0) {
       fromRow[0] = 1;
     }
 
-    const row = [];
+    rawTable[`Rank${rank}`] = fromRow.map((from, i) => {
+      const to = toRow[i] ?? 0;
+      return from + calcProgressedDiff(to - from, progress);
+    });
+  }
 
-    for (let i = 0; i < 7; i++) {
-      const from = fromRow[i] ?? 0;
-      const to   = toRow[i] ?? 0;
+  // ② ここからが変更点：属性 selected のみ展開
+  const result = {};
 
-      const diff = to - from;
-      const add  = calcProgressedDiff(diff, progress);
-
-      row.push(from + add);
+  attributeSelected.forEach((attr, index) => {
+    result[attr] = {};
+    for (let rank = 1; rank <= 7; rank++) {
+      result[attr][`Rank${rank}`] =
+        rawTable[`Rank${rank}`]?.[index] ?? 0;
     }
+  });
 
-    result[`Rank${rank}`] = row;
+  // skill（同じレベルで混ぜる）
+  if (skillObj && typeof skillObj === "object") {
+    const skillTable = buildSkillLearnTable(baseRank, skillObj);
+    for (const [name, ranks] of Object.entries(skillTable)) {
+      result[name] = ranks;
+    }
+  }
+
+  if (DEBUG_MAGIC) {
+    console.log("buildProgressedMagicLearnTable result:", result);
   }
 
   return result;
@@ -1530,53 +1681,47 @@ function buildProgressedMagicLearnTable(baseRank, progress) {
     );
   }
   
-  // 条件がない魔法のみを取得
-  function acquireMagicByTable(attrProgressMap, attributeList, learnTable) {
-    if (DEBUG_MAGIC) {
-      console.log(
-        "acquireMagicByTable called:",
-        attrProgressMap,
-        attributeList,
-        learnTable
-      );
-    }
+// 条件がない魔法のみを取得
+function acquireMagicByTable(attributeList, learnTable) {
+  if (DEBUG_MAGIC) {
+    console.log(
+      "acquireMagicByTable called:",
+      attributeList,
+      learnTable
+    );
+  }
 
-    const result = {};
+  const result = {};
 
-  for (const ap of attrProgressMap) {
-    const { attr, index, rank: maxRank } = ap;
-    const attrData = attributeList.find(a => a.属性名 === attr);
+  for (const [name, rankTable] of Object.entries(learnTable)) {
+    const attrData = attributeList.find(a => a.属性名 === name);
     if (!attrData) continue;
 
     const magicList = attrData.魔法リスト ?? [];
-    result[attr] = [];
+    result[name] = [];
 
-    for (let r = 1; r <= maxRank; r++) {
-      const limit = learnTable[`Rank${r}`]?.[index] ?? 0;
+    for (let r = 1; r <= 7; r++) {
+      const limit = rankTable[`Rank${r}`] ?? 0;
       if (limit <= 0) continue;
 
       const candidates = magicList.filter(m => {
         const mr = Number(String(m.Rank).trim());
-
         const raw = typeof m.取得条件 === "string"
           ? m.取得条件.trim()
           : "";
-
-        const noCondition = (raw === "" || raw === "0");
-
-        return mr === r && noCondition;
+        return mr === r && (raw === "" || raw === "0");
       });
 
-
-
-      result[attr].push(...candidates.slice(0, limit));
+      result[name].push(...candidates.slice(0, limit));
     }
   }
-    if (DEBUG_MAGIC) {
-      console.log("acquireMagicByTable result:", result);
-    }
-    return result;
+
+  if (DEBUG_MAGIC) {
+    console.log("acquireMagicByTable result:", result);
   }
+  return result;
+}
+
 
 
   // 属性ごとに通常魔法と条件魔法を分離する
@@ -1618,148 +1763,96 @@ function buildProgressedMagicLearnTable(baseRank, progress) {
   }
 
   // 取得条件をチェック（parsed 前提・全条件AND + 属性別Rank上限）
-  function checkMagicConditionParsed(magic, char, attrProgressMap) {
-    const parsed = magic?.取得条件_parsed;
+  function checkMagicConditionParsed(magic, char, learnTable) {
+  const parsed = magic?.取得条件_parsed;
+  if (!parsed) return true;
 
-    if (!parsed) {
+  const name = magic?.名前 ?? "(no name)";
+  const magicRank = Number(magic?.Rank ?? 0);
+
+  const charRoles = (char.Role ?? [])
+    .map(r => r?.roleName)
+    .filter(Boolean);
+
+  const charMagics = char.magic?.magicListAll ?? [];
+  const charStats  = char.stats?.baseStats ?? {};
+
+  // ----------------------------
+  // 属性条件（Rank）
+  // ----------------------------
+// ----------------------------
+// 属性条件（Rank）
+// ----------------------------
+if (Array.isArray(parsed.属性) && parsed.属性.length > 0) {
+  for (const attr of parsed.属性) {
+    const rankTable = learnTable?.[attr];
+    if (!rankTable) {
       if (DEBUG_MAGIC) {
-        console.log(`[OK] ${magic?.名前} : 条件なし`);
+        console.warn(
+          `[NG][属性] ${magic?.名前} : ${attr} の learnTable が存在しない`
+        );
       }
-      return true;
+      return false;
     }
 
-    const name = magic?.名前 ?? "(no name)";
-
-    const charRoles = (char.Role ?? [])
-      .map(r => r?.roleName)
-      .filter(Boolean);
-
-    const charMagics = char.magic?.magicListAll ?? [];
-    const charStats = char.stats?.baseStats ?? {};
-
-    // ----------------------------
-    // Rank 制限
-    // ----------------------------
-    const magicRank = Number(magic?.Rank ?? 0);
-
-    // ----------------------------
-    // 属性条件（Rank 必須）
-    // ----------------------------
-    if (Array.isArray(parsed.属性) && parsed.属性.length > 0) {
-      // console.log("属性条件チェック:", parsed.属性);
-      for (const attr of parsed.属性) {
-        // console.log("属性条件チェック:", attr);
-        // attr が attrProgressMap に存在するか確認
-        const ap = attrProgressMap.find(ap => ap.attr === attr);
-        if (!ap) {
-          if (DEBUG_MAGIC) {
-            console.warn(`[NG][属性] ${name} : 属性 ${attr} が attrProgressMap に存在しない`);
-          }
-          return false;
-        }
-        // rank が魔法の rank を超えていなければ false
-        if (ap.rank <= magicRank) {
-          if (DEBUG_MAGIC) {
-            console.warn(`[NG][属性] ${name} : 属性 ${attr} の rank ${ap.rank} が魔法 rank ${magicRank} を満たさない`);
-          }
-          return false;
-        }
-      }
-    }
-
-
-    // ----------------------------
-    // ロール条件
-    // ----------------------------
-    if (Array.isArray(parsed.ロール) && parsed.ロール.length > 0) {
-      const ok = parsed.ロール.every(r => charRoles.includes(r));
-      if (!ok) {
-        if (DEBUG_MAGIC) {
-          console.warn(
-            `[NG][ロール] ${name}`,
-            { need: parsed.ロール, char: charRoles }
-          );
-        }
-        return false;
-      }
-    }
-
-    // ----------------------------
-    // スキル条件
-    // ----------------------------
-    if (Array.isArray(parsed.スキル) && parsed.スキル.length > 0) {
-      const ok = parsed.スキル.every(s =>
-        charMagics.some(m => m.名前 === s)
-      );
-      if (!ok) {
-        if (DEBUG_MAGIC) {
-          console.warn(
-            `[NG][スキル] ${name}`,
-            {
-              need: parsed.スキル,
-              char: charMagics.map(m => m.名前)
-            }
-          );
-        }
-        return false;
-      }
-    }
-
-    // ----------------------------
-    // 能力値条件
-    // ----------------------------
-    if (Array.isArray(parsed.能力値) && parsed.能力値.length > 0) {
-      for (const c of parsed.能力値) {
-        const v = charStats?.[c.key] ?? 0;
-        const ok = compareValue(v, c.op, c.value);
-
-        if (!ok) {
-          if (DEBUG_MAGIC) {
-            console.warn(
-              `[NG][能力値] ${name}`,
-              {
-                stat: c.key,
-                op: c.op,
-                need: c.value,
-                char: v
-              }
-            );
-          }
-          return false;
-        }
-      }
+    let unlockedRank = 0;
+    for (let r = 1; r <= 7; r++) {
+      if ((rankTable[`Rank${r}`] ?? 0) > 0) unlockedRank = r;
     }
 
     if (DEBUG_MAGIC) {
-      console.log(`[OK] ${name} : 条件クリア`);
+      console.log(
+        `[CHK][属性] ${magic?.名前}`,
+        {
+          attr,
+          magicRank,
+          unlockedRank,
+          rankTable
+        }
+      );
     }
 
-    return true;
-  }
-
-  // 属性ごとの魔法取得進捗を計算（attribute順を保証）
-  function buildAttributeProgressMap({
-    attribute,
-    learnTable,
-    baseRank,
-    globalProgress
-  }) {
-    return attribute.map((attr, attrIndex) => {
-      const attrRank = getContinuousAttributeRank(learnTable, attrIndex);
-
-      let progress = 0;
-      if (attrRank === baseRank) {
-        progress = Number(globalProgress.toFixed(3));
+    if (unlockedRank < magicRank) {
+      if (DEBUG_MAGIC) {
+        console.warn(
+          `[NG][属性] ${magic?.名前} : ${attr} unlockedRank=${unlockedRank} < magicRank=${magicRank}`
+        );
       }
-
-      return {
-        attr,          // 属性名
-        index: attrIndex, // 明示的な順序
-        rank: attrRank,
-        progress
-      };
-    });
+      return false;
+    }
   }
+}
+
+  // ----------------------------
+  // ロール条件
+  // ----------------------------
+  if (Array.isArray(parsed.ロール) && parsed.ロール.length > 0) {
+    if (!parsed.ロール.every(r => charRoles.includes(r))) return false;
+  }
+
+  // ----------------------------
+  // スキル条件（取得済み魔法）
+  // ----------------------------
+  if (Array.isArray(parsed.スキル) && parsed.スキル.length > 0) {
+    if (!parsed.スキル.every(s =>
+      charMagics.some(m => m.名前 === s)
+    )) return false;
+  }
+
+  // ----------------------------
+  // 能力値条件
+  // ----------------------------
+  if (Array.isArray(parsed.能力値) && parsed.能力値.length > 0) {
+    for (const c of parsed.能力値) {
+      const v = charStats?.[c.key] ?? 0;
+      if (!compareValue(v, c.op, c.value)) return false;
+    }
+  }
+
+  return true;
+}
+
+
 
   // 属性ごとの連続ランクを取得
   function getContinuousAttributeRank(learnTable, attrIndex) {
@@ -1785,62 +1878,116 @@ function buildProgressedMagicLearnTable(baseRank, progress) {
    *   conditionalMagicList : 条件魔法リスト（配列 or 属性別オブジェクト）
    *   attrProgressMap : 属性ごとの進捗情報 { 属性名: { rank: n, progress: x.xx }, ... }
    */
+  // function acquireConditionalMagicByAttr(
+  //   character,
+  //   acquiredNormalByAttr,
+  //   conditionalMagicList,
+  //   attrProgressMap
+  // ) {
+  //   if (DEBUG_MAGIC) {
+  //     console.log("=== acquireConditionalMagicByAttr START ===");
+  //     console.log("character.attribute:", character);
+  //     console.log("attrProgressMap:", attrProgressMap);
+  //     console.log("acquiredNormalByAttr:", acquiredNormalByAttr);
+  //     console.log("conditionalMagicList(raw):", conditionalMagicList);
+  //   }
+  //   const normalAll = Object.values(acquiredNormalByAttr ?? {}).flat();
+  //   const alreadyAll = [
+  //     ...normalAll,
+  //     ...(character.magicListAll ?? [])
+  //   ];
+
+  //   const result = {};
+
+  // for (const ap of attrProgressMap) {
+  //   const attr = ap.attr;
+  //   const unlockedRank = ap.rank;
+
+  //   if (!character.attribute.selected.includes(attr)) continue;
+  //   if (!unlockedRank) continue;
+
+  //   const list = conditionalMagicList[attr];
+  //   if (!Array.isArray(list) || list.length === 0) continue;
+
+  //   const attrMagics = [];
+
+  //   for (const magic of list) {
+  //     // Rank制御
+  //     if (Number(magic.Rank) > unlockedRank) continue;
+
+  //     // 条件チェック
+  //     if (magic.取得条件_parsed) {
+  //       if (!checkMagicConditionParsed(magic, character, attrProgressMap)) continue;
+  //     }
+
+  //     // 既取得チェック
+  //     if (alreadyAll.some(m => m.名前 === magic.名前)) continue;
+
+  //     attrMagics.push(magic);
+  //   }
+
+  //   if (attrMagics.length > 0) {
+  //     result[attr] = attrMagics;
+  //   }
+  // }
+
+
+  //   return result;
+  // }
   function acquireConditionalMagicByAttr(
-    character,
-    acquiredNormalByAttr,
-    conditionalMagicList,
-    attrProgressMap
-  ) {
-    if (DEBUG_MAGIC) {
-      console.log("=== acquireConditionalMagicByAttr START ===");
-      console.log("character.attribute:", character);
-      console.log("attrProgressMap:", attrProgressMap);
-      console.log("acquiredNormalByAttr:", acquiredNormalByAttr);
-      console.log("conditionalMagicList(raw):", conditionalMagicList);
-    }
-    const normalAll = Object.values(acquiredNormalByAttr ?? {}).flat();
-    const alreadyAll = [
-      ...normalAll,
-      ...(character.magicListAll ?? [])
-    ];
+  character,
+  acquiredNormalByAttr,
+  conditionalMagicList,
+  learnTable
+) {
+  if (DEBUG_MAGIC) {
+    console.log("=== acquireConditionalMagicByAttr START ===");
+    console.log("character:", character);
+    console.log("learnTable:", learnTable);
+    console.log("acquiredNormalByAttr:", acquiredNormalByAttr);
+    console.log("conditionalMagicList:", conditionalMagicList);
+  }
 
-    const result = {};
+  const normalAll = Object.values(acquiredNormalByAttr ?? {}).flat();
+  const alreadyAll = [
+    ...normalAll,
+    ...(character.magicListAll ?? [])
+  ];
 
-  for (const ap of attrProgressMap) {
-    const attr = ap.attr;
-    const unlockedRank = ap.rank;
+  const result = {};
 
-    if (!character.attribute.includes(attr)) continue;
-    if (!unlockedRank) continue;
-
-    const list = conditionalMagicList[attr];
+  for (const [name, rankTable] of Object.entries(learnTable)) {
+    const list = conditionalMagicList?.[name];
     if (!Array.isArray(list) || list.length === 0) continue;
 
-    const attrMagics = [];
+    // 解放済み最大Rank
+    let unlockedRank = 0;
+    for (let r = 1; r <= 7; r++) {
+      if ((rankTable[`Rank${r}`] ?? 0) > 0) unlockedRank = r;
+    }
+    if (unlockedRank === 0) continue;
+
+    const picked = [];
 
     for (const magic of list) {
-      // Rank制御
       if (Number(magic.Rank) > unlockedRank) continue;
 
-      // 条件チェック
       if (magic.取得条件_parsed) {
-        if (!checkMagicConditionParsed(magic, character, attrProgressMap)) continue;
+        if (!checkMagicConditionParsed(magic, character, learnTable)) continue;
       }
 
-      // 既取得チェック
       if (alreadyAll.some(m => m.名前 === magic.名前)) continue;
 
-      attrMagics.push(magic);
+      picked.push(magic);
     }
 
-    if (attrMagics.length > 0) {
-      result[attr] = attrMagics;
+    if (picked.length > 0) {
+      result[name] = picked;
     }
   }
 
-
-    return result;
-  }
+  return result;
+}
 
   // 属性別取得魔法マージ（名前で重複排除）
   function mergeAcquiredByAttr(base, added) {
@@ -1872,10 +2019,10 @@ function buildProgressedMagicLearnTable(baseRank, progress) {
   }
 
   /*
-      魔法を取得
+      魔法を作成するメイン関数
   */
   function autoAcquireMagic(character, attributeList, magicPoint, conditionalMagicList = []) {
-    if (true) {
+    if (DEBUG_MAGIC) {
       console.log("#############################");
       console.log("### autoAcquireMagic START ###");
       console.log("magicPoint:", magicPoint);
@@ -1887,10 +2034,8 @@ function buildProgressedMagicLearnTable(baseRank, progress) {
 
     // 1. ランク決定
     const rank = getUnlockedRank(magicPoint);
-
     // 2. ランク進捗
     const progress = getRankProgress(magicPoint, rank);
-
     if (DEBUG_MAGIC) {
       console.log("currentRank:", rank);
       console.log(
@@ -1902,39 +2047,16 @@ function buildProgressedMagicLearnTable(baseRank, progress) {
 
     // 3. 習得表作成
     const learnTable =
-      rank === 1
-        ? buildMagicLearnTable(1)
-        : buildProgressedMagicLearnTable(rank, progress);
+        buildProgressedMagicLearnTable(rank, progress, attribute);
 
     if (DEBUG_MAGIC) {
       console.log("=== Magic Learn Table ===");
-      Object.keys(learnTable).forEach(key => {
-        console.log(
-          key,
-          learnTable[key].map(v => String(v).padStart(2, " ")).join(" ")
-        );
-      });
-    }
-
-    const attrProgressMap = buildAttributeProgressMap({
-      attribute,
-      attributeList,
-      baseRank: rank,
-      globalProgress: progress,
-      learnTable
-    });
-
-    if (DEBUG_MAGIC) {
-      console.log("=== Attribute Progress ===");
-      console.log(attrProgressMap);
+      console.log(learnTable);
     }
 
     // 4. 通常魔法取得（表ベース）
-    const acquired = acquireMagicByTable(
-      attrProgressMap,
-      attributeList,
-      learnTable
-    );
+    const acquired = 
+    acquireMagicByTable(attributeList, learnTable);
 
     if (DEBUG_MAGIC) {
       console.log("=== Acquired Normal Magic ===");
@@ -1957,7 +2079,7 @@ function buildProgressedMagicLearnTable(baseRank, progress) {
       character,
       acquired,
       conditionalMagicList,
-      attrProgressMap
+      learnTable,
     );
 
     if (DEBUG_MAGIC) {

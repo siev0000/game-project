@@ -57,11 +57,17 @@
                 <!-- スキル表示 → Skill1 を使う -->
                 <template v-if="key === 'スキル'">
                   <div class="skill-block">
-                    <div class="skill-name" >
-                      技：{{ selectedSkillDetail.名前 || 'なし' }}
+                    <div class="skill-name" v-if="selectedSkillDetail">
+                      技：{{ selectedSkillDetail.名前 }}
                     </div>
-                    <div class="skill-effect">
-                      {{ selectedSkillDetail.効果概要 || '説明なし' }}
+                    <div class="skill-name" v-else>
+                      技：なし
+                    </div>
+                    <div class="skill-effect" v-if="selectedSkillDetail">
+                      {{ selectedSkillDetail.効果概要 }}
+                    </div>
+                    <div class="skill-effect" v-else>
+                      説明なし
                     </div>
                   </div>
                 </template>
@@ -214,8 +220,13 @@ const nextClasse = () => {
 }
 
 function getSizeBonus(siz) {
+  // NaN / 0 は補正なし
+  if (!Number.isFinite(siz) || siz === 0) {
+    return 0;
+  }
+
   if (siz >= 180) {
-    return Math.round(siz / 50 + 8);;
+    return Math.round(siz / 50 + 8);
   } else if (siz <= 150) {
     return -Math.round((160 - siz) / 3);
   } else {
@@ -238,6 +249,7 @@ function getDisplayValue(key) {
   : (currentClasse.value["SIZ"] ?? 100)
 
   const bonusPercent = getSizeBonus(siz);
+  console.log("SIZ:"+ siz + " → ボーナス:" + bonusPercent);
   const bonusKeysPlus = ["HP", "攻撃", "威圧"];
   const bonusKeysMinus = ["速度", "隠密", "軽業"];
 
