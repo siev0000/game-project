@@ -484,6 +484,17 @@ export function getRollIcon(name) {
   return result;
 }
 
+// 背景イラスト
+const backgroundMods = import.meta.glob(
+  "/src/assets/images/locations/*.webp",
+  { eager: true, as: "url" }
+);
+export const BACKGROUND_ILLUSTS = mapIcons(backgroundMods);
+// 背景
+export function getBackgroundIllust(name) {
+  return name && BACKGROUND_ILLUSTS[name] ? BACKGROUND_ILLUSTS[name] : "";
+}
+
 //★=== 戦闘関連ヘルパー ==============================================================================
 /**
  * 武器データを名前で取得

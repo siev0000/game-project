@@ -11,7 +11,8 @@ const routes = [
   { path: '/register', component: Register },
   { path: '/dashboard', component: Dashboard },
   { path: '/characterCreateView', component: CharacterCreateView },
-  { path: '/characterSelectView', component: CharacterSelectView }
+  { path: '/characterSelectView', component: CharacterSelectView },
+  { path: '/guest', component: () => import('../views/GuestView.vue')}
 ]
 
 export const router = createRouter({

@@ -14,6 +14,10 @@
     <div class="register-link">
       アカウントをお持ちでない方は <a href="/Register">こちら</a>
     </div>
+    <!-- ★ 追加 -->
+    <div class="guest-link">
+      <a @click.prevent="goGuest">ゲストで始める</a>
+    </div>
   </div>
 </template>
 
@@ -34,6 +38,10 @@ const username = ref('')
 const password = ref('')
 const message = ref('')
 const router = useRouter()
+
+const goGuest = () => {
+  router.push('/guest')   // ← 遷移先は自由に変更OK
+}
 
 const handleLogin = async () => {
   try {
@@ -65,6 +73,24 @@ const handleLogin = async () => {
 
 
 <style>
+.guest-link {
+  margin-top: 10px;
+  font-size: 15px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.guest-link a {
+  color: #aaffff;
+  text-decoration: none;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.guest-link a:hover {
+  text-decoration: underline;
+}
+
 .container {
   /* これだけあれば中央配置される */
   max-width: 650px;
