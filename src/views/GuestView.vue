@@ -17,6 +17,7 @@
         <button @click="showWorld = true">▶ ワールド情報</button>
         <button @click="showStats = true">▶ ステータス情報</button>
         <button @click="showBattle = true">▶ バトル情報</button>
+        <button @click="showUI = true">▶ UI情報</button>
       </div>
 
       <div class="back">
@@ -42,6 +43,10 @@
       v-if="showBattle"
       @close="showBattle = false"
     />
+    <UIModal
+      v-if="showUI"
+      @close="showUI = false"
+    />
   </div>
 </template>
 
@@ -54,11 +59,13 @@ import TutorialModal from '../components/modals/robot/TutorialModal.vue'
 import WorldModal from '../components/modals/robot/WorldModal.vue'
 import StatsModal from '../components/modals/robot/StatsView.vue'
 import BattleModal from '../components/modals/robot/BattleView.vue'
+import UIModal from '../components/modals/robot/UIModal.vue'
 
 const showTutorial = ref(false)
 const showWorld = ref(false)
 const showStats = ref(false)
 const showBattle = ref(false)
+const showUI = ref(false)
 
 const router = useRouter()
 

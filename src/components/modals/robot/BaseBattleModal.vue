@@ -42,6 +42,7 @@ defineEmits(['close'])
 }
 
 .close-btn {
+  width: 700px;
   position: absolute;
   bottom: 8px;
   right: 8px;

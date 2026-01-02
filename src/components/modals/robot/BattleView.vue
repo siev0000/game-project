@@ -22,7 +22,7 @@
             <div class="ally-icon" :class="{ 'has-icon': slot.unit.icon }">
               <img
                 v-if="slot.unit.icon"
-                :src="getCharIllust(slot.unit.icon)"
+                :src="getCharIllust(slot.unit.icon) || getCharIllust('スレイブ (新)')"
                 :alt="slot.unit.name"
               />
             </div>
@@ -101,7 +101,7 @@
 <script setup>
 import { reactive, computed, onMounted } from 'vue'
 import BaseBattleModal from './BaseBattleModal.vue'
-import { battleAllies } from '../data/battleAllies.js'
+import { battleAllies, battleEnemies } from '../data/battleAllies.js'
 import { getBackgroundIllust, getCharIllust } from '@/constants/statData.js'
 defineEmits(['close'])
 
@@ -332,9 +332,10 @@ onMounted(() => {
 
 .segment {
   background: #0a141a;
-  border: 1px solid #173542;
   position: relative;
   overflow: hidden;
+  clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%);
+  box-shadow: inset 0 0 0 1px #173542;
 }
 
 .segment::before {
@@ -355,8 +356,11 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   font-size: 19px;
-  color: #e6fcff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  color: #f7fdff;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.9),
+    0 0 6px rgba(0, 200, 255, 0.45),
+    0 0 12px rgba(0, 0, 0, 0.6);
   pointer-events: none;
 }
 
