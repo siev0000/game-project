@@ -424,6 +424,60 @@ function mapIcons(mods) {
   return icons;
 }
 
+// SE用マッピング関数（拡張子を除去）
+function mapSE(mods) {
+  const sounds = {};
+  for (const [path, url] of Object.entries(mods)) {
+    const filename = path.split("/").pop().replace(/\.(mp3|wav)$/i, "");
+    sounds[filename] = url;
+  }
+  return sounds;
+}
+
+// SE読み込み
+const seMods = import.meta.glob(
+  "/src/assets/audio/se/*.{mp3,wav}",
+  { eager: true, as: "url" }
+);
+export const SE_SOUNDS = mapSE(seMods);
+
+const sePlayers = new Map();
+
+// 値からSEを鳴らす共通処理
+export function playSE(value, options = {}) {
+  if (typeof Audio === "undefined") return;
+  const { volume = 0.8, rate = 1, loop = false, id = null } = options;
+  const key = value || "ui_click";
+  const url = SE_SOUNDS[key];
+  if (!url) return;
+
+  const playerKey = id || key;
+  if (loop && sePlayers.has(playerKey)) {
+    const current = sePlayers.get(playerKey);
+    current.pause();
+    sePlayers.delete(playerKey);
+  }
+
+  const audio = new Audio(url);
+  audio.volume = Math.max(0, Math.min(1, volume));
+  audio.playbackRate = rate;
+  audio.loop = loop;
+  audio.currentTime = 0;
+  audio.play().catch(() => {});
+
+  if (loop) {
+    sePlayers.set(playerKey, audio);
+  }
+}
+
+export function stopSE(id) {
+  const key = id || "ui_click";
+  const audio = sePlayers.get(key);
+  if (!audio) return;
+  audio.pause();
+  sePlayers.delete(key);
+}
+
 /* =====================================
    取得ヘルパー
 ===================================== */
@@ -493,6 +547,17 @@ export const BACKGROUND_ILLUSTS = mapIcons(backgroundMods);
 // 背景
 export function getBackgroundIllust(name) {
   return name && BACKGROUND_ILLUSTS[name] ? BACKGROUND_ILLUSTS[name] : "";
+}
+
+// UI用イラスト取得
+const uiMods = import.meta.glob(
+  "/src/assets/images/ui/*.webp",
+  { eager: true, as: "url" }
+);
+export const ui_ILLUSTS = mapIcons(uiMods);
+// 背景
+export function getUillust(name) {
+  return name && ui_ILLUSTS[name] ? ui_ILLUSTS[name] : "";
 }
 
 //★=== 戦闘関連ヘルパー ==============================================================================
