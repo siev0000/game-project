@@ -5,7 +5,29 @@
       <!-- ===== 上：バトルフィールド（40%） ===== -->
       <div class="battle-field" :style="{ backgroundImage: `url(${battleFieldBg})` }">
         <div class="enemy-area">
-          <div class="field-placeholder"></div>
+          <div class="enemy-grid">
+            <div
+              v-for="slot in enemySlots"
+              :key="slot.index"
+              class="enemy-slot"
+              :class="getEnemySlotClass(slot)"
+            >
+              <div
+                v-if="slot.unit"
+                class="enemy-card"
+                :style="enemyDistanceStyle(slot.unit, slot.index)"
+              >
+                <div class="enemy-icon" :class="{ 'has-icon': slot.unit.icon }">
+                  <img
+                    v-if="slot.unit.icon"
+                    :src="getCharIllust(slot.unit.icon)"
+                    :alt="slot.unit.name"
+                    :style="enemyColorStyle(slot.unit)"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       
 
@@ -113,6 +135,121 @@ const allies = reactive(
     mpDisplay: 0
   }))
 )
+const enemyUnits = battleEnemies
+const ENEMY_SLOT_COUNT = 4
+const enemySlots = computed(() => {
+  const front = enemyUnits.filter(enemy => enemy.position !== 'back')
+  const back = enemyUnits.filter(enemy => enemy.position === 'back')
+  const backSlots = [back[0] || null, back[1] || null]
+  const frontSlots = [front[0] || null, front[1] || null]
+  const ordered = [...backSlots, ...frontSlots].slice(0, ENEMY_SLOT_COUNT)
+  return Array.from({ length: ENEMY_SLOT_COUNT }, (_, index) => ({
+    index,
+    unit: ordered[index] || null
+  }))
+})
+const backCount = computed(() => enemyUnits.filter(enemy => enemy.position === 'back').length)
+const frontCount = computed(() => enemyUnits.filter(enemy => enemy.position !== 'back').length)
+
+const getEnemySlotClass = (slot) => {
+  const classes = [`enemy-slot-${slot.index + 1}`]
+
+  if (slot.unit) {
+    const isBackRow = slot.index < 2
+    const isFrontRow = slot.index >= 2
+    const isSingleBack = isBackRow && backCount.value === 1
+    const isSingleFront = isFrontRow && frontCount.value === 1
+
+    if (isSingleBack || isSingleFront) {
+      classes.push('is-center')
+    }
+  }
+
+  return classes
+}
+
+const enemyDistanceStyle = (enemy, slotIndex) => {
+  if (!enemy) return null
+  const rawSiz = Number(enemy.siz) || 450
+
+  // SIZ の想定範囲
+  const MIN_SIZ = 90
+  const MAX_SIZ = 1000
+  const SIZ_RANGE = MAX_SIZ - MIN_SIZ // 910
+
+  // 表示サイズ(px)の範囲
+  const MIN_PX = 200
+  const MAX_PX = 550
+  const PX_RANGE = MAX_PX - MIN_PX // 700
+
+  // clamp
+  const siz = Math.min(MAX_SIZ, Math.max(MIN_SIZ, rawSiz))
+
+  // 割合（0〜1）
+  const ratio = (siz - MIN_SIZ) / SIZ_RANGE
+
+  // 線形変換
+  const sizePx = Math.round(
+    MIN_PX + PX_RANGE * ratio
+  )
+
+  const { scale, offsetX, offsetY, baseShift } = getEnemyPositionAdjust(
+    enemy,
+    sizePx,
+    slotIndex
+  )
+  const shift = baseShift + offsetY
+
+  console.log(
+    'enemyDistanceStyle',
+    enemy.name,
+    rawSiz,
+    '→',
+    siz,
+    `ratio=${ratio.toFixed(3)}`,
+    '=>',
+    sizePx,
+    shift
+  )
+
+  return {
+    '--enemy-size': `${sizePx}px`,
+    '--enemy-shift': `${shift}px`,
+    '--enemy-x': `${offsetX}px`,
+    '--enemy-scale': scale
+  }
+}
+
+const getEnemyPositionAdjust = (enemy, sizePx) => {
+  const isBack = enemy.position === 'back'
+
+  const baseScale = Number(enemy.scale) || (isBack ? 0.95 : 1.05)
+  const flyingScale = enemy.sFlying ? (Number(enemy.flyingScale) || 0.85) : 1
+  const scale = baseScale * flyingScale
+
+  const baseX = isBack ? 35 : -23
+  const baseY = isBack ? -180 : 0
+
+  const x = Number(enemy.offsetX ?? baseX) || 0
+  const y = Number(enemy.offsetY ?? baseY) || 0
+  const flyingOffsetY = enemy.sFlying ? (Number(enemy.flyingOffsetY) || -120) : 0
+  const offsetY = y + flyingOffsetY
+
+  const baseShift = isBack ? Math.round(sizePx + 50) : 0
+
+  return {
+    scale,
+    offsetX: x,
+    offsetY,
+    baseShift
+  }
+}
+const enemyColorStyle = (enemy) => {
+  if (!enemy?.setColor) return null
+  return { filter: enemy.setColor }
+}
+
+
 const battleFieldBg = getBackgroundIllust('ロボット研究所_廃墟')
 const SLOT_COUNT = 4
 const allySlots = computed(() =>
@@ -155,25 +292,100 @@ onMounted(() => {
 
 /* ===== 上：フィールド ===== */
 .battle-field {
-  height: 60%;
+  height: 725px;
   border: 1px solid #2fa4c7;
   display: flex;
   flex-direction: column;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  position: relative;
+  overflow: hidden;
+}
+
+.battle-field::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(3px);
+  background: rgba(0, 0, 0, 0.08);
+  z-index: 0;
+}
+
+.battle-field > * {
+  position: relative;
+  z-index: 1;
 }
 
 .enemy-area {
   height: 66.6667%;
   display: flex;
+  align-items: flex-end;
   justify-content: center;
-  align-items: center;
+  padding: 8px 16px;
 }
 
-.field-placeholder {
-  opacity: 0.4;
-  letter-spacing: 3px;
+.enemy-grid {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 8px 24px;
+  align-items: stretch;
+  justify-items: stretch;
+}
+
+.enemy-slot {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.enemy-slot.is-center {
+  grid-column: 1 / -1;
+  justify-self: center;
+}
+
+.enemy-card {
+  width: var(--enemy-size, 225px);
+  height: var(--enemy-size, 225px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translate(calc(-50% + var(--enemy-x, 0px)), var(--enemy-shift, 0px))
+    scale(var(--enemy-scale, 1));
+}
+
+/* Slot order: 1,2 = front / 3,4 = back */
+.enemy-slot-3,
+.enemy-slot-4 {
+  opacity: 0.9;
+}
+
+.enemy-icon {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  transform-origin: center center;
+}
+
+.enemy-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+/* 人数による縮小は行わず、個体サイズをそのまま反映 */
+.enemy-icon {
+  transform: none;
 }
 
 /* ===== 中央：味方 ===== */

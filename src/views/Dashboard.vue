@@ -9,7 +9,7 @@
   </div>
 </template>
 <style scoped>
-@import '/src/css/useScale.css';
+/* @import '/src/css/useScale.css'; */
 </style>
 <script setup>
 import { ref, onMounted } from 'vue'

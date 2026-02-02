@@ -16,13 +16,13 @@
     </div>
     <!-- ★ 追加 -->
     <div class="guest-link">
-      <a @click.prevent="goGuest">ゲストで始める</a>
+      <a @click.prevent="goGuest">機械で始める</a>
     </div>
   </div>
 </template>
 
 <style scoped>
-@import '/src/css/useScale.css';
+/* @import '/src/css/useScale.css'; */
 </style>
 <script setup>
 import { ref, onMounted } from 'vue'
@@ -32,7 +32,7 @@ import { runEquipmentTest } from "@/constants/testData.js";
 
 onMounted(() => {
   applyGlobalScale()
-  runEquipmentTest()
+  // runEquipmentTest()
 })
 const username = ref('')
 const password = ref('')

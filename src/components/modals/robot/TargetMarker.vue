@@ -754,7 +754,7 @@ watch(
   opacity: 0.95;
   --gen1-ring-x: 0px;
   --gen1-ring-y: 0px;
-  animation: gen1JitterRing 2.1s steps(2) infinite;
+  animation: gen1JitterRing 3.1s steps(2) infinite;
   animation-delay: 0.42s;
   transform: translate(var(--gen1-ring-x), var(--gen1-ring-y));
 }
@@ -766,7 +766,8 @@ watch(
   --gen1-jx: 0px;
   --gen1-jy: 0px;
   animation-delay: 0.5s;
-  animation: gen1JitterCross 2.1s steps(2) infinite;
+  animation: gen1JitterCross 3.1s steps(2) infinite;
+  transform: translate(-50%, -50%) translate(var(--gen1-jx), var(--gen1-jy));
 }
 
 .gen-1 .cross-h {
@@ -777,7 +778,6 @@ watch(
     currentColor 0 4px,
     transparent 4px 10px
   );
-  transform: translate(-50%, -50%) translate(var(--gen1-jx), var(--gen1-jy));
 }
 
 .gen-1 .cross-v {
@@ -788,7 +788,6 @@ watch(
     currentColor 0 4px,
     transparent 4px 10px
   );
-  transform: translate(-50%, -50%) translate(var(--gen1-jx), var(--gen1-jy));
 }
 
 .gen-1 .core {
@@ -1026,9 +1025,9 @@ watch(
   inset: 1%;
 }
 
-.gen-5 .orbit-3 {
+/* .gen-5 .orbit-3 {
   inset: 3%;
-}
+} */
 
 .gen-5 .orbit-4 {
   inset: 3%;
@@ -1108,6 +1107,7 @@ watch(
     currentColor 0 2px,
     transparent 2px 8px
   );
+  opacity: 0.4;
 }
 
 .gen-6 .cross-v {
@@ -1118,6 +1118,7 @@ watch(
     currentColor 0 2px,
     transparent 2px 8px
   );
+  opacity: 0.4;
 }
 
 .gen-6 .cross.small {
@@ -1128,6 +1129,7 @@ watch(
   display: block;
   opacity: 0.85;
   animation: spin 12s linear infinite;
+  opacity: 0.7;
 }
 
 .gen-6 .corner {
@@ -1146,28 +1148,32 @@ watch(
   top: 4px;
   left: 4px;
   --corner-rot: 0deg;
+  opacity: 0.7;
 }
 
 .gen-6 .corner.tr {
   top: 4px;
   right: 4px;
   --corner-rot: 90deg;
+  opacity: 0.7;
 }
 
 .gen-6 .corner.bl {
   bottom: 4px;
   left: 4px;
   --corner-rot: 90deg;
+  opacity: 0.7;
 }
 
 .gen-6 .corner.br {
   bottom: 4px;
   right: 4px;
   --corner-rot: 0deg;
+  opacity: 0.7;
 }
 
 .gen-6 .center-x {
-  opacity: 0.9;
+  opacity: 0.45;
 }
 
 .gen-6 .core {
@@ -1176,6 +1182,7 @@ watch(
   border-width: 1px;
   border-radius: 50%;
   box-shadow: 0 0 8px currentColor;
+  opacity: 0.9;
 }
 
 .gen-6 {
@@ -1312,13 +1319,39 @@ watch(
 
 /* 第一世代の照準 */
 @keyframes gen1JitterRing {
-  0% { --gen1-ring-x: 0px; --gen1-ring-y: 0px; }
-  25% { --gen1-ring-x: -1px; --gen1-ring-y: 1px; }
-  50% { --gen1-ring-x: 1px; --gen1-ring-y: 0px; }
-  75% { --gen1-ring-x: 0px; --gen1-ring-y: -1px; }
-  100% { --gen1-ring-x: 0px; --gen1-ring-y: 0px; }
-}
+  0%  { --gen1-ring-x: 0px;  --gen1-ring-y: 0px; }
 
+  /* 左下へ一気にブレる */
+  5%  { --gen1-ring-x: -1px; --gen1-ring-y: 1px; }
+  10% { --gen1-ring-x: -2px; --gen1-ring-y: 2px; }
+  15% { --gen1-ring-x: -3px; --gen1-ring-y: 3px; }
+  20% { --gen1-ring-x: -4px; --gen1-ring-y: 4px; }
+  25% { --gen1-ring-x: -5px; --gen1-ring-y: 5px; } /* ピーク */
+
+  /* 少し戻す（縦だけ） */
+  30% { --gen1-ring-x: -5px; --gen1-ring-y: 3px; }
+
+  /* 横方向へズレ */
+  35% { --gen1-ring-x: -2px; --gen1-ring-y: 3px; }
+  40% { --gen1-ring-x: 1px;  --gen1-ring-y: 3px; }
+  45% { --gen1-ring-x: 4px;  --gen1-ring-y: 3px; }
+
+  /* 上方向へ */
+  50% { --gen1-ring-x: 4px;  --gen1-ring-y: 1px; }
+  55% { --gen1-ring-x: 4px;  --gen1-ring-y: -1px; }
+  60% { --gen1-ring-x: 4px;  --gen1-ring-y: -3px; }
+
+  /* 減衰しながら戻る */
+  65% { --gen1-ring-x: 2px;  --gen1-ring-y: -2px; }
+  70% { --gen1-ring-x: 1px;  --gen1-ring-y: -1px; }
+  75% { --gen1-ring-x: 0px;  --gen1-ring-y: -1px; }
+  80% { --gen1-ring-x: 0px;  --gen1-ring-y: -0.5px; }
+
+  /* 余韻 */
+  90% { --gen1-ring-x: -0.5px; --gen1-ring-y: 0.2px; }
+  100%{ --gen1-ring-x: 0px;    --gen1-ring-y: 0px; }
+}
+/* 第一世代の照準十字 */
 @keyframes gen1JitterCross {
   0%  { --gen1-jx: 0px;  --gen1-jy: 0px; }
 

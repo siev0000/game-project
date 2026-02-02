@@ -69,7 +69,7 @@ const handleRegister = async () => {
 @import '/src/css/useScale.css';
 
 .container {
-  background-image: url('/images/入力ホーム.jpg');
+  background-image: url('/src/assets/images/入力ホーム.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

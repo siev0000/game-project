@@ -75,7 +75,7 @@
 </template>
 <!-- 追加してみる。なんだかラグがすごい気がするけど大丈夫だろうか -->
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { playSE, stopSE } from '@/constants/statData.js'
 import TargetMarker from './TargetMarker.vue'
 // import TargetMarkerVer2 from './TargetMarkerVer2.vue'
@@ -97,6 +97,38 @@ const isAnalyze = ref(false)
 const isHeat = ref(false)
 const isNightVision = ref(false)
 // const showTargetVer2 = ref(false)
+const controlButtons = computed(() => [
+  { key: "close", label: "閉じる", action: "handleClose" },
+
+  { key: "eyeOpen", label: "眼を開く", action: "triggerEyeOpen" },
+  { key: "eyeClose", label: "眼を閉じる", action: "triggerEyeClose" },
+
+  { key: "analyze", label: "解析", action: "triggerAnalyze" },
+  { key: "damage", label: "ダメージ", action: "triggerDamage" },
+  { key: "shake", label: "揺れ", action: "triggerShake" },
+
+  { key: "static1", label: "砂嵐", action: "triggerStatic", args: [1] },
+  { key: "static2", label: "砂嵐2", action: "toggleStatic2" },
+  { key: "static3", label: "砂嵐3", action: "triggerStatic", args: [3] },
+  { key: "static4", label: "砂嵐4", action: "toggleStatic4" },
+
+  { key: "anomaly", label: "異常", action: "triggerAnomaly" },
+  { key: "reboot", label: "再起動", action: "triggerReboot" },
+
+  { key: "target", label: "ターゲット", action: "toggleTarget" },
+  { key: "heat", label: "熱源", action: "toggleHeat" },
+  { key: "night", label: "暗視", action: "toggleNightVision" },
+]);
+
+const generationButtons = computed(() => [
+  { key: 1, label: "第一世代", action: "setGeneration", args: [1] },
+  { key: 2, label: "第二世代", action: "setGeneration", args: [2] },
+  { key: 3, label: "第三世代", action: "setGeneration", args: [3] },
+  { key: 4, label: "第四世代", action: "setGeneration", args: [4] },
+  { key: 5, label: "第五世代", action: "setGeneration", args: [5] },
+  { key: 6, label: "第六世代", action: "setGeneration", args: [6] },
+  { key: 9, label: "SP世代", action: "setGeneration", args: [9] },
+]);
 
 const setGeneration = value => {
   generation.value = value

@@ -15,13 +15,15 @@
         <button @click="goDemo">▶ デモ起動</button>
         <button @click="showTutorial = true">▶ 操作ガイド</button>
         <button @click="showWorld = true">▶ ワールド情報</button>
-        <button @click="showStats = true">▶ ステータス情報</button>
+        <button @click="showStats = true">▶ ステータス一覧</button>
         <button @click="showBattle = true">▶ バトル情報</button>
+        <button @click="showBattleVer2 = true">▶ バトル情報ver2</button>
         <button @click="showUI = true">▶ UI情報</button>
+        <button @click="showImageGallery = true">▶ イメージギャラリー</button>
       </div>
 
       <div class="back">
-        <a @click.prevent="goBack">← ログイン画面に戻る</a>
+        <a @click.prevent="goBack">ログイン画面に戻る</a>
       </div>
     </div>
     <TutorialModal
@@ -43,9 +45,17 @@
       v-if="showBattle"
       @close="showBattle = false"
     />
+    <BattleVer2Modal
+      v-if="showBattleVer2"
+      @close="showBattleVer2 = false"
+    />
     <UIModal
       v-if="showUI"
       @close="showUI = false"
+    />
+    <ImageGalleryModal
+      v-if="showImageGallery"
+      @close="showImageGallery = false"
     />
   </div>
 </template>
@@ -59,13 +69,17 @@ import TutorialModal from '../components/modals/robot/TutorialModal.vue'
 import WorldModal from '../components/modals/robot/WorldModal.vue'
 import StatsModal from '../components/modals/robot/StatsView.vue'
 import BattleModal from '../components/modals/robot/BattleView.vue'
+import BattleVer2Modal from '../components/modals/robot/BattleView_ver2.vue'
 import UIModal from '../components/modals/robot/UIModal.vue'
+import ImageGalleryModal from '../components/modals/robot/ImageGalleryModal.vue'
 
 const showTutorial = ref(false)
 const showWorld = ref(false)
 const showStats = ref(false)
 const showBattle = ref(false)
+const showBattleVer2 = ref(false)
 const showUI = ref(false)
+const showImageGallery = ref(false)
 
 const router = useRouter()
 
@@ -79,11 +93,8 @@ const goBack = () => {
 </script>
 
 <style scoped>
-@import '/src/css/useScale.css';
-</style>
 
-<style>
-/* ===== 全体 ===== */
+/* ===== 全体===== */
 .sf-terminal {
   max-width: 700px;
   width: 100%;
@@ -160,7 +171,7 @@ const goBack = () => {
   );
 }
 
-/* ===== 戻る ===== */
+/* ===== 戻めE===== */
 .back {
   margin-top: 20px;
   text-align: center;
