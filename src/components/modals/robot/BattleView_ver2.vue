@@ -170,14 +170,18 @@ const allies = reactive(
 const enemyUnits = battleEnemiesver2
 const ENEMY_ROWS = 3
 const ALLY_ROWS = 3
+// 1体のみのときに配置する行（0-2）
 const SINGLE_UNIT_ROW_INDEX = 1
+// 1体のみのときの追加オフセット
 const SINGLE_UNIT_OFFSET = { x: 0, y: 90 }
 
+// front/back で列分割
 const splitUnits = (units, backValue = 'back') => ({
   back: units.filter(unit => unit.position === backValue),
   front: units.filter(unit => unit.position !== backValue)
 })
 
+// 片側の表示スロットを組み立て（列×行）
 const buildSideSlots = (units, rows, columnOrder) => {
   const slots = []
   const { back, front } = splitUnits(units)
@@ -215,6 +219,7 @@ const allyFieldSlots = computed(() =>
   buildSideSlots(allies, ALLY_ROWS, ['front', 'back'])
 )
 
+// 敵の表示サイズ・位置（スロット補正込み）
 const enemyDistanceStyle = (enemy, slot) => {
   if (!enemy) return null
   const sizePx = calcSizePx(enemy.siz, 450)
@@ -235,6 +240,7 @@ const enemyDistanceStyle = (enemy, slot) => {
   }
 }
 
+// 敵の個体補正（拡大率/位置）
 const getEnemyPositionAdjust = (enemy, sizePx) => {
   const { scale, offsetX, offsetY } = getPositionAdjust(enemy, 'enemy')
 
@@ -248,8 +254,10 @@ const getEnemyPositionAdjust = (enemy, sizePx) => {
     baseShift
   }
 }
+// 味方の個体補正（拡大率/位置）
 const getAllyPositionAdjust = (unit) => getPositionAdjust(unit, 'ally')
 
+// 共通の位置補正（敵/味方の向きだけ変える）
 const getPositionAdjust = (unit, side) => {
   const sign = side === 'enemy' ? -1 : 1
   const baseXBack = 20 * sign
@@ -278,6 +286,7 @@ const getPositionAdjust = (unit, side) => {
   }
 }
 
+// 敵の色フィルタ
 const enemyColorStyle = (enemy) => {
   if (!enemy?.setColor) return null
   return { filter: enemy.setColor }
@@ -298,6 +307,7 @@ const segmentFill = (current, max, index) => {
   return Math.max(0, Math.min(1, fill))
 }
 
+// 味方の表示サイズ・位置（スロット補正込み）
 const allyImageStyle = (unit, slot) => {
   const sizePx = calcSizePx(unit?.siz, 450)
   const { scale, offsetX, offsetY } = getAllyPositionAdjust(unit)
@@ -311,6 +321,7 @@ const allyImageStyle = (unit, slot) => {
   }
 }
 
+// 飛行時の影：本来位置に固定
 const unitShadowStyle = (unit, slot, side) => {
   const sizePx = calcSizePx(unit?.siz * 0.1, 450)
   const shadowHeight = Math.round(sizePx / 5)
@@ -325,6 +336,7 @@ const unitShadowStyle = (unit, slot, side) => {
   }
 }
 
+// SIZ を表示サイズ(px)へ変換（1000超は別スケール）
 const calcSizePx = (rawValue, fallback) => {
   const rawSiz = Number(rawValue) || fallback
 

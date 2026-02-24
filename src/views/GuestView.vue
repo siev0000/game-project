@@ -18,6 +18,7 @@
         <button @click="showStats = true">▶ ステータス一覧</button>
         <button @click="showBattle = true">▶ バトル情報</button>
         <button @click="showBattleVer2 = true">▶ バトル情報ver2</button>
+        <button @click="openDialogueTest">▶ メッセージテスト</button>
         <button @click="showUI = true">▶ UI情報</button>
         <button @click="showImageGallery = true">▶ イメージギャラリー</button>
       </div>
@@ -49,6 +50,19 @@
       v-if="showBattleVer2"
       @close="showBattleVer2 = false"
     />
+    <DialogueMessageModal
+      v-if="showDialogueTest"
+      :name="dialogueTestName"
+      :message="dialogueTestMessage"
+      :type="dialogueTestType"
+      :message-speed="dialogueTestMessageSpeed"
+      :voice-pitch="dialogueTestVoicePitch"
+      :voice-volume="dialogueTestVoiceVolume"
+      :message-id="dialogueTestMessageId"
+      :wait-input="dialogueTestWaitInput"
+      :test-mode="true"
+      @close="showDialogueTest = false"
+    />
     <UIModal
       v-if="showUI"
       @close="showUI = false"
@@ -70,6 +84,7 @@ import WorldModal from '../components/modals/robot/WorldModal.vue'
 import StatsModal from '../components/modals/robot/StatsView.vue'
 import BattleModal from '../components/modals/robot/BattleView.vue'
 import BattleVer2Modal from '../components/modals/robot/BattleView_ver2.vue'
+import DialogueMessageModal from '../components/modals/robot/DialogueMessageModal.vue'
 import UIModal from '../components/modals/robot/UIModal.vue'
 import ImageGalleryModal from '../components/modals/robot/ImageGalleryModal.vue'
 
@@ -78,8 +93,17 @@ const showWorld = ref(false)
 const showStats = ref(false)
 const showBattle = ref(false)
 const showBattleVer2 = ref(false)
+const showDialogueTest = ref(false)
 const showUI = ref(false)
 const showImageGallery = ref(false)
+const dialogueTestName = ref('TEST-UNIT')
+const dialogueTestMessage = ref('テストモードを起動しました。\nTYPEと音声設定を調整してください。')
+const dialogueTestType = ref(1)
+const dialogueTestMessageSpeed = ref(28)
+const dialogueTestVoicePitch = ref(1)
+const dialogueTestVoiceVolume = ref(0.5)
+const dialogueTestMessageId = ref(1)
+const dialogueTestWaitInput = ref(true)
 
 const router = useRouter()
 
@@ -89,6 +113,11 @@ onMounted(() => {
 
 const goBack = () => {
   router.push('/')
+}
+
+const openDialogueTest = () => {
+  dialogueTestMessageId.value += 1
+  showDialogueTest.value = true
 }
 </script>
 

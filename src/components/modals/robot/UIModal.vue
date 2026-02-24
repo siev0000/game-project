@@ -1,6 +1,13 @@
 <template>
-  <div class="ui-modal">
+  <div class="ui-modal" :class="{ embedded }">
     <div class="hud-root" :class="`gen-${generation}`">
+        <div v-if="showTarget" class="target-layer" :class="`gen-${currentTargetGeneration}`">
+          <div ref="targetRef" class="target-marker-instance" :style="targetStyle">
+            <div class="target-marker-core" :class="targetMarkerClasses">
+              <TargetMarker :generation="currentTargetGeneration" />
+            </div>
+          </div>
+        </div>
       <div
         class="hud-panel"
         :class="[
@@ -19,9 +26,6 @@
           }
         ]"
       >
-        <div v-if="showTarget" class="target-layer">
-          <TargetMarker class="target-marker-instance" :generation="generation" />
-        </div>
         <!-- <div v-if="showTargetVer2" class="target-layer">
           <TargetMarkerVer2
             v-if="generation <= 3"
@@ -29,22 +33,35 @@
             :generation="generation"
           />
         </div> -->
+        <!-- 視界の開閉（暗転/開眼/閉眼） -->
         <div class="hud-blackout" :class="{ active: eyeClosed || eyeOpen || eyeClosing }"></div>
+        <!-- HUDの発光レイヤー -->
         <div class="hud-glow"></div>
+        <!-- 四隅のライン装飾 -->
         <div class="hud-corners"></div>
-        <div class="hud-notch"></div>
+        <!-- HUDの切り欠き装飾（未使用） -->
+        <!-- <div class="hud-notch"></div> -->
+        <!-- 走査線（横ライン） -->
         <div class="hud-scanlines"></div>
+        <!-- 走査線（縦スキャン） -->
         <div class="hud-scanline-x" @animationend="onScanlineEnd"></div>
+        <!-- ノイズ粒子 -->
         <div class="hud-noise"></div>
+        <!-- 眼を開く光の演出 -->
         <div class="hud-open-light"></div>
+        <!-- 砂嵐/ノイズ演出 -->
         <div class="hud-static"></div>
+        <!-- まぶたの演出 -->
         <div class="hud-lids"></div>
-        <div class="hud-readout">ROBOT VISION</div>
+        <!-- HUDのテキスト表示（未使用） -->
+        <!-- <div class="hud-readout">ROBOT VISION</div> -->
+        <!-- HUDのメーター装飾 -->
         <div class="hud-gauge"></div>
       </div>
 
-      <div class="hud-controls">
+      <div v-if="showControls" class="hud-controls">
         <button @click="handleClose">閉じる</button>
+        <button @click="toggleTarget">ターゲット</button>
         <button @click="triggerEyeOpen">眼を開く</button>
         <button @click="triggerEyeClose">眼を閉じる</button>
         <button @click="triggerAnalyze">解析</button>
@@ -56,12 +73,11 @@
         <button @click="toggleStatic4">砂嵐4</button>
         <button @click="triggerAnomaly">異常</button>
         <button @click="triggerReboot">再起動</button>
-        <button @click="toggleTarget">ターゲット</button>
         <button @click="toggleHeat">熱源</button>
         <button @click="toggleNightVision">暗視</button>
         <!-- <button @click="toggleTargetVer2">ターゲットVer2</button> -->
       </div>
-      <div class="hud-controls hud-controls-secondary">
+      <div v-if="showControls" class="hud-controls hud-controls-secondary">
         <button @click="setGeneration(1)">第一世代</button>
         <button @click="setGeneration(2)">第二世代</button>
         <button @click="setGeneration(3)">第三世代</button>
@@ -75,10 +91,15 @@
 </template>
 <!-- 追加してみる。なんだかラグがすごい気がするけど大丈夫だろうか -->
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { playSE, stopSE } from '@/constants/statData.js'
 import TargetMarker from './TargetMarker.vue'
 // import TargetMarkerVer2 from './TargetMarkerVer2.vue'
+
+const props = defineProps({
+  embedded: { type: Boolean, default: false },
+  showControls: { type: Boolean, default: true }
+})
 
 const emit = defineEmits(['close'])
 
@@ -93,10 +114,20 @@ const staticMode4 = ref(false)
 const eyeClosed = ref(false)
 const generation = ref(1)
 const showTarget = ref(false)
+const targetRef = ref(null)
+const targetPos = ref(null)
 const isAnalyze = ref(false)
 const isHeat = ref(false)
 const isNightVision = ref(false)
 // const showTargetVer2 = ref(false)
+
+// 世代別アニメーション用の状態
+const targetAnimating = ref(false)
+const targetShaking = ref(false)
+const targetScaling = ref(false)
+const targetPulse = ref(false)
+const targetGeneration = ref(null)
+const targetStage = ref(0) // 第二世代の2段階移動用（0: なし, 1: 縦移動中, 2: 横移動中）
 const controlButtons = computed(() => [
   { key: "close", label: "閉じる", action: "handleClose" },
 
@@ -144,6 +175,212 @@ const toggleTarget = () => {
   showTarget.value = !showTarget.value
   playSE('カーソル移動2')
 }
+
+const setTargetVisible = (value) => {
+  showTarget.value = value
+}
+
+const setTargetGeneration = (value) => {
+  if (value == null || value === '') {
+    targetGeneration.value = null
+    return
+  }
+  const numeric = Number(value)
+  targetGeneration.value = Number.isFinite(numeric) ? numeric : null
+}
+
+const currentTargetGeneration = computed(() => targetGeneration.value ?? generation.value)
+
+const setTargetPosition = (pos) => {
+  if (!pos) {
+    targetPos.value = null
+    return
+  }
+  
+  // 第二世代の2段階移動の場合
+  if (currentTargetGeneration.value === 2 && targetPos.value) {
+    // まず縦（Y）のみ更新
+    targetStage.value = 1
+    targetPos.value = { 
+      x: targetPos.value.x, // 古いXを維持
+      y: pos.y, 
+      scale: pos.scale || 1 
+    }
+    // 0.3秒後に横（X）を更新
+    setTimeout(() => {
+      targetStage.value = 2
+      targetPos.value = { x: pos.x, y: pos.y, scale: pos.scale || 1 }
+      setTimeout(() => {
+        targetStage.value = 0
+      }, 300)
+    }, 300)
+  } else {
+    targetPos.value = { x: pos.x, y: pos.y, scale: pos.scale || 1 }
+  }
+}
+
+const targetMotionProfiles = {
+  1: {
+    transition: () => 'left 0.4s linear, top 0.4s linear, transform 0.4s linear',
+    transform: scale => `translate(-50%, -50%) scale(${scale})`,
+    duration: 400,
+    shouldScheduleEnd: () => true,
+    endShake: true,
+    moveSound: '巨大ロボットが腕を動かす3',
+    onMoveStart: () => {},
+    onMoveEnd: () => {
+      targetShaking.value = false
+      targetPulse.value = false
+      requestAnimationFrame(() => {
+        targetShaking.value = true
+        targetPulse.value = true
+        setTimeout(() => {
+          targetShaking.value = false
+        }, 450)
+        setTimeout(() => {
+          targetPulse.value = false
+        }, 400)
+      })
+    }
+  },
+  2: {
+    transition: () => {
+      if (targetStage.value === 1) {
+        return 'top 0.3s ease-in-out, transform 0.3s ease-in-out'
+      }
+      if (targetStage.value === 2) {
+        return 'left 0.3s ease-in-out, transform 0.3s ease-in-out'
+      }
+      return 'left 0.3s ease-in-out, top 0.3s ease-in-out, transform 0.3s ease-in-out'
+    },
+    transform: scale => `translate(-50%, -50%) scale(${scale})`,
+    duration: 300,
+    shouldScheduleEnd: () => targetStage.value !== 1,
+    endShake: false,
+    moveSound: 'ロボットが腕を動かす1',
+    shouldPlaySound: () => targetStage.value === 1,
+    onMoveStart: () => {}
+  },
+  3: {
+    transition: () =>
+      'left 0.35s ease-out, top 0.35s ease-out, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)',
+    transform: scale => {
+      const overshootScale = targetScaling.value ? scale * 1.3 : scale
+      return `translate(-50%, -50%) scale(${overshootScale})`
+    },
+    duration: 350,
+    shouldScheduleEnd: () => true,
+    endShake: false,
+    moveSound: 'データ表示4',
+    onMoveStart: () => {
+      targetScaling.value = true
+      setTimeout(() => {
+        targetScaling.value = false
+      }, 350)
+    }
+  },
+  6: {
+    transition: () =>
+      'left 0.25s cubic-bezier(0.4, 0, 0.2, 1), top 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+    transform: scale => `translate(-50%, -50%) scale(${scale})`,
+    duration: 250,
+    shouldScheduleEnd: () => true,
+    endShake: false,
+    moveSound: 'メニューを開く4',
+    onMoveStart: () => {}
+  },
+  default: {
+    transition: () =>
+      'left 0.25s cubic-bezier(0.4, 0, 0.2, 1), top 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+    transform: scale => `translate(-50%, -50%) scale(${scale})`,
+    duration: 250,
+    shouldScheduleEnd: () => true,
+    endShake: false,
+    moveSound: 'キャンセル7',
+    onMoveStart: () => {}
+  }
+}
+
+const getTargetMotionProfile = (value) =>
+  targetMotionProfiles[value] ?? targetMotionProfiles.default
+
+const targetStyle = computed(() => {
+  if (!targetPos.value) {
+    return { left: '50%', top: '50%' }
+  }
+
+  const scale = targetPos.value.scale || 1
+  const baseStyle = {
+    left: `${targetPos.value.x}px`,
+    top: `${targetPos.value.y}px`
+  }
+  const profile = getTargetMotionProfile(currentTargetGeneration.value)
+  const transition = profile.transition()
+  const transform = profile.transform(scale)
+
+  return {
+    ...baseStyle,
+    transform,
+    transition
+  }
+})
+
+const targetMarkerClasses = computed(() => ({
+  'target-jitter': targetShaking.value,
+  'target-pulse': targetPulse.value
+}))
+
+const getTargetRect = () => {
+  if (!targetRef.value) return null
+  return targetRef.value.getBoundingClientRect()
+}
+
+let targetMoveTimer = null
+let targetMoveToken = 0
+const scheduleTargetMoveEnd = (duration, options = {}) => {
+  const { endShake = false, onMoveEnd = null } = options
+  targetMoveToken += 1
+  const token = targetMoveToken
+  if (targetMoveTimer) {
+    clearTimeout(targetMoveTimer)
+    targetMoveTimer = null
+  }
+  targetAnimating.value = true
+  targetMoveTimer = setTimeout(() => {
+    if (token !== targetMoveToken) return
+    targetAnimating.value = false
+    if (endShake) {
+      triggerShake()
+    }
+    if (onMoveEnd) onMoveEnd()
+  }, duration)
+}
+
+// targetPosの変更を監視して世代別アニメーションをトリガー
+watch(targetPos, (newPos, oldPos) => {
+  if (!newPos || !oldPos) return
+  
+  const newScale = newPos.scale || 1
+  const oldScale = oldPos.scale || 1
+  const moved =
+    newPos.x !== oldPos.x ||
+    newPos.y !== oldPos.y ||
+    newScale !== oldScale
+  if (!moved) return
+
+  const profile = getTargetMotionProfile(currentTargetGeneration.value)
+  if (profile.moveSound && (!profile.shouldPlaySound || profile.shouldPlaySound())) {
+    playSE(profile.moveSound)
+  }
+  if (profile.onMoveStart) profile.onMoveStart()
+  if (profile.shouldScheduleEnd && !profile.shouldScheduleEnd()) {
+    return
+  }
+  scheduleTargetMoveEnd(profile.duration, {
+    endShake: profile.endShake,
+    onMoveEnd: profile.onMoveEnd
+  })
+})
 // const toggleTargetVer2 = () => {
 //   showTargetVer2.value = !showTargetVer2.value
 // }
@@ -259,6 +496,30 @@ const toggleStatic4 = () => {
     stopSE('static4')
   }
 }
+
+defineExpose({
+  getControlButtons: () => controlButtons.value,
+  getGenerationButtons: () => generationButtons.value,
+  setTargetVisible,
+  setTargetGeneration,
+  setTargetPosition,
+  getTargetRect,
+  handleClose,
+  triggerEyeOpen,
+  triggerEyeClose,
+  triggerAnalyze,
+  triggerDamage,
+  triggerShake,
+  triggerStatic,
+  toggleStatic2,
+  toggleStatic4,
+  triggerAnomaly,
+  triggerReboot,
+  toggleTarget,
+  toggleHeat,
+  toggleNightVision,
+  setGeneration
+})
 </script>
 
 <style scoped>
@@ -266,6 +527,15 @@ const toggleStatic4 = () => {
   position: fixed;
   inset: 0;
   background: radial-gradient(circle at 50% 40%, #0b1423 0%, #060a12 55%, #04070d 100%);
+}
+
+.ui-modal.embedded {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
 }
 
 .hud-root {
@@ -282,8 +552,17 @@ const toggleStatic4 = () => {
 }
 
 .hud-panel {
-  width: min(700px);
-  height: min(400px);
+  width: min(702px);
+  /*---------------------------------- 
+    画面サイズ小さめ 
+  ------------------------------------*/
+  /* height: min(475px);
+  top: -125px; */
+  /*---------------------------------- 
+    画面サイズ大き目 
+  ------------------------------------*/
+  height: min(725px);
+  /* --------------------- */
   position: relative;
   --hud-rgb: 0, 220, 255;
   --hud-accent-rgb: 140, 250, 255;
@@ -302,36 +581,61 @@ const toggleStatic4 = () => {
 .target-layer {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: 2;
   pointer-events: none;
   color: #8fefff;
 }
 
-.gen-1 .target-layer {
+.target-marker-instance {
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+.target-marker-core {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center;
+}
+
+.target-marker-core.target-jitter {
+  animation: targetJitter 0.45s ease-in-out;
+}
+
+.target-marker-core.target-pulse::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border: 1px solid currentColor;
+  border-radius: 12px;
+  opacity: 0;
+  animation: targetPulse 0.4s ease-out;
+  box-shadow: 0 0 14px rgba(var(--hud-accent-rgb), 0.55);
+}
+
+.target-layer.gen-1 {
   filter: grayscale(1) brightness(1.1);
   opacity: 0.7;
 }
 
-.gen-2 .target-layer {
+.target-layer.gen-2 {
   color: #5cff8a;
   opacity: 0.9;
 }
 
-.gen-3 .target-layer {
+.target-layer.gen-3 {
   filter: hue-rotate(200deg) saturate(1.2);
   opacity: 0.9;
 }
 
-.gen-4 .target-layer {
+.target-layer.gen-4 {
   filter: hue-rotate(210deg) saturate(1.3) brightness(1.1);
   opacity: 1;
 }
 
-.gen-5 .target-layer,
-.gen-6 .target-layer {
+.target-layer.gen-5,
+.target-layer.gen-6 {
   filter: saturate(0.7) brightness(1.35);
   opacity: 0.85;
 }
@@ -639,8 +943,8 @@ const toggleStatic4 = () => {
 .gen-1 {
   --hud-rgb: 170, 170, 170;
   --hud-accent-rgb: 200, 200, 200;
-  --hud-bg-start: rgba(18, 18, 18, 0.952);
-  --hud-bg-end: rgba(8, 8, 8, 0.95);
+  --hud-bg-start: rgba(18, 18, 18, 0.252);
+  --hud-bg-end: rgba(8, 8, 8, 0.25);
   --hud-scan-opacity: 1.18;
   --hud-noise-opacity: 1.22;
 }
@@ -648,8 +952,8 @@ const toggleStatic4 = () => {
 .gen-2 {
   --hud-rgb: 0, 200, 105;
   --hud-accent-rgb: 120, 240, 175;
-  --hud-bg-start: rgba(6, 20, 12, 0.4);
-  --hud-bg-end: rgba(4, 10, 6, 0.35);
+  --hud-bg-start: rgba(6, 20, 12, 0.2);
+  --hud-bg-end: rgba(4, 10, 6, 0.25);
   --hud-scan-opacity: 0.42;
   --hud-noise-opacity: 0.64;
 }
@@ -660,8 +964,8 @@ const toggleStatic4 = () => {
 .gen-3 {
   --hud-rgb: 60, 140, 255;
   --hud-accent-rgb: 170, 210, 255;
-  --hud-bg-start: rgba(8, 14, 26, 0.3);
-  --hud-bg-end: rgba(4, 8, 16, 0.45);
+  --hud-bg-start: rgba(8, 14, 26, 0.15);
+  --hud-bg-end: rgba(4, 8, 16, 0.20);
   --hud-scan-opacity: 0.18;
   --hud-noise-opacity: 0.1;
 }
@@ -672,8 +976,8 @@ const toggleStatic4 = () => {
 .gen-4 {
   --hud-rgb: 90, 170, 255;
   --hud-accent-rgb: 200, 235, 255;
-  --hud-bg-start: rgba(10, 16, 24, 0.3);
-  --hud-bg-end: rgba(6, 10, 16, 0.45);
+  --hud-bg-start: rgba(10, 16, 24, 0.1);
+  --hud-bg-end: rgba(6, 10, 16, 0.15);
   --hud-scan-opacity: 0.12;
   --hud-noise-opacity: 0.06;
 }
@@ -683,8 +987,8 @@ const toggleStatic4 = () => {
 .gen-5 {
   --hud-rgb: 245, 252, 255;
   --hud-accent-rgb: 140, 220, 255;
-  --hud-bg-start: rgba(10, 14, 18, 0);
-  --hud-bg-end: rgba(4, 6, 8, 0);
+  --hud-bg-start: rgba(10, 14, 18, 0.1);
+  --hud-bg-end: rgba(4, 6, 8, 0.1);
   --hud-scan-opacity: 0.1;
   --hud-noise-opacity: 0.05;
 }
@@ -733,6 +1037,21 @@ const toggleStatic4 = () => {
 
 .shake {
   animation: shake 0.45s ease-in-out;
+}
+
+@keyframes targetJitter {
+  0% { transform: translate(0, 0) scale(1); }
+  20% { transform: translate(-2px, 1px) scale(1.02); }
+  40% { transform: translate(2px, -2px) scale(1.04); }
+  60% { transform: translate(-1px, 2px) scale(1.02); }
+  80% { transform: translate(1px, -1px) scale(1); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes targetPulse {
+  0% { opacity: 0; transform: scale(0.7); }
+  35% { opacity: 0.9; }
+  100% { opacity: 0; transform: scale(1.45); }
 }
 
 @keyframes eyeOpen {

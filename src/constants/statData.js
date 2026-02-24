@@ -436,12 +436,29 @@ function mapSE(mods) {
 
 // SE読み込み
 const seMods = import.meta.glob(
-  "/src/assets/audio/se/*.{mp3,wav}",
+  "/src/assets/audio/se/*.{mp3,wav,flac}",
   { eager: true, as: "url" }
 );
 export const SE_SOUNDS = mapSE(seMods);
 
 const sePlayers = new Map();
+let seMasterVolume = 1;
+const clamp01 = value => Math.max(0, Math.min(1, value));
+
+export function setSEMasterVolume(value) {
+  const next = clamp01(Number(value) || 0);
+  seMasterVolume = next;
+  sePlayers.forEach(audio => {
+    if (!audio) return;
+    const base = typeof audio.__baseVolume === "number" ? audio.__baseVolume : audio.volume;
+    audio.__baseVolume = clamp01(base);
+    audio.volume = clamp01(audio.__baseVolume * seMasterVolume);
+  });
+}
+
+export function getSEMasterVolume() {
+  return seMasterVolume;
+}
 
 // 値からSEを鳴らす共通処理
 export function playSE(value, options = {}) {
@@ -459,7 +476,9 @@ export function playSE(value, options = {}) {
   }
 
   const audio = new Audio(url);
-  audio.volume = Math.max(0, Math.min(1, volume));
+  const baseVolume = clamp01(volume);
+  audio.__baseVolume = baseVolume;
+  audio.volume = clamp01(baseVolume * seMasterVolume);
   audio.playbackRate = rate;
   audio.loop = loop;
   audio.currentTime = 0;

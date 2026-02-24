@@ -7,12 +7,15 @@ export const battleAllies = [
     mp: 60,
     mpMax: 100,
     fatigue: false,
-    icon: '第一世代',
+    icon: '第1世代',
     setColor: '',
     siz: 1000,
     position: 'front',
     distance: 0,
-    sFlying: false
+    sFlying: false,
+    targetOffsetX: 20,
+    targetOffsetY: 140,
+    targetScale: 1
   },
   {
     id: 2,
@@ -27,7 +30,10 @@ export const battleAllies = [
     siz: 180,
     position: 'back',
     distance: 0,
-    sFlying: false
+    sFlying: false,
+    targetOffsetX: 20,
+    targetOffsetY: 140,
+    targetScale: 1
   },
   {
     id: 3,
@@ -37,12 +43,15 @@ export const battleAllies = [
     mp: 20,
     mpMax: 80,
     fatigue: false,
-    icon: '第二世代',
+    icon: '第2世代',
     setColor: '',
     siz: 180,
     position: 'back',
     distance: 0,
-    sFlying: false
+    sFlying: false,
+    targetOffsetX: 20,
+    targetOffsetY: 140,
+    targetScale: 1
   }
 ]
 
@@ -55,28 +64,28 @@ export const battleEnemies = [
     mp: 60,
     mpMax: 100,
     fatigue: false,
-    icon: '第五世代ver1',
+    icon: 'キャリバーver2',
     setColor: '',
-    siz: 520,
-    position: 'front',
-    distance: 0,
-    sFlying: true
-  },
-  {
-    id: 102,
-    name: 'ENEMY-02',
-    hp: 90,
-    hpMax: 110,
-    mp: 20,
-    mpMax: 80,
-    fatigue: false,
-    icon: '捕獲用ドローン',
-    setColor: '',
-    siz: 180,
+    siz: 920,
     position: 'back',
     distance: 0,
-    sFlying: true
+    sFlying: false
   },
+  // {
+  //   id: 102,
+  //   name: 'ENEMY-02',
+  //   hp: 90,
+  //   hpMax: 110,
+  //   mp: 20,
+  //   mpMax: 80,
+  //   fatigue: false,
+  //   icon: '捕獲用ドローン',
+  //   setColor: '',
+  //   siz: 980,
+  //   position: 'back',
+  //   distance: 0,
+  //   sFlying: false
+  // },
   {
     id: 103,
     name: 'ENEMY-03',
@@ -85,10 +94,10 @@ export const battleEnemies = [
     mp: 20,
     mpMax: 80,
     fatigue: false,
-    icon: '第四世代',
+    icon: '第四世代ver2',
     setColor: '',
     siz: 180,
-    position: 'back',
+    position: 'front',
     distance: 0,
     sFlying: false
   }
@@ -103,7 +112,7 @@ export const battleEnemies = [
     fatigue: false,
     icon: 'セレス機体',
     setColor: 'hue-rotate(120deg) saturate(1.2)',
-    siz: 180,
+    siz: 320,
     position: 'front',
     distance:   0,
     sFlying: false
