@@ -14,7 +14,7 @@ const apiRoutes = require('./routes/api');
 const { initMongo } = require('./data/db/mongo.cjs');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 console.log('モジュールの読み込みが完了しました');
 
