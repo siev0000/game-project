@@ -1,17 +1,24 @@
 <template>
   <div class="ui-modal" :class="{ embedded }">
-    <div class="hud-root" :class="`gen-${generation}`">
-        <div v-if="showTarget" class="target-layer" :class="`gen-${currentTargetGeneration}`">
+    <div class="hud-root" :class="generationClass(generation)">
+        <div v-if="showTarget" class="target-layer" :class="generationClass(currentTargetGeneration)">
           <div ref="targetRef" class="target-marker-instance" :style="targetStyle">
             <div class="target-marker-core" :class="targetMarkerClasses">
-              <TargetMarker :generation="currentTargetGeneration" />
+              <TargetMarker
+                :generation="currentTargetGeneration"
+                :marker-type="targetMarkerType"
+                :gen4-magitech-node-settings="gen4MarkerNodes"
+                :gen45-magitech-node-settings="gen45MarkerNodes"
+                :custom-marker-settings="customMarkerSettings"
+                :is-target-moving="targetMarkerType === 'custom' ? customMarkerMovingAppearance : targetAnimating || targetMotionPhase !== 'idle'"
+              />
             </div>
           </div>
         </div>
       <div
         class="hud-panel"
         :class="[
-          `gen-${generation}`,
+          generationClass(generation),
           {
             'eye-opening': eyeOpen,
             'eye-closing': eyeClosing,
@@ -78,13 +85,23 @@
         <!-- <button @click="toggleTargetVer2">ターゲットVer2</button> -->
       </div>
       <div v-if="showControls" class="hud-controls hud-controls-secondary">
-        <button @click="setGeneration(1)">第一世代</button>
-        <button @click="setGeneration(2)">第二世代</button>
-        <button @click="setGeneration(3)">第三世代</button>
-        <button @click="setGeneration(4)">第四世代</button>
-        <button @click="setGeneration(5)">第五世代</button>
-        <button @click="setGeneration(6)">第六世代</button>
-        <button @click="setGeneration(9)">SP世代</button>
+        <button class="generation-sp" @click="setGeneration(9)">SP</button>
+        <button @click="setGeneration(1)">G1</button>
+        <button @click="setGeneration(1.5)">G1.5</button>
+        <button @click="setGeneration(2)">G2</button>
+        <button @click="setGeneration(2.5)">G2.5</button>
+        <button @click="setGeneration(3)">G3</button>
+        <button @click="setGeneration(3.5)">G3.5</button>
+        <button @click="setGeneration(4)">G4</button>
+        <button @click="setGeneration(4.5)">G4.5</button>
+        <button @click="setGeneration(5)">G5</button>
+        <button @click="setGeneration(5.5)">G5.5</button>
+        <button @click="setTargetMarkerType('standard')">標準</button>
+        <button @click="setTargetMarkerType('angel')">天使</button>
+        <button @click="setTargetMarkerType('tactical')">戦術</button>
+        <button @click="setTargetMarkerType('diamond')">菱形</button>
+        <button @click="setTargetMarkerType('radar')">レーダー</button>
+        <button @click="setTargetMarkerType('rift')">裂け目</button>
       </div>
     </div>
   </div>
@@ -98,7 +115,11 @@ import TargetMarker from './TargetMarker.vue'
 
 const props = defineProps({
   embedded: { type: Boolean, default: false },
-  showControls: { type: Boolean, default: true }
+  showControls: { type: Boolean, default: true },
+  targetMarkerType: { type: String, default: 'standard' },
+  gen4MarkerNodes: { type: Array, default: () => [] },
+  gen45MarkerNodes: { type: Array, default: () => [] },
+  customMarkerSettings: { type: Object, default: () => ({}) }
 })
 
 const emit = defineEmits(['close'])
@@ -126,8 +147,19 @@ const targetAnimating = ref(false)
 const targetShaking = ref(false)
 const targetScaling = ref(false)
 const targetPulse = ref(false)
+const targetArrivalMotion = ref('')
+const targetMotionPhase = ref('idle')
+const customMarkerMovingAppearance = ref(false)
+const targetMarkerType = ref(props.targetMarkerType)
 const targetGeneration = ref(null)
 const targetStage = ref(0) // 第二世代の2段階移動用（0: なし, 1: 縦移動中, 2: 横移動中）
+
+// 2.5世代は暫定的に第2世代のHUD設定を使う。
+const generationClass = value => {
+  const fallbackGeneration = value === 2.5 ? 2 : value
+  return `gen-${String(fallbackGeneration).replace('.', '-')}`
+}
+
 const controlButtons = computed(() => [
   { key: "close", label: "閉じる", action: "handleClose" },
 
@@ -146,23 +178,47 @@ const controlButtons = computed(() => [
   { key: "anomaly", label: "異常", action: "triggerAnomaly" },
   { key: "reboot", label: "再起動", action: "triggerReboot" },
 
-  { key: "target", label: "ターゲット", action: "toggleTarget" },
   { key: "heat", label: "熱源", action: "toggleHeat" },
   { key: "night", label: "暗視", action: "toggleNightVision" },
+  { key: "target", label: "ターゲット", action: "toggleTarget" },
 ]);
 
 const generationButtons = computed(() => [
-  { key: 1, label: "第一世代", action: "setGeneration", args: [1] },
-  { key: 2, label: "第二世代", action: "setGeneration", args: [2] },
-  { key: 3, label: "第三世代", action: "setGeneration", args: [3] },
-  { key: 4, label: "第四世代", action: "setGeneration", args: [4] },
-  { key: 5, label: "第五世代", action: "setGeneration", args: [5] },
-  { key: 6, label: "第六世代", action: "setGeneration", args: [6] },
-  { key: 9, label: "SP世代", action: "setGeneration", args: [9] },
+  { key: 9, label: "SP", action: "setGeneration", args: [9] },
+  { key: 1, label: "G1", action: "setGeneration", args: [1] },
+  { key: 1.5, label: "G1.5", action: "setGeneration", args: [1.5] },
+  { key: 2, label: "G2", action: "setGeneration", args: [2] },
+  { key: 2.5, label: "G2.5", action: "setGeneration", args: [2.5] },
+  { key: 3, label: "G3", action: "setGeneration", args: [3] },
+  { key: 3.5, label: "G3.5", action: "setGeneration", args: [3.5] },
+  { key: 4, label: "G4", action: "setGeneration", args: [4] },
+  { key: 4.5, label: "G4.5", action: "setGeneration", args: [4.5] },
+  { key: 5, label: "G5", action: "setGeneration", args: [5] },
+  { key: 5.5, label: "G5.5", action: "setGeneration", args: [5.5] },
+  { key: 'angel', label: '天使', action: 'setMarkerPreset', args: ['angel', 5] },
+  { key: 'seraph', label: '熾天使', action: 'setMarkerPreset', args: ['angel', 5.5] },
+  { key: 'tactical', label: '戦術', action: 'setMarkerPreset', args: ['tactical'] },
+  { key: 'diamond', label: '菱形', action: 'setMarkerPreset', args: ['diamond'] },
+  { key: 'radar', label: 'レーダー', action: 'setMarkerPreset', args: ['radar'] },
+  { key: 'rift', label: '裂け目', action: 'setMarkerPreset', args: ['rift'] },
+  { key: 'custom-edit', label: '作成', action: 'openCustomMarkerBuilder' },
+  { key: 'custom', label: '作成済', action: 'setMarkerPreset', args: ['custom'] }
 ]);
 
 const setGeneration = value => {
   generation.value = value
+  // 追加タイプが固定した世代指定を解除し、選択した標準世代をそのまま使う。
+  targetGeneration.value = null
+  targetMarkerType.value = 'standard'
+  playSE('カーソル移動5')
+}
+
+const setMarkerPreset = (markerType, generationValue = null) => {
+  setTargetMarkerType(markerType)
+  if (generationValue != null) {
+    generation.value = generationValue
+    targetGeneration.value = generationValue
+  }
   playSE('カーソル移動5')
 }
 
@@ -189,14 +245,119 @@ const setTargetGeneration = (value) => {
   targetGeneration.value = Number.isFinite(numeric) ? numeric : null
 }
 
+const setTargetMarkerType = (value) => {
+  const markerTypes = ['angel', 'tactical', 'diamond', 'radar', 'rift', 'custom']
+  targetMarkerType.value = markerTypes.includes(value) ? value : 'standard'
+}
+
+watch(() => props.targetMarkerType, setTargetMarkerType)
+
 const currentTargetGeneration = computed(() => targetGeneration.value ?? generation.value)
+
+let targetPreparationTimer = null
+let targetPreparationToken = 0
+let customTargetSequenceTimer = null
+let customTargetSequenceToken = 0
+
+const getCustomTransitionSettings = () => {
+  const settings = props.customMarkerSettings?.transition || {}
+  const easing = ['linear', 'ease-in', 'ease-out', 'ease-in-out'].includes(settings.easing)
+    ? settings.easing
+    : 'ease-in-out'
+  return {
+    sequence: ['before', 'simultaneous', 'after'].includes(settings.sequence) ? settings.sequence : 'before',
+    morphInDuration: Math.max(0, Number(settings.morphInDuration) || 0),
+    moveDuration: Math.max(100, Number(settings.moveDuration) || 350),
+    morphOutDuration: Math.max(0, Number(settings.morphOutDuration) || 0),
+    easing
+  }
+}
+
+const scheduleCustomTargetStep = (callback, duration, token) => {
+  if (customTargetSequenceTimer) clearTimeout(customTargetSequenceTimer)
+  customTargetSequenceTimer = setTimeout(() => {
+    if (token !== customTargetSequenceToken) return
+    customTargetSequenceTimer = null
+    callback()
+  }, duration)
+}
+
+const setCustomTargetPosition = pos => {
+  customTargetSequenceToken += 1
+  const token = customTargetSequenceToken
+  if (customTargetSequenceTimer) clearTimeout(customTargetSequenceTimer)
+  const settings = getCustomTransitionSettings()
+  const nextPosition = { x: pos.x, y: pos.y, scale: pos.scale || 1 }
+
+  const restoreIdleAppearance = () => {
+    targetMotionPhase.value = 'settle'
+    customMarkerMovingAppearance.value = false
+    scheduleCustomTargetStep(() => {
+      targetMotionPhase.value = 'idle'
+    }, settings.morphOutDuration, token)
+  }
+  const moveWithMovingAppearance = () => {
+    targetMotionPhase.value = 'move'
+    targetPos.value = nextPosition
+    scheduleCustomTargetStep(restoreIdleAppearance, settings.moveDuration, token)
+  }
+
+  if (settings.sequence === 'simultaneous') {
+    customMarkerMovingAppearance.value = true
+    moveWithMovingAppearance()
+    return
+  }
+  if (settings.sequence === 'after') {
+    targetMotionPhase.value = 'move'
+    customMarkerMovingAppearance.value = false
+    targetPos.value = nextPosition
+    scheduleCustomTargetStep(() => {
+      targetMotionPhase.value = 'prepare'
+      customMarkerMovingAppearance.value = true
+      scheduleCustomTargetStep(restoreIdleAppearance, settings.morphInDuration, token)
+    }, settings.moveDuration, token)
+    return
+  }
+
+  targetMotionPhase.value = 'prepare'
+  customMarkerMovingAppearance.value = true
+  scheduleCustomTargetStep(moveWithMovingAppearance, settings.morphInDuration, token)
+}
 
 const setTargetPosition = (pos) => {
   if (!pos) {
     targetPos.value = null
+    customMarkerMovingAppearance.value = false
+    targetMotionPhase.value = 'idle'
+    return
+  }
+
+  if (targetMarkerType.value === 'custom') {
+    if (!targetPos.value) {
+      targetPos.value = { x: pos.x, y: pos.y, scale: pos.scale || 1 }
+      customMarkerMovingAppearance.value = false
+      targetMotionPhase.value = 'idle'
+      return
+    }
+    setCustomTargetPosition(pos)
     return
   }
   
+  // 第2.5世代は、矢印を展開してから対象位置へ移動する。
+  if (currentTargetGeneration.value === 2.5 && targetPos.value) {
+    targetPreparationToken += 1
+    const token = targetPreparationToken
+    if (targetPreparationTimer) clearTimeout(targetPreparationTimer)
+    targetMotionPhase.value = 'prepare'
+    targetPreparationTimer = setTimeout(() => {
+      if (token !== targetPreparationToken) return
+      targetMotionPhase.value = 'move'
+      targetPos.value = { x: pos.x, y: pos.y, scale: pos.scale || 1 }
+      targetPreparationTimer = null
+    }, 180)
+    return
+  }
+
   // 第二世代の2段階移動の場合
   if (currentTargetGeneration.value === 2 && targetPos.value) {
     // まず縦（Y）のみ更新
@@ -279,6 +440,85 @@ const targetMotionProfiles = {
       }, 350)
     }
   },
+  1.5: {
+    transition: () =>
+      'left 0.65s cubic-bezier(0.22, 0.9, 0.3, 1), top 0.65s cubic-bezier(0.22, 0.9, 0.3, 1), transform 0.65s ease-out',
+    transform: scale => `translate(-50%, -50%) scale(${scale})`,
+    duration: 650,
+    shouldScheduleEnd: () => true,
+    endShake: false,
+    moveSound: '巨大ロボットが腕を動かす3',
+    onMoveStart: () => {},
+    onMoveEnd: () => triggerTargetArrivalMotion('heavy', 480)
+  },
+  2.5: {
+    transition: () =>
+      'left 0.3s ease-in-out, top 0.3s ease-in-out, transform 0.3s ease-in-out',
+    transform: scale => `translate(-50%, -50%) scale(${scale})`,
+    duration: 300,
+    shouldScheduleEnd: () => true,
+    endShake: false,
+    moveSound: 'ロボットが腕を動かす1',
+    onMoveStart: () => {},
+    onMoveEnd: () => {
+      targetMotionPhase.value = 'idle'
+    }
+  },
+  3.5: {
+    transition: () =>
+      'left 0.32s cubic-bezier(0.2, 0.9, 0.25, 1), top 0.32s cubic-bezier(0.2, 0.9, 0.25, 1), transform 0.32s ease-out',
+    transform: scale => `translate(-50%, -50%) scale(${scale})`,
+    duration: 320,
+    shouldScheduleEnd: () => true,
+    endShake: false,
+    moveSound: 'データ表示4',
+    onMoveStart: () => {},
+    onMoveEnd: () => triggerTargetArrivalMotion('precision', 440)
+  },
+  4: {
+    transition: () =>
+      'left 0.36s cubic-bezier(0.22, 0.85, 0.25, 1), top 0.36s cubic-bezier(0.22, 0.85, 0.25, 1), transform 0.36s ease-out',
+    transform: scale => `translate(-50%, -50%) scale(${scale})`,
+    duration: 360,
+    shouldScheduleEnd: () => true,
+    endShake: false,
+    moveSound: 'データ表示4',
+    onMoveStart: () => {},
+    onMoveEnd: () => triggerTargetArrivalMotion('magitech', 520)
+  },
+  4.5: {
+    transition: () =>
+      'left 0.36s cubic-bezier(0.22, 0.85, 0.25, 1), top 0.36s cubic-bezier(0.22, 0.85, 0.25, 1), transform 0.36s ease-out',
+    transform: scale => `translate(-50%, -50%) scale(${scale})`,
+    duration: 360,
+    shouldScheduleEnd: () => true,
+    endShake: false,
+    moveSound: 'データ表示4',
+    onMoveStart: () => {},
+    onMoveEnd: () => triggerTargetArrivalMotion('demon', 520)
+  },
+  5: {
+    transition: () =>
+      'left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), top 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.3s ease-out',
+    transform: scale => `translate(-50%, -50%) scale(${scale})`,
+    duration: 300,
+    shouldScheduleEnd: () => true,
+    endShake: false,
+    moveSound: 'メニューを開く4',
+    onMoveStart: () => {},
+    onMoveEnd: () => triggerTargetArrivalMotion('advanced', 400)
+  },
+  5.5: {
+    transition: () =>
+      'left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), top 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.3s ease-out',
+    transform: scale => `translate(-50%, -50%) scale(${scale})`,
+    duration: 300,
+    shouldScheduleEnd: () => true,
+    endShake: false,
+    moveSound: 'メニューを開く4',
+    onMoveStart: () => {},
+    onMoveEnd: () => triggerTargetArrivalMotion('advanced', 400)
+  },
   6: {
     transition: () =>
       'left 0.25s cubic-bezier(0.4, 0, 0.2, 1), top 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -301,8 +541,21 @@ const targetMotionProfiles = {
   }
 }
 
-const getTargetMotionProfile = (value) =>
-  targetMotionProfiles[value] ?? targetMotionProfiles.default
+const getTargetMotionProfile = (value) => {
+  if (targetMarkerType.value === 'custom') {
+    const settings = getCustomTransitionSettings()
+    return {
+      transition: () => `left ${settings.moveDuration}ms ${settings.easing}, top ${settings.moveDuration}ms ${settings.easing}, transform ${settings.moveDuration}ms ${settings.easing}`,
+      transform: scale => `translate(-50%, -50%) scale(${scale})`,
+      duration: settings.moveDuration,
+      shouldScheduleEnd: () => true,
+      endShake: false,
+      moveSound: 'キャンセル7',
+      onMoveStart: () => {}
+    }
+  }
+  return targetMotionProfiles[value] ?? targetMotionProfiles.default
+}
 
 const targetStyle = computed(() => {
   if (!targetPos.value) {
@@ -325,10 +578,13 @@ const targetStyle = computed(() => {
   }
 })
 
-const targetMarkerClasses = computed(() => ({
-  'target-jitter': targetShaking.value,
-  'target-pulse': targetPulse.value
-}))
+const targetMarkerClasses = computed(() => [
+  {
+    'target-jitter': targetShaking.value,
+    'target-pulse': targetPulse.value
+  },
+  targetArrivalMotion.value ? `target-arrival-${targetArrivalMotion.value}` : ''
+])
 
 const getTargetRect = () => {
   if (!targetRef.value) return null
@@ -337,6 +593,19 @@ const getTargetRect = () => {
 
 let targetMoveTimer = null
 let targetMoveToken = 0
+let targetArrivalTimer = null
+
+const triggerTargetArrivalMotion = (motion, duration) => {
+  if (targetArrivalTimer) clearTimeout(targetArrivalTimer)
+  targetArrivalMotion.value = ''
+  requestAnimationFrame(() => {
+    targetArrivalMotion.value = motion
+    targetArrivalTimer = setTimeout(() => {
+      targetArrivalMotion.value = ''
+      targetArrivalTimer = null
+    }, duration)
+  })
+}
 const scheduleTargetMoveEnd = (duration, options = {}) => {
   const { endShake = false, onMoveEnd = null } = options
   targetMoveToken += 1
@@ -502,6 +771,7 @@ defineExpose({
   getGenerationButtons: () => generationButtons.value,
   setTargetVisible,
   setTargetGeneration,
+  setTargetMarkerType,
   setTargetPosition,
   getTargetRect,
   handleClose,
@@ -518,7 +788,8 @@ defineExpose({
   toggleTarget,
   toggleHeat,
   toggleNightVision,
-  setGeneration
+  setGeneration,
+  setMarkerPreset
 })
 </script>
 
@@ -614,9 +885,119 @@ defineExpose({
   box-shadow: 0 0 14px rgba(var(--hud-accent-rgb), 0.55);
 }
 
+/* 既存の第1〜3世代とは別に、派生・後期世代だけ到達時の印象を付ける。 */
+.target-marker-core.target-arrival-heavy {
+}
+
+.target-marker-core.target-arrival-jammer {
+}
+
+.target-marker-core.target-arrival-precision {
+}
+
+.target-marker-core.target-arrival-magitech {
+}
+
+.target-marker-core.target-arrival-demon {
+}
+
+.target-marker-core.target-arrival-advanced {
+}
+
+/* 到達演出は疑似要素だけを動かし、マーカー本体の常時アニメーションを再開させない。 */
+.target-marker-core[class*="target-arrival-"]::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.target-marker-core.target-arrival-heavy::before {
+  inset: -12px;
+  border-radius: 8px;
+  animation: targetArrivalHeavy 0.48s cubic-bezier(0.16, 0.86, 0.3, 1);
+}
+
+.target-marker-core.target-arrival-jammer::before {
+  inset: -9px;
+  border-style: dashed;
+  animation: targetArrivalJammer 0.42s steps(2, end);
+}
+
+.target-marker-core.target-arrival-precision::before {
+  inset: -8px;
+  border-width: 2px;
+  animation: targetArrivalPrecision 0.44s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.target-marker-core.target-arrival-magitech::before {
+  inset: -10px;
+  border-color: #bcefff;
+  box-shadow: 0 0 12px rgba(92, 220, 255, 0.75);
+  animation: targetArrivalMagitech 0.52s ease-out;
+}
+
+.target-marker-core.target-arrival-demon::before {
+  inset: -12px;
+  border-color: #c8bbff;
+  box-shadow: 0 0 14px rgba(138, 113, 255, 0.8);
+  animation: targetArrivalDemon 0.52s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.target-marker-core.target-arrival-advanced::before {
+  inset: -7px;
+  border-color: #fff2ae;
+  animation: targetArrivalAdvanced 0.4s ease-out;
+}
+
+@keyframes targetArrivalHeavy {
+  0% { transform: scale(0.82); opacity: 0; }
+  30% { opacity: 0.9; }
+  100% { transform: scale(1.16); opacity: 0; }
+}
+
+@keyframes targetArrivalJammer {
+  0% { transform: translate(-6px, 2px) scale(0.9); opacity: 0; }
+  30% { transform: translate(5px, -2px) scale(1); opacity: 0.85; }
+  55% { transform: translate(-2px, 1px) scale(1.05); opacity: 0.5; }
+  100% { transform: translate(0, 0) scale(1.12); opacity: 0; }
+}
+
+@keyframes targetArrivalPrecision {
+  0% { transform: scale(0.88) rotate(-8deg); opacity: 0; }
+  35% { opacity: 0.9; }
+  100% { transform: scale(1.16) rotate(8deg); opacity: 0; }
+}
+
+@keyframes targetArrivalMagitech {
+  0% { transform: scale(0.76); opacity: 0; }
+  35% { opacity: 0.9; }
+  100% { transform: scale(1.2); opacity: 0; }
+}
+
+@keyframes targetArrivalDemon {
+  0% { transform: scale(0.72) rotate(7deg); opacity: 0; }
+  40% { opacity: 0.95; }
+  100% { transform: scale(1.22) rotate(-7deg); opacity: 0; }
+}
+
+@keyframes targetArrivalAdvanced {
+  0% { transform: scale(0.88); opacity: 0; }
+  40% { opacity: 0.82; }
+  100% { transform: scale(1.16); opacity: 0; }
+}
+
 .target-layer.gen-1 {
   filter: grayscale(1) brightness(1.1);
   opacity: 0.7;
+}
+
+.target-layer.gen-1-5 {
+  filter: none;
+  opacity: 1;
 }
 
 .target-layer.gen-2 {
@@ -625,17 +1006,32 @@ defineExpose({
 }
 
 .target-layer.gen-3 {
-  filter: hue-rotate(200deg) saturate(1.2);
-  opacity: 0.9;
+  filter: none;
+  opacity: 1;
+  isolation: isolate;
+  mix-blend-mode: normal;
+}
+
+.target-layer.gen-3-5 {
+  filter: none;
+  opacity: 1;
+  isolation: isolate;
+  mix-blend-mode: normal;
 }
 
 .target-layer.gen-4 {
-  filter: hue-rotate(210deg) saturate(1.3) brightness(1.1);
+  filter: saturate(1.2) brightness(1.1);
+  opacity: 1;
+}
+
+.target-layer.gen-4-5 {
+  /* マーカー固有の紫・球体色を、HUD背景用の色補正で変えない。 */
+  filter: none;
   opacity: 1;
 }
 
 .target-layer.gen-5,
-.target-layer.gen-6 {
+.target-layer.gen-5-5 {
   filter: saturate(0.7) brightness(1.35);
   opacity: 0.85;
 }
@@ -897,6 +1293,16 @@ defineExpose({
 
 .hud-controls-secondary {
   opacity: 0.9;
+  width: min(260px);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.hud-controls-secondary button {
+  width: 100%;
+}
+
+.hud-controls-secondary .generation-sp {
+  grid-column: 1 / -1;
 }
 
 .hud-controls button {
@@ -949,6 +1355,16 @@ defineExpose({
   --hud-noise-opacity: 1.22;
 }
 
+/* 第1.5世代は、第1世代の粗いHUDを継承しつつ照準のみを重装用へ差し替える。 */
+.gen-1-5 {
+  --hud-rgb: 170, 170, 170;
+  --hud-accent-rgb: 200, 200, 200;
+  --hud-bg-start: rgba(18, 18, 18, 0.252);
+  --hud-bg-end: rgba(8, 8, 8, 0.25);
+  --hud-scan-opacity: 1.18;
+  --hud-noise-opacity: 1.22;
+}
+
 .gen-2 {
   --hud-rgb: 0, 200, 105;
   --hud-accent-rgb: 120, 240, 175;
@@ -962,10 +1378,10 @@ defineExpose({
 }
 
 .gen-3 {
-  --hud-rgb: 60, 140, 255;
-  --hud-accent-rgb: 170, 210, 255;
-  --hud-bg-start: rgba(8, 14, 26, 0.15);
-  --hud-bg-end: rgba(4, 8, 16, 0.20);
+  --hud-rgb: 168, 255, 90;
+  --hud-accent-rgb: 218, 255, 166;
+  --hud-bg-start: rgba(22, 40, 8, 0.15);
+  --hud-bg-end: rgba(10, 20, 4, 0.2);
   --hud-scan-opacity: 0.18;
   --hud-noise-opacity: 0.1;
 }
@@ -973,29 +1389,47 @@ defineExpose({
   opacity: 0.5;
 }
 
-.gen-4 {
-  --hud-rgb: 90, 170, 255;
-  --hud-accent-rgb: 200, 235, 255;
-  --hud-bg-start: rgba(10, 16, 24, 0.1);
-  --hud-bg-end: rgba(6, 10, 16, 0.15);
+.gen-3-5 {
+  --hud-rgb: 85, 230, 168;
+  --hud-accent-rgb: 186, 255, 220;
+  --hud-bg-start: rgba(6, 34, 24, 0.1);
+  --hud-bg-end: rgba(3, 18, 13, 0.15);
   --hud-scan-opacity: 0.12;
   --hud-noise-opacity: 0.06;
 }
-.gen-4 .hud-glow{
+.gen-3-5 .hud-glow{
   opacity: 0.35;
 }
 .gen-5 {
-  --hud-rgb: 245, 252, 255;
-  --hud-accent-rgb: 140, 220, 255;
-  --hud-bg-start: rgba(10, 14, 18, 0.1);
-  --hud-bg-end: rgba(4, 6, 8, 0.1);
+  --hud-rgb: 255, 240, 166;
+  --hud-accent-rgb: 255, 248, 205;
+  --hud-bg-start: rgba(38, 32, 8, 0.1);
+  --hud-bg-end: rgba(18, 15, 4, 0.1);
   --hud-scan-opacity: 0.1;
   --hud-noise-opacity: 0.05;
 }
 .gen-5 .hud-glow{
   opacity: 0.25;
 }
-.gen-6 {
+.gen-4 {
+  --hud-rgb: 82, 172, 255;
+  --hud-accent-rgb: 230, 193, 91;
+  --hud-bg-start: rgba(7, 16, 32, 0.2);
+  --hud-bg-end: rgba(4, 8, 20, 0.2);
+  --hud-scan-opacity: 0.14;
+  --hud-noise-opacity: 0.05;
+}
+
+.gen-4-5 {
+  --hud-rgb: 115, 130, 255;
+  --hud-accent-rgb: 198, 156, 255;
+  --hud-bg-start: rgba(10, 10, 32, 0.22);
+  --hud-bg-end: rgba(5, 4, 20, 0.22);
+  --hud-scan-opacity: 0.16;
+  --hud-noise-opacity: 0.08;
+}
+
+.gen-5-5 {
   --hud-rgb: 245, 252, 255;
   --hud-accent-rgb: 140, 220, 255;
   --hud-bg-start: rgba(10, 14, 18, 0);
@@ -1004,12 +1438,12 @@ defineExpose({
   --hud-noise-opacity: 0;
 }
 
-.gen-6 .hud-glow,
-.gen-6 .hud-notch,
-.gen-6 .hud-scanlines,
-.gen-6 .hud-noise,
-.gen-6 .hud-open-light,
-.gen-6 .hud-static {
+.gen-5-5 .hud-glow,
+.gen-5-5 .hud-notch,
+.gen-5-5 .hud-scanlines,
+.gen-5-5 .hud-noise,
+.gen-5-5 .hud-open-light,
+.gen-5-5 .hud-static {
   opacity: 0;
 }
 

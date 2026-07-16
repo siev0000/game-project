@@ -24,18 +24,67 @@
         </div>
       </div>
       <div class="options-section">
-        <div class="options-section-title">ALLY TARGET</div>
-        <div class="options-gen-row">
-          <button
-            v-for="gen in generationOptions"
-            :key="gen"
-            type="button"
-            class="options-gen-button"
-            :class="{ active: gen === allyTargetGeneration }"
-            @click="emit('update-ally-target-generation', gen)"
-          >
-            {{ generationLabel(gen) }}
-          </button>
+        <div class="options-section-title">G4 TARGET MARKER</div>
+        <div class="options-row">
+          <span class="options-label">NODES</span>
+          <div class="options-stepper">
+            <button type="button" class="options-stepper-button" @click="emit('update-gen4-marker-node-count', gen4MarkerNodes.length - 1)">-</button>
+            <span class="options-value">{{ gen4MarkerNodes.length }}</span>
+            <button type="button" class="options-stepper-button" @click="emit('update-gen4-marker-node-count', gen4MarkerNodes.length + 1)">+</button>
+          </div>
+        </div>
+        <div v-for="(node, index) in gen4MarkerNodes" :key="index" class="marker-node-row">
+          <span class="options-label">NODE {{ index + 1 }}</span>
+          <input
+            class="marker-color-input"
+            type="color"
+            :value="node.color"
+            :aria-label="`G4 node ${index + 1} color`"
+            @input="emit('update-gen4-marker-node-color', index, $event.target.value)"
+          />
+          <input
+            class="options-slider"
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            :value="Math.round(node.connectionStrength * 100)"
+            :aria-label="`G4 node ${index + 1} connection strength`"
+            @input="emit('update-gen4-marker-node-strength', index, $event.target.value)"
+          />
+          <span class="options-value">{{ Math.round(node.connectionStrength * 100) }}%</span>
+        </div>
+      </div>
+      <div class="options-section">
+        <div class="options-section-title">G4.5 TARGET MARKER</div>
+        <div class="options-row">
+          <span class="options-label">NODES</span>
+          <div class="options-stepper">
+            <button type="button" class="options-stepper-button" @click="emit('update-marker-node-count', gen45MarkerNodes.length - 1)">-</button>
+            <span class="options-value">{{ gen45MarkerNodes.length }}</span>
+            <button type="button" class="options-stepper-button" @click="emit('update-marker-node-count', gen45MarkerNodes.length + 1)">+</button>
+          </div>
+        </div>
+        <div v-for="(node, index) in gen45MarkerNodes" :key="index" class="marker-node-row">
+          <span class="options-label">NODE {{ index + 1 }}</span>
+          <input
+            class="marker-color-input"
+            type="color"
+            :value="node.color"
+            :aria-label="`G4.5 node ${index + 1} color`"
+            @input="emit('update-marker-node-color', index, $event.target.value)"
+          />
+          <input
+            class="options-slider"
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            :value="Math.round(node.connectionStrength * 100)"
+            :aria-label="`G4.5 node ${index + 1} connection strength`"
+            @input="emit('update-marker-node-strength', index, $event.target.value)"
+          />
+          <span class="options-value">{{ Math.round(node.connectionStrength * 100) }}%</span>
         </div>
       </div>
     </div>
@@ -45,12 +94,22 @@
 <script setup>
 import BaseHudModal from './BaseHudModal.vue'
 
-const { seVolume, allyTargetGeneration } = defineProps({
+const { seVolume, gen4MarkerNodes, gen45MarkerNodes } = defineProps({
   seVolume: { type: Number, default: 100 },
-  allyTargetGeneration: { type: Number, default: 1 }
+  gen4MarkerNodes: { type: Array, default: () => [] },
+  gen45MarkerNodes: { type: Array, default: () => [] }
 })
 
-const emit = defineEmits(['close', 'update-se-volume', 'update-ally-target-generation'])
+const emit = defineEmits([
+  'close',
+  'update-se-volume',
+  'update-marker-node-count',
+  'update-marker-node-color',
+  'update-marker-node-strength',
+  'update-gen4-marker-node-count',
+  'update-gen4-marker-node-color',
+  'update-gen4-marker-node-strength'
+])
 
 const onSeVolumeInput = (event) => {
   const raw = Number(event?.target?.value)
@@ -61,8 +120,6 @@ const onSeVolumeInput = (event) => {
   emit('update-se-volume', clamped)
 }
 
-const generationOptions = [1, 2, 3, 4, 5, 6, 9]
-const generationLabel = (gen) => (gen === 9 ? 'SP' : `G${gen}`)
 </script>
 
 <style scoped>
@@ -99,6 +156,10 @@ const generationLabel = (gen) => (gen === 9 ? 'SP' : `G${gen}`)
   border-radius: 10px;
   padding: 12px;
   background: rgba(6, 12, 20, 0.6);
+}
+
+.options-section + .options-section {
+  margin-top: 12px;
 }
 
 .options-section-title {
@@ -145,5 +206,38 @@ const generationLabel = (gen) => (gen === 9 ? 'SP' : `G${gen}`)
 .options-value {
   min-width: 46px;
   text-align: right;
+}
+
+.options-stepper,
+.marker-node-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.options-stepper-button {
+  width: 26px;
+  height: 24px;
+  border: 1px solid rgba(160, 230, 255, 0.35);
+  border-radius: 5px;
+  background: rgba(6, 12, 20, 0.7);
+  color: #bff6ff;
+  cursor: pointer;
+}
+
+.marker-node-row {
+  display: grid;
+  grid-template-columns: 58px 28px 1fr 42px;
+  margin-top: 8px;
+  font-size: 11px;
+}
+
+.marker-color-input {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 </style>

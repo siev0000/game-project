@@ -8,7 +8,16 @@
         class="battle-field"
         :style="{ backgroundImage: `url(${battleFieldBg})` }"
       >
-        <UIModal v-if="showUIModal" ref="uiModalRef" embedded :showControls="false" />
+        <UIModal
+          v-if="showUIModal"
+          ref="uiModalRef"
+          embedded
+          :showControls="false"
+          :target-marker-type="targetMarkerType"
+          :gen4-marker-nodes="gen4MarkerNodes"
+          :gen45-marker-nodes="gen45MarkerNodes"
+          :custom-marker-settings="customMarkerSettings"
+        />
         <div class="battle-settings">
           <button
             type="button"
@@ -17,6 +26,14 @@
             @click="toggleOptionsModal"
           >
             ⚙
+          </button>
+          <button
+            type="button"
+            class="settings-button marker-settings-button"
+            aria-label="Target marker settings"
+            @click="openMarkerSettings"
+          >
+            TARGET
           </button>
           <button
             type="button"
@@ -54,10 +71,22 @@
         <OptionsModal
           v-if="showOptionsModal"
           :seVolume="seVolume"
-          :allyTargetGeneration="allyTargetGeneration"
+          :gen4MarkerNodes="gen4MarkerNodes"
+          :gen45MarkerNodes="gen45MarkerNodes"
           @close="showOptionsModal = false"
           @update-se-volume="onSeVolumeChange"
-          @update-ally-target-generation="onAllyTargetGenerationChange"
+          @update-marker-node-count="onMarkerNodeCountChange"
+          @update-marker-node-color="onMarkerNodeColorChange"
+          @update-marker-node-strength="onMarkerNodeStrengthChange"
+          @update-gen4-marker-node-count="onGen4MarkerNodeCountChange"
+          @update-gen4-marker-node-color="onGen4MarkerNodeColorChange"
+          @update-gen4-marker-node-strength="onGen4MarkerNodeStrengthChange"
+        />
+        <CustomMarkerModal
+          v-if="showCustomMarkerModal"
+          :settings="customMarkerSettings"
+          @close="showCustomMarkerModal = false"
+          @save="onCustomMarkerSave"
         />
         <!-- ===== メッセージモーダル設定 送信先 ===== -->
         <!-- name / message: 表示テキスト -->
@@ -208,6 +237,19 @@
                 <button @click="selectTargetBySlot(2)">3</button>
                 <button @click="selectTargetBySlot(3)">4</button>
               </div>
+              <div class="target-select-group">
+                <div class="target-select-label">TARGET GENERATION</div>
+                <div class="target-config-buttons target-generation-buttons">
+                  <button
+                    v-for="gen in targetGenerationOptions"
+                    :key="gen"
+                    :class="{ active: gen === allyTargetGeneration }"
+                    @click="onAllyTargetGenerationChange(gen)"
+                  >
+                    {{ targetGenerationLabel(gen) }}
+                  </button>
+                </div>
+              </div>
             </div>
             <div class="ui-controls">
               <button
@@ -243,11 +285,13 @@ import { reactive, computed, onMounted, ref, nextTick, watch } from 'vue'
 import BaseBattleModal from './BaseBattleModal.vue'
 import UIModal from './UIModal.vue'
 import OptionsModal from './OptionsModal.vue'
+import CustomMarkerModal from './CustomMarkerModal.vue'
 import DialogueMessageModal from './DialogueMessageModal.vue'
 import { battleAllies, battleEnemies } from '../data/battleAllies.js'
 import { getBackgroundIllust, getCharIllust, getSEMasterVolume, setSEMasterVolume } from '@/constants/statData.js'
 defineEmits(['close'])
 const DIALOGUE_SETTINGS_STORAGE_KEY = 'battle-dialogue-settings-v1'
+const CUSTOM_MARKER_SETTINGS_STORAGE_KEY = 'battle-custom-target-marker-settings-v1'
 const DIALOGUE_PLAYBACK_DEFAULTS = {
   messageSpeed: 28,
   voicePitch: 1,
@@ -453,6 +497,19 @@ const enemyRenderOffsets = reactive({})
 const battleFieldRef = ref(null)
 const allyIconRefs = ref([])
 const showOptionsModal = ref(false)
+const showCustomMarkerModal = ref(false)
+const gen4MarkerNodes = ref([
+  { color: '#63f58c', connectionStrength: 0.7 },
+  { color: '#ffe45c', connectionStrength: 0.55 },
+  { color: '#5faeff', connectionStrength: 0.8 }
+])
+const gen45MarkerNodes = ref([
+  { color: '#63f58c', connectionStrength: 0.7 },
+  { color: '#ffe45c', connectionStrength: 0.45 },
+  { color: '#5faeff', connectionStrength: 0.85 },
+  { color: '#ffffff', connectionStrength: 0.55 },
+  { color: '#b8ff62', connectionStrength: 0.65 }
+])
 
 // ===== メッセージモーダル設定（DialogueMessageModal へ送信） =====
 // 表示状態（true でメッセージモーダルを表示）
@@ -460,6 +517,27 @@ const showDialogueModal = ref(false)
 const dialogueTestMode = ref(false)
 const seVolume = ref(Math.round(getSEMasterVolume() * 100))
 const allyTargetGeneration = ref(1)
+const targetMarkerType = ref('standard')
+const CUSTOM_MARKER_DEFAULTS = {
+  shape: 'circle',
+  color: '#8fefff',
+  size: 100,
+  opacity: 88,
+  ringCount: 2,
+  lineWidth: 2,
+  rotationSeconds: 8,
+  showCenterDot: true,
+  behavior: {
+    previewBackgroundColor: '#071722',
+    previewGradientEnabled: true,
+    followCursor: false,
+    cursorFollowDuration: 80,
+    cursorFollowSpeed: 90
+  }
+}
+const customMarkerSettings = ref({ ...CUSTOM_MARKER_DEFAULTS })
+const targetGenerationOptions = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 9]
+const targetGenerationLabel = generation => generation === 9 ? 'SP' : `G${generation}`
 // 話者名
 const dialogueName = ref('UNIT-01')
 // 本文（\n で改行）
@@ -498,6 +576,60 @@ const dialogueWaitButtonLabel = computed(() =>
 
 const toggleOptionsModal = () => {
   showOptionsModal.value = !showOptionsModal.value
+}
+
+const openMarkerSettings = () => {
+  showOptionsModal.value = true
+}
+
+const gen4MarkerNodeDefaults = [
+  { color: '#63f58c', connectionStrength: 0.7 },
+  { color: '#ffe45c', connectionStrength: 0.55 },
+  { color: '#5faeff', connectionStrength: 0.8 }
+]
+
+const markerNodeDefaults = [
+  { color: '#63f58c', connectionStrength: 0.7 },
+  { color: '#ffe45c', connectionStrength: 0.45 },
+  { color: '#5faeff', connectionStrength: 0.85 },
+  { color: '#ffffff', connectionStrength: 0.55 },
+  { color: '#b8ff62', connectionStrength: 0.65 }
+]
+
+const onMarkerNodeCountChange = value => {
+  const count = Math.max(3, Math.min(10, Math.round(Number(value) || 3)))
+  gen45MarkerNodes.value = Array.from({ length: count }, (_, index) => {
+    return gen45MarkerNodes.value[index] ?? markerNodeDefaults[index % markerNodeDefaults.length]
+  })
+}
+
+const onMarkerNodeColorChange = (index, color) => {
+  if (!gen45MarkerNodes.value[index]) return
+  gen45MarkerNodes.value[index] = { ...gen45MarkerNodes.value[index], color }
+}
+
+const onMarkerNodeStrengthChange = (index, value) => {
+  if (!gen45MarkerNodes.value[index]) return
+  const strength = Math.max(0, Math.min(1, Number(value) / 100 || 0))
+  gen45MarkerNodes.value[index] = { ...gen45MarkerNodes.value[index], connectionStrength: strength }
+}
+
+const onGen4MarkerNodeCountChange = value => {
+  const count = Math.max(3, Math.min(10, Math.round(Number(value) || 3)))
+  gen4MarkerNodes.value = Array.from({ length: count }, (_, index) => {
+    return gen4MarkerNodes.value[index] ?? gen4MarkerNodeDefaults[index % gen4MarkerNodeDefaults.length]
+  })
+}
+
+const onGen4MarkerNodeColorChange = (index, color) => {
+  if (!gen4MarkerNodes.value[index]) return
+  gen4MarkerNodes.value[index] = { ...gen4MarkerNodes.value[index], color }
+}
+
+const onGen4MarkerNodeStrengthChange = (index, value) => {
+  if (!gen4MarkerNodes.value[index]) return
+  const strength = Math.max(0, Math.min(1, Number(value) / 100 || 0))
+  gen4MarkerNodes.value[index] = { ...gen4MarkerNodes.value[index], connectionStrength: strength }
 }
 const handleDialogueClose = () => {
   showDialogueModal.value = false
@@ -563,6 +695,36 @@ const saveDialoguePlaybackSettings = () => {
   }
   window.localStorage.setItem(DIALOGUE_SETTINGS_STORAGE_KEY, JSON.stringify(payload))
 }
+
+const loadCustomMarkerSettings = () => {
+  if (typeof window === 'undefined') return
+  try {
+    const raw = window.localStorage.getItem(CUSTOM_MARKER_SETTINGS_STORAGE_KEY)
+    const parsed = raw ? JSON.parse(raw) : null
+    if (parsed && typeof parsed === 'object') {
+      customMarkerSettings.value = { ...CUSTOM_MARKER_DEFAULTS, ...parsed }
+    }
+  } catch {
+    // Ignore a malformed saved marker and continue with the defaults.
+  }
+}
+
+const onCustomMarkerSave = (settings) => {
+  customMarkerSettings.value = { ...CUSTOM_MARKER_DEFAULTS, ...settings }
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(
+      CUSTOM_MARKER_SETTINGS_STORAGE_KEY,
+      JSON.stringify(customMarkerSettings.value)
+    )
+  }
+  onTargetMarkerTypeChange('custom')
+  showCustomMarkerModal.value = false
+}
+
+const openCustomMarkerModal = () => {
+  showCustomMarkerModal.value = true
+}
+
 watch(
   () => [dialogueMessageSpeed.value, dialogueVoicePitch.value, dialogueVoiceVolume.value],
   () => {
@@ -597,7 +759,15 @@ const onAllyTargetGenerationChange = (value) => {
   const raw = Number(value)
   const numeric = Number.isFinite(raw) ? raw : 1
   allyTargetGeneration.value = numeric
+  uiModalRef.value?.setTargetGeneration?.(numeric)
 }
+
+const onTargetMarkerTypeChange = (value) => {
+  const markerTypes = ['standard', 'angel', 'tactical', 'diamond', 'radar', 'rift', 'custom']
+  targetMarkerType.value = markerTypes.includes(value) ? value : 'standard'
+  uiModalRef.value?.setTargetMarkerType?.(targetMarkerType.value)
+}
+
 const setAllyIconRef = (el, index) => {
   allyIconRefs.value[index] = el
 }
@@ -630,9 +800,18 @@ const uiGenButtons = ref([])
 const targetSelectMode = ref(false)
 
 const invokeUiAction = (btn) => {
+  if (btn?.key === 'custom-edit') {
+    openCustomMarkerModal()
+    return
+  }
+
   const ui = uiModalRef.value
   const action = btn?.action
   if (!ui || !action || typeof ui[action] !== 'function') return
+
+  if (action === 'setGeneration') onTargetMarkerTypeChange('standard')
+  if (action === 'setMarkerPreset') onTargetMarkerTypeChange(btn.args?.[0])
+
   if (btn.key === 'target') {
     targetSelectMode.value = !targetSelectMode.value
   }
@@ -773,6 +952,7 @@ const segmentFill = (current, max, index) => {
 // 起動時に HP / MP を 0 → 現在値までアニメーション
 onMounted(() => {
   loadDialoguePlaybackSettings()
+  loadCustomMarkerSettings()
   nextTick(() => {
     loadUiButtons()
     const field = battleFieldRef.value
@@ -1280,5 +1460,35 @@ onMounted(() => {
   font-size: 20px;
   font-weight: 700;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.target-select-group {
+  margin-top: 10px;
+}
+
+.target-config-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.target-config-buttons button {
+  min-width: 58px;
+  padding: 5px 7px;
+  border: 1px solid rgba(76, 201, 240, 0.65);
+  background: rgba(13, 39, 52, 0.9);
+  color: #dffaff;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.target-config-buttons button.active {
+  border-color: #dffaff;
+  background: rgba(30, 100, 125, 0.95);
+  box-shadow: 0 0 9px rgba(76, 201, 240, 0.55);
+}
+
+.target-generation-buttons button {
+  min-width: 48px;
 }
 </style>
