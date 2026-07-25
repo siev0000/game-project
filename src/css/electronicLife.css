@@ -1,0 +1,44 @@
+html {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  transform-origin: center center;
+  background: #020405;
+  color: #d8fbff;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 18px;
+  line-height: 1.6;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+html,
+body,
+#scalable-root {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  overscroll-behavior: none;
+}
+
+body {
+  margin: 0;
+}
+
+#scalable-root {
+  width: 720px;
+  height: 1280px;
+  box-sizing: border-box;
+  padding: 40px;
+  overflow: hidden;
+  transform-origin: center center;
+  border: 1px solid rgba(109, 245, 255, 0.24);
+  background: #020405;
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}

@@ -1,0 +1,556 @@
+
+> game-project@1.0.0 dev
+> concurrently "npm:dev:client" "npm:dev:server" --host 127.0.0.1
+
+[dev:client] 
+[dev:client] > game-project@1.0.0 dev:client
+[dev:client] > vite --host
+[dev:client] 
+[dev:server] 
+[dev:server] > game-project@1.0.0 dev:server
+[dev:server] > node server.js
+[dev:server] 
+[dev:server] サーバーのセットアップを開始します
+[dev:client] 
+[dev:client]   [32m[1mVITE[22m v7.0.6[39m  [2mready in [0m[1m250[22m[2m[0m ms[22m
+[dev:client] 
+[dev:client]   [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5173[22m/[39m
+[dev:client]   [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.0.209:[1m5173[22m/[39m
+[dev:server] C:\Users\skkt3\ドキュメント\Github\game-project\data\excel\game-data
+[dev:server] C:\Users\skkt3\ドキュメント\Github\game-project\data\excel\item-data.xlsx
+[dev:server] C:\Users\skkt3\ドキュメント\Github\game-project\data\excel\area-data.xlsx
+[dev:server] Watching for changes in C:\Users\skkt3\ドキュメント\Github\game-project\data\excel\game-data...
+[dev:server] Watching for changes in C:\Users\skkt3\ドキュメント\Github\game-project\data\excel\item-data.xlsx...
+[dev:server] Watching for changes in C:\Users\skkt3\ドキュメント\Github\game-project\data\excel\area-data.xlsx...
+[dev:server] game ディレクトリのJSONファイル: [
+[dev:server]   'クラス.json',
+[dev:server]   'ステータスの説明.json',
+[dev:server]   '体の特徴.json',
+[dev:server]   '属性.json',
+[dev:server]   '属性アイコン.json',
+[dev:server]   '技.json',
+[dev:server]   '種族属性.json',
+[dev:server]   '範囲.json',
+[dev:server]   '装備箇所.json'
+[dev:server] ]
+[dev:server] === クラスJSONのヘッダ ===
+[dev:server] [
+[dev:server]   '名前',         'ルビ',       '肉体',
+[dev:server]   '分類',         '初期系統',   'ステ総/技総/耐性総',
+[dev:server]   'HP',           'MP',         'ST',
+[dev:server]   '攻撃',         '防御',       '魔力',
+[dev:server]   '精神',         '回避',       '命中',
+[dev:server]   'SIZ',          'APP',        '隠密',
+[dev:server]   '感知',         '威圧',       '軽業',
+[dev:server]   '技術',         '早業',       '看破',
+[dev:server]   '騙す',         '知識',       '鑑定',
+[dev:server]   '装置',         '変装',       '制作',
+[dev:server]   '精神接続',     '魔法技術',   '指揮',
+[dev:server]   '素手',         '角',         '牙',
+[dev:server]   '爪',           '翼',         '尾',
+[dev:server]   '外皮',         '装甲',       '再生',
+[dev:server]   '物理軽減',     '魔法軽減',   '切断耐性',
+[dev:server]   '貫通耐性',     '打撃耐性',   '炎耐性',
+[dev:server]   '氷耐性',       '雷耐性',     '酸耐性',
+[dev:server]   '音耐性',       '光耐性',     '闇耐性',
+[dev:server]   '善耐性',       '悪耐性',     '正耐性',
+[dev:server]   '負耐性',       '精神耐性',   '毒耐性',
+[dev:server]   '盲目耐性',     '幻覚耐性',   '石化耐性',
+[dev:server]   '怯み耐性',     '拘束耐性',   '呪い耐性',
+[dev:server]   '即死耐性',     '時間耐性',   '出血耐性',
+[dev:server]   '疲労耐性',     '体幹耐性',   '物理耐性',
+[dev:server]   '魔法耐性',     'Cr率耐性',   'Cr威力耐性',
+[dev:server]   'Skill1',       'Skill2',     'Skill3',
+[dev:server]   'Skill4',       'Skill5',     'Skill6',
+[dev:server]   'Skill7',       'Skill8',     'Skill9',
+[dev:server]   'Skill10',      '取得分類',   '条件分類Lv',
+[dev:server]   '条件クラス_1', '条件Lv_1',   '条件クラス_2',
+[dev:server]   '条件Lv_2',     '合計Lv',     '条件スキル',
+[dev:server]   '条件属性',     '技能分類',   '技能分類2',
+[dev:server]   '画像url',      '代表スキル', '特徴',
+[dev:server]   '外見',
+[dev:server]   ... 1 more item
+[dev:server] ]
+[dev:server] item ファイルのシート名: [
+[dev:server]   'カテゴリ', '作製品',
+[dev:server]   'アイテム', '素材',
+[dev:server]   '付与',     '装備品',
+[dev:server]   'ショップ', 'Sheet1',
+[dev:server]   '素材 (2)'
+[dev:server] ]
+[dev:server] ショップデータ: [
+[dev:server]   {
+[dev:server]     '店名': 'ル・エストロ',
+[dev:server]     'ルビ': undefined,
+[dev:server]     '商品': [
+[dev:server]       '簡易拠点',   '下位水薬',   '水薬',
+[dev:server]       '霊薬',       '閃光の棒',   '鉄の短刀',
+[dev:server]       '鉄の剣',     '鉄の槍',     '鉄の棍棒',
+[dev:server]       '鉄の短弓',   '鉄の盾',     '鉄の兜',
+[dev:server]       '鉄の鎧',     '鉄の胴衣',   '皮の衣布',
+[dev:server]       '皮の法衣',   '皮の鎧',     '皮の胴衣',
+[dev:server]       '獣皮の衣布', '獣皮の法衣', '獣皮の鎧',
+[dev:server]       '獣皮の胴衣', '鉄の靴',     '樹の帯',
+[dev:server]       '蟻の帯',     '猪の帯',     '大樹の帯',
+[dev:server]       '獅子の帯',   '熊の帯',     '鋼の短刀',
+[dev:server]       '鋼の剣',     '鋼の広剣',   '鋼の長剣',
+[dev:server]       '鋼の細剣',   '鋼の槍',     '鋼の戦棍',
+[dev:server]       '鋼の棘棍',   '鋼の面兜',   '鋼の兜',
+[dev:server]       '鋼の鎧',     '鋼の胴衣',   '鋼の靴'
+[dev:server]     ]
+[dev:server]   },
+[dev:server]   {
+[dev:server]     '店名': 'アルジビア王国',
+[dev:server]     'ルビ': undefined,
+[dev:server]     '商品': [
+[dev:server]       '簡易拠点',     '下位水薬',
+[dev:server]       '水薬',         '霊薬',
+[dev:server]       '閃光の棒',     '熱鉄の短刀',
+[dev:server]       '熱鉄の剣',     '熱鉄の槍',
+[dev:server]       '熱鉄の棍棒',   '熱鉄の短弓',
+[dev:server]       '熱鉄の盾',     '熱鉄の兜',
+[dev:server]       '熱鉄の鎧',     '熱鉄の胴衣',
+[dev:server]       '魔獣皮の衣布', '魔獣皮の法衣',
+[dev:server]       '魔獣皮の鎧',   '魔獣皮の胴衣',
+[dev:server]       '熱鉄の靴',     '影の外套',
+[dev:server]       '耐炎の外套',   '耐氷の外套',
+[dev:server]       '耐雷の外套',   '耐酸の外套'
+[dev:server]     ]
+[dev:server]   }
+[dev:server] ]
+[dev:server] area ファイルのシート名: [ 'クエスト', 'イベント', 'エリア', 'ダンジョン', 'エネミー' ]
+[dev:server] モジュールの読み込みが完了しました
+[dev:server] 静的ファイルの提供が設定されました
+[dev:server] ルーティングの設定が完了しました
+[dev:server] [mongo] connect failed: Error: querySrv ENOTFOUND _mongodb._tcp.cluster0.ablyfdl.mongodb.net
+[dev:server]     at QueryReqWrap.onresolve [as oncomplete] (node:internal/dns/promises:294:17) {
+[dev:server]   errno: undefined,
+[dev:server]   code: 'ENOTFOUND',
+[dev:server]   syscall: 'querySrv',
+[dev:server]   hostname: '_mongodb._tcp.cluster0.ablyfdl.mongodb.net'
+[dev:server] }
+[dev:server] npm run dev:server exited with code 1
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [2m15:40:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+[dev:client] 4  |          
+[dev:client] 5  |        <div v-if="activeTab !== '魔法'" class="exp-div">
+[dev:client] 6  |          <td class="exp-btn-cell">
+[dev:client]    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 7  |            <button 
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^
+[dev:client] 8  |              class="lvup-btn"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 9  |              :class="{ 'lvup-active': character.stats.experience >= character.stats.nextLevelExp }"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 10 |              :disabled="character.stats.experience < character.stats.nextLevelExp"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 11 |              @click="levelUpMode = !levelUpMode"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 12 |            >
+[dev:client]    |  ^^^^^^^^^^^
+[dev:client] 13 |              Lvアップ
+[dev:client]    |  ^^^^^^^^^^^^^^^^^
+[dev:client] 14 |            </button>
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^
+[dev:client] 15 |          </td>
+[dev:client]    |  ^^^^^^^^^^^^^[39m
+[dev:client]   Plugin: [35mvite:vue[39m
+[dev:client]   File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[dev:client] [2m15:40:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+[dev:client] 14 |            </button>
+[dev:client] 15 |          </td>
+[dev:client] 16 |          <td class="exp-btn-cell">
+[dev:client]    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 17 |            <button
+[dev:client]    |  ^^^^^^^^^^^^^^^^^
+[dev:client] 18 |              class="addclass-btn"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 19 |              :class="{ 'lvup-active': character.stats.experience >= character.stats.nextLevelExp }"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 20 |              :disabled="character.stats.experience < character.stats.nextLevelExp"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 21 |              @click="openAddClassModal"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 22 |            >
+[dev:client]    |  ^^^^^^^^^^^
+[dev:client] 23 |              新規取得
+[dev:client]    |  ^^^^^^^^^^^^^^^^
+[dev:client] 24 |            </button>
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^
+[dev:client] 25 |          </td>
+[dev:client]    |  ^^^^^^^^^^^^^[39m
+[dev:client]   Plugin: [35mvite:vue[39m
+[dev:client]   File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[dev:client] [2m15:40:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+[dev:client] 24 |            </button>
+[dev:client] 25 |          </td>
+[dev:client] 26 |          <td class="exp-cell">
+[dev:client]    |          ^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 27 |            EXP {{ character.stats.experience }} / {{ character.stats.nextLevelExp }}
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 28 |            （残り: {{ character.stats.nextLevelExp - character.stats.experience }}）
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 29 |          </td>
+[dev:client]    |  ^^^^^^^^^^^^^[39m
+[dev:client]   Plugin: [35mvite:vue[39m
+[dev:client]   File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[dev:client] [2m15:40:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+[dev:client] 29 |          </td>
+[dev:client] 30 |            <!-- ★ テスト用：EXP増減ボタン -->
+[dev:client] 31 |          <td class="exp-cell">
+[dev:client]    |          ^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 32 |            <button @click="addExp(-500)" class="exp-btn minus">-500</button>
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 33 |          </td>
+[dev:client]    |  ^^^^^^^^^^^^^[39m
+[dev:client]   Plugin: [35mvite:vue[39m
+[dev:client]   File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[dev:client] [2m15:40:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+[dev:client] 32 |            <button @click="addExp(-500)" class="exp-btn minus">-500</button>
+[dev:client] 33 |          </td>
+[dev:client] 34 |          <td class="exp-cell">
+[dev:client]    |          ^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 35 |            <button @click="addExp(500)"  class="exp-btn plus">+500</button>
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 36 |          </td>
+[dev:client]    |  ^^^^^^^^^^^^^[39m
+[dev:client]   Plugin: [35mvite:vue[39m
+[dev:client]   File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[dev:client] [2m15:40:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+[dev:client] 37 |        </div>
+[dev:client] 38 |        <div v-else class="magic-exp-row">
+[dev:client] 39 |          <td class="exp-cell">
+[dev:client]    |          ^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 40 |            <button
+[dev:client]    |  ^^^^^^^^^^^^^^^^^
+[dev:client] 41 |            :class="{ 'lvup-active': props.character.attribute.selected.length < props.character.magic.magicRank }"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 42 |            :disabled="!(props.character.attribute.selected.length < props.character.magic.magicRank)"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 43 |            @click="openAttributeModal">
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 44 |            属性を追加する
+[dev:client]    |  ^^^^^^^^^^^^^^^^^
+[dev:client] 45 |            </button>
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^
+[dev:client] 46 |          </td>
+[dev:client]    |  ^^^^^^^^^^^^^[39m
+[dev:client]   Plugin: [35mvite:vue[39m
+[dev:client]   File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [2m17:23:59[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m17:25:00[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/TargetMarker.vue[22m
+[dev:client] [2m17:26:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/views/GuestView.vue[22m
+[dev:client] [2m17:28:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/FontPreviewModal.vue?vue&type=style&index=0&scoped=0194198f&lang.css[22m
+[dev:client] [2m17:38:53[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue, /src/components/modals/robot/TargetMarker.vue, /src/components/modals/robot/FontPreviewModal.vue[22m
+[dev:client] [2m17:39:07[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m17:42:36[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m17:42:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m17:43:21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/FontPreviewModal.vue[22m
+[dev:client] [2m17:44:45[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/FontPreviewModal.vue[22m
+[dev:client] [2m17:44:45[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m17:53:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/main.js[22m
+[dev:client] [2m17:53:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue, /src/components/modals/robot/TargetMarker.vue, /src/components/modals/robot/FontPreviewModal.vue[22m
+[dev:client] [2m18:18:20[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/FontPreviewModal.vue?vue&type=style&index=0&scoped=0194198f&lang.css[22m
+[dev:client] [2m18:22:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m18:23:41[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m18:24:02[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m18:24:45[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue?vue&type=style&index=0&scoped=e6df6288&lang.css[22m
+[dev:client] [2m18:30:43[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue, /src/components/modals/robot/CustomMarkerModal.vue?vue&type=style&index=0&scoped=e6df6288&lang.css[22m
+[dev:client] [2m18:30:59[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m18:39:08[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m18:47:36[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m18:48:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue?vue&type=style&index=0&scoped=e6df6288&lang.css[22m
+[dev:client] [2m19:15:37[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m19:17:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m19:17:21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue?vue&type=style&index=0&scoped=e6df6288&lang.css[22m
+[dev:client] [2m19:17:45[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/assets/fonts/markerFonts.css[22m
+[dev:client] [2m19:17:45[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue, /src/components/modals/robot/TargetMarker.vue, /src/components/modals/robot/FontPreviewModal.vue[22m
+[dev:client] [2m2:03:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue, /src/components/modals/robot/TargetMarker.vue, /src/components/modals/robot/FontPreviewModal.vue[22m
+[dev:client] [2m2:03:52[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/FontPreviewModal.vue[22m
+[dev:client] [2m2:03:52[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m2:04:20[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue?vue&type=style&index=0&scoped=e6df6288&lang.css[22m
+[dev:client] [2m11:37:55[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m11:38:29[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m11:39:01[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue?vue&type=style&index=0&scoped=e6df6288&lang.css[22m
+[dev:client] [2m11:39:41[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue?vue&type=style&index=0&scoped=e6df6288&lang.css[22m
+[dev:client] [2m13:47:23[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m13:47:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32m✨ new dependencies optimized: [33mhtml2canvas[32m[39m
+[dev:client] [2m13:47:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32m✨ optimized dependencies changed. reloading[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [2m13:47:26[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+[dev:client] 4  |          
+[dev:client] 5  |        <div v-if="activeTab !== '魔法'" class="exp-div">
+[dev:client] 6  |          <td class="exp-btn-cell">
+[dev:client]    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 7  |            <button 
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^
+[dev:client] 8  |              class="lvup-btn"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 9  |              :class="{ 'lvup-active': character.stats.experience >= character.stats.nextLevelExp }"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 10 |              :disabled="character.stats.experience < character.stats.nextLevelExp"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 11 |              @click="levelUpMode = !levelUpMode"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 12 |            >
+[dev:client]    |  ^^^^^^^^^^^
+[dev:client] 13 |              Lvアップ
+[dev:client]    |  ^^^^^^^^^^^^^^^^^
+[dev:client] 14 |            </button>
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^
+[dev:client] 15 |          </td>
+[dev:client]    |  ^^^^^^^^^^^^^[39m
+[dev:client]   Plugin: [35mvite:vue[39m
+[dev:client]   File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[dev:client] [2m13:47:26[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+[dev:client] 14 |            </button>
+[dev:client] 15 |          </td>
+[dev:client] 16 |          <td class="exp-btn-cell">
+[dev:client]    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 17 |            <button
+[dev:client]    |  ^^^^^^^^^^^^^^^^^
+[dev:client] 18 |              class="addclass-btn"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 19 |              :class="{ 'lvup-active': character.stats.experience >= character.stats.nextLevelExp }"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 20 |              :disabled="character.stats.experience < character.stats.nextLevelExp"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 21 |              @click="openAddClassModal"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 22 |            >
+[dev:client]    |  ^^^^^^^^^^^
+[dev:client] 23 |              新規取得
+[dev:client]    |  ^^^^^^^^^^^^^^^^
+[dev:client] 24 |            </button>
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^
+[dev:client] 25 |          </td>
+[dev:client]    |  ^^^^^^^^^^^^^[39m
+[dev:client]   Plugin: [35mvite:vue[39m
+[dev:client]   File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[dev:client] [2m13:47:26[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+[dev:client] 24 |            </button>
+[dev:client] 25 |          </td>
+[dev:client] 26 |          <td class="exp-cell">
+[dev:client]    |          ^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 27 |            EXP {{ character.stats.experience }} / {{ character.stats.nextLevelExp }}
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 28 |            （残り: {{ character.stats.nextLevelExp - character.stats.experience }}）
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 29 |          </td>
+[dev:client]    |  ^^^^^^^^^^^^^[39m
+[dev:client]   Plugin: [35mvite:vue[39m
+[dev:client]   File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[dev:client] [2m13:47:26[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+[dev:client] 29 |          </td>
+[dev:client] 30 |            <!-- ★ テスト用：EXP増減ボタン -->
+[dev:client] 31 |          <td class="exp-cell">
+[dev:client]    |          ^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 32 |            <button @click="addExp(-500)" class="exp-btn minus">-500</button>
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 33 |          </td>
+[dev:client]    |  ^^^^^^^^^^^^^[39m
+[dev:client]   Plugin: [35mvite:vue[39m
+[dev:client]   File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[dev:client] [2m13:47:26[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+[dev:client] 32 |            <button @click="addExp(-500)" class="exp-btn minus">-500</button>
+[dev:client] 33 |          </td>
+[dev:client] 34 |          <td class="exp-cell">
+[dev:client]    |          ^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 35 |            <button @click="addExp(500)"  class="exp-btn plus">+500</button>
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 36 |          </td>
+[dev:client]    |  ^^^^^^^^^^^^^[39m
+[dev:client]   Plugin: [35mvite:vue[39m
+[dev:client]   File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[dev:client] [2m13:47:26[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+[dev:client] 37 |        </div>
+[dev:client] 38 |        <div v-else class="magic-exp-row">
+[dev:client] 39 |          <td class="exp-cell">
+[dev:client]    |          ^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 40 |            <button
+[dev:client]    |  ^^^^^^^^^^^^^^^^^
+[dev:client] 41 |            :class="{ 'lvup-active': props.character.attribute.selected.length < props.character.magic.magicRank }"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 42 |            :disabled="!(props.character.attribute.selected.length < props.character.magic.magicRank)"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 43 |            @click="openAttributeModal">
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 44 |            属性を追加する
+[dev:client]    |  ^^^^^^^^^^^^^^^^^
+[dev:client] 45 |            </button>
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^
+[dev:client] 46 |          </td>
+[dev:client]    |  ^^^^^^^^^^^^^[39m
+[dev:client]   Plugin: [35mvite:vue[39m
+[dev:client]   File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [2m13:51:12[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m14:09:21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m14:13:50[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m14:16:21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m14:17:15[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m14:33:57[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m14:33:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32m✨ new dependencies optimized: [33mhtml-to-image[32m[39m
+[dev:client] [2m14:33:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32m✨ optimized dependencies changed. reloading[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [2m14:33:58[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+[dev:client] 4  |          
+[dev:client] 5  |        <div v-if="activeTab !== '魔法'" class="exp-div">
+[dev:client] 6  |          <td class="exp-btn-cell">
+[dev:client]    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 7  |            <button 
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^
+[dev:client] 8  |              class="lvup-btn"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 9  |              :class="{ 'lvup-active': character.stats.experience >= character.stats.nextLevelExp }"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 10 |              :disabled="character.stats.experience < character.stats.nextLevelExp"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 11 |              @click="levelUpMode = !levelUpMode"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 12 |            >
+[dev:client]    |  ^^^^^^^^^^^
+[dev:client] 13 |              Lvアップ
+[dev:client]    |  ^^^^^^^^^^^^^^^^^
+[dev:client] 14 |            </button>
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^
+[dev:client] 15 |          </td>
+[dev:client]    |  ^^^^^^^^^^^^^[39m
+[dev:client]   Plugin: [35mvite:vue[39m
+[dev:client]   File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[dev:client] [2m14:33:58[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+[dev:client] 14 |            </button>
+[dev:client] 15 |          </td>
+[dev:client] 16 |          <td class="exp-btn-cell">
+[dev:client]    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 17 |            <button
+[dev:client]    |  ^^^^^^^^^^^^^^^^^
+[dev:client] 18 |              class="addclass-btn"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 19 |              :class="{ 'lvup-active': character.stats.experience >= character.stats.nextLevelExp }"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 20 |              :disabled="character.stats.experience < character.stats.nextLevelExp"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 21 |              @click="openAddClassModal"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 22 |            >
+[dev:client]    |  ^^^^^^^^^^^
+[dev:client] 23 |              新規取得
+[dev:client]    |  ^^^^^^^^^^^^^^^^
+[dev:client] 24 |            </button>
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^
+[dev:client] 25 |          </td>
+[dev:client]    |  ^^^^^^^^^^^^^[39m
+[dev:client]   Plugin: [35mvite:vue[39m
+[dev:client]   File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[dev:client] [2m14:33:58[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+[dev:client] 24 |            </button>
+[dev:client] 25 |          </td>
+[dev:client] 26 |          <td class="exp-cell">
+[dev:client]    |          ^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 27 |            EXP {{ character.stats.experience }} / {{ character.stats.nextLevelExp }}
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 28 |            （残り: {{ character.stats.nextLevelExp - character.stats.experience }}）
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 29 |          </td>
+[dev:client]    |  ^^^^^^^^^^^^^[39m
+[dev:client]   Plugin: [35mvite:vue[39m
+[dev:client]   File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[dev:client] [2m14:33:58[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+[dev:client] 29 |          </td>
+[dev:client] 30 |            <!-- ★ テスト用：EXP増減ボタン -->
+[dev:client] 31 |          <td class="exp-cell">
+[dev:client]    |          ^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 32 |            <button @click="addExp(-500)" class="exp-btn minus">-500</button>
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 33 |          </td>
+[dev:client]    |  ^^^^^^^^^^^^^[39m
+[dev:client]   Plugin: [35mvite:vue[39m
+[dev:client]   File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[dev:client] [2m14:33:58[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+[dev:client] 32 |            <button @click="addExp(-500)" class="exp-btn minus">-500</button>
+[dev:client] 33 |          </td>
+[dev:client] 34 |          <td class="exp-cell">
+[dev:client]    |          ^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 35 |            <button @click="addExp(500)"  class="exp-btn plus">+500</button>
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 36 |          </td>
+[dev:client]    |  ^^^^^^^^^^^^^[39m
+[dev:client]   Plugin: [35mvite:vue[39m
+[dev:client]   File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[dev:client] [2m14:33:58[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+[dev:client] 37 |        </div>
+[dev:client] 38 |        <div v-else class="magic-exp-row">
+[dev:client] 39 |          <td class="exp-cell">
+[dev:client]    |          ^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 40 |            <button
+[dev:client]    |  ^^^^^^^^^^^^^^^^^
+[dev:client] 41 |            :class="{ 'lvup-active': props.character.attribute.selected.length < props.character.magic.magicRank }"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 42 |            :disabled="!(props.character.attribute.selected.length < props.character.magic.magicRank)"
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 43 |            @click="openAttributeModal">
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[dev:client] 44 |            属性を追加する
+[dev:client]    |  ^^^^^^^^^^^^^^^^^
+[dev:client] 45 |            </button>
+[dev:client]    |  ^^^^^^^^^^^^^^^^^^^
+[dev:client] 46 |          </td>
+[dev:client]    |  ^^^^^^^^^^^^^[39m
+[dev:client]   Plugin: [35mvite:vue[39m
+[dev:client]   File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[dev:client] [33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[dev:client] [2m14:34:12[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m14:35:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m14:51:52[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m15:18:31[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m15:18:51[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m15:19:16[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m15:19:35[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m15:19:52[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m15:20:01[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m15:20:30[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/TargetMarker.vue[22m
+[dev:client] [2m15:20:50[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue?vue&type=style&index=0&scoped=e6df6288&lang.css[22m
+[dev:client] [2m15:23:08[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue?vue&type=style&index=0&scoped=e6df6288&lang.css[22m
+[dev:client] [2m17:27:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m17:27:43[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m17:28:07[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m17:28:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m17:28:47[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m17:29:07[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m17:29:23[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m17:29:37[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m17:31:44[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/TargetMarker.vue[22m
+[dev:client] [2m17:32:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/TargetMarker.vue[22m
+[dev:client] [2m17:32:31[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue?vue&type=style&index=0&scoped=e6df6288&lang.css[22m
+[dev:client] [2m17:33:53[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m17:36:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/TargetMarker.vue[22m
+[dev:client] [2m17:38:04[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue?vue&type=style&index=0&scoped=e6df6288&lang.css[22m
+[dev:client] [2m17:39:54[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue?vue&type=style&index=0&scoped=e6df6288&lang.css[22m
+[dev:client] [2m18:01:59[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/CustomMarkerModal.vue[22m
+[dev:client] [2m18:02:21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/modals/robot/TargetMarker.vue[22m

@@ -4,12 +4,17 @@ import { useRoute } from "vue-router";
 import { applyGlobalScale } from "@/components/useScale.js";
 import useScaleCss from "@/css/useScale.css?url";
 import gestScaleCss from "@/css/gestScale.css?url";
+import electronicLifeCss from "@/css/electronicLife.css?url";
 
 const route = useRoute();
 const scaleLinkId = "scale-css";
 
 const setScaleCss = (path) => {
-  const href = path === "/guest" ? gestScaleCss : useScaleCss;
+  const href = path === "/guest"
+    ? gestScaleCss
+    : path === "/electronic-life"
+      ? electronicLifeCss
+      : useScaleCss;
   let link = document.getElementById(scaleLinkId);
   if (!link) {
     link = document.createElement("link");
@@ -45,4 +50,3 @@ onBeforeUnmount(() => {
     <router-view />
   </div>
 </template>
-

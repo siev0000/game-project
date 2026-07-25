@@ -1,0 +1,50 @@
+@font-face {
+  font-family: 'Magic Ring';
+  src: url('./magic-ring.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Alien Script';
+  src: url('./alien-script.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Isekai';
+  src: url('./isekai-Regular.otf') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Neko no Mezame';
+  src: url('./Neko_no_Mezame.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Technoid';
+  src: url('./TECHNOID.TTF') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Tech Vermin';
+  src: url('./TechVermin-Regular.otf') format('opentype');
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Tech Vermin';
+  src: url('./TechVermin-Italic.otf') format('opentype');
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Tech Vermin Italic';
+  src: url('./TechVermin-Italic.otf') format('opentype');
+  font-style: italic;
+  font-display: swap;
+}

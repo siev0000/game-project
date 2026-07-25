@@ -196,37 +196,94 @@
       :style="customMarkerStyle"
       aria-hidden="true"
     >
+      <div
+        class="custom-marker-whole-orbit"
+        :class="{ 'is-animated': isCustomWholeMotionEnabled && customWholeMotion.rotateEnabled }"
+        :style="customWholeMotionStyle"
+      >
+      <div
+        class="custom-marker-whole-pulse"
+        :class="{ 'is-animated': isCustomWholeMotionEnabled && customWholeMotion.pulseEnabled }"
+      >
+      <div
+        class="custom-marker-whole-glow"
+        :class="{ 'is-animated': isCustomWholeMotionEnabled && customWholeMotion.glowEnabled }"
+      >
       <div class="custom-marker-motion">
+        <svg class="custom-layer-mask-definitions" aria-hidden="true">
+          <defs>
+            <mask
+              v-for="ring in customRings"
+              :id="getCustomLayerMaskId(ring)"
+              :key="getCustomLayerMaskId(ring)"
+              x="-1"
+              y="-1"
+              width="3"
+              height="3"
+              maskUnits="objectBoundingBox"
+              maskContentUnits="objectBoundingBox"
+            >
+              <rect x="-1" y="-1" width="3" height="3" fill="white" />
+              <path
+                v-for="eraser in getCustomErasersAbove(ring)"
+                :key="eraser.id"
+                :d="getCustomShapeMaskPath(eraser.shape || customMarkerAppearance.shape, eraser)"
+                :transform="getCustomLayerEraseTransform(eraser)"
+                :fill-rule="getCustomShapeFillRule(eraser.shape || customMarkerAppearance.shape)"
+                fill="black"
+                :stroke="(eraser.shape || customMarkerAppearance.shape) === 'gear' ? 'none' : 'black'"
+              />
+            </mask>
+          </defs>
+        </svg>
         <span
           v-for="ring in customRings"
           :key="ring.id"
-          class="custom-marker-ring-orbit"
-          :class="[
-            {
-              'is-animated': isCustomRingAnimated(ring) && isCustomRingRotationEnabled(ring),
-              'is-hidden': ring.visible === false
-            }
-          ]"
-          :style="getCustomRingMotionStyle(ring)"
+          class="custom-marker-layer-frame"
+          :class="{ 'is-hidden': ring.visible === false }"
+          :style="getCustomLayerFrameStyle(ring)"
         >
           <span
-            class="custom-marker-ring-highlight"
-            :class="{ 'is-editor-highlighted': ring.id === highlightRingId }"
+            class="custom-marker-ring-orbit"
+            :class="{ 'is-animated': isCustomRingAnimated(ring) && isCustomWholeRotationEnabled(ring) }"
+            :style="getCustomRingMotionStyle(ring)"
           >
-          <span
-            class="custom-marker-ring"
-            :class="[
-              `is-mode-${getCustomRenderMode(ring)}`,
-              getCustomRingSplitDirection(ring),
-              {
-                'is-layout-arc': isCustomCircumference(ring),
-                'is-animated': isCustomRingAnimated(ring) && isCustomRingPulseEnabled(ring)
-              }
-            ]"
-            :style="getCustomRingStyle(ring)"
-          >
+            <span
+              class="custom-marker-ring-highlight"
+              :class="{ 'is-editor-highlighted': ring.id === highlightRingId }"
+              :style="getCustomRingTransformStyle(ring)"
+            >
+            <span
+              class="custom-marker-ring"
+              :class="[
+                `is-mode-${getCustomRenderMode(ring)}`,
+                getCustomRingSplitDirection(ring),
+                {
+                  'is-layout-arc': isCustomCircumference(ring),
+                  'is-animated': isCustomRingAnimated(ring) && isCustomRingPulseEnabled(ring)
+                }
+              ]"
+              :style="getCustomRingStyle(ring)"
+            >
+            <template v-if="getCustomRenderMode(ring) === 'textRing'">
+              <span
+                v-for="(text, textIndex) in getCustomTextItems(ring)"
+                :key="`${textIndex}-${text}`"
+                class="custom-marker-ring-segment custom-text-item"
+                :class="getCustomSegmentAnimationClasses(ring)"
+                :style="getCustomTextItemStyle(ring, textIndex)"
+              >
+                <span
+                  class="custom-text-glyph"
+                  :class="{
+                    'is-counter-rotating': isCustomTextCounterRotating(ring),
+                    'is-text-rotating': isCustomTextOnlyRotating(ring)
+                  }"
+                >{{ text }}</span>
+              </span>
+            </template>
             <svg
-              v-if="getCustomRenderMode(ring) === 'segmentedArc'"
+              v-else-if="getCustomRenderMode(ring) === 'segmentedArc'"
               viewBox="0 0 100 100"
               preserveAspectRatio="none"
               class="custom-marker-ring-segment custom-special-layer"
@@ -239,8 +296,8 @@
                 class="custom-segment-line custom-segment-line-inner"
                 cx="50"
                 cy="50"
-                rx="40"
-                ry="40"
+                rx="46"
+                ry="46"
                 pathLength="100"
               />
             </svg>
@@ -270,32 +327,51 @@
               :class="[`custom-shape-${ring.shape || customMarkerAppearance.shape}`, getCustomSegmentAnimationClasses(ring)]"
               :style="getCustomRingSegmentStyle(ring, segmentIndex - 1)"
             >
+              <defs v-if="ring.cutoutEnabled">
+                <mask :id="getCustomCutoutMaskId(ring, segmentIndex)">
+                  <rect width="100" height="100" fill="white" />
+                  <path
+                    :d="getCustomShapeMaskPath(ring.shape || customMarkerAppearance.shape, ring)"
+                    :transform="getCustomCutoutTransform(ring)"
+                    :fill-rule="getCustomShapeFillRule(ring.shape || customMarkerAppearance.shape)"
+                    fill="black"
+                    :stroke="(ring.shape || customMarkerAppearance.shape) === 'gear' ? 'none' : 'black'"
+                  />
+                </mask>
+              </defs>
               <path
                 class="custom-segment-fill"
-                :d="getCustomShapePath(ring.shape || customMarkerAppearance.shape)"
+                :d="getCustomShapeFillPath(ring.shape || customMarkerAppearance.shape, ring)"
+                :mask="ring.cutoutEnabled ? `url(#${getCustomCutoutMaskId(ring, segmentIndex)})` : null"
+                :fill-rule="getCustomShapeFillRule(ring.shape || customMarkerAppearance.shape)"
               />
               <path
                 class="custom-segment-line"
-                :d="getCustomShapePath(ring.shape || customMarkerAppearance.shape)"
+                :d="getCustomShapePath(ring.shape || customMarkerAppearance.shape, ring)"
               />
               <path
                 v-if="ring.lineStyle === 'double'"
                 class="custom-segment-line custom-segment-line-inner"
-                :d="getCustomShapePath(ring.shape || customMarkerAppearance.shape)"
+                :d="getCustomShapePath(ring.shape || customMarkerAppearance.shape, ring)"
               />
             </svg>
-          </span>
+            </span>
+            </span>
           </span>
         </span>
       </div>
       <span v-if="customMarkerAppearance.showCenterDot" class="custom-marker-core"></span>
+      </div>
+      </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 import { getUillust } from '@/constants/statData.js'
+import { TEXT_FONT_FAMILY_MAP } from '../data/textFontPresets.js'
 
 const props = defineProps({
   generation: {
@@ -318,6 +394,10 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  customMarkerState: {
+    type: String,
+    default: ''
+  },
   customMarkerSettings: {
     type: Object,
     default: () => ({})
@@ -327,6 +407,7 @@ const props = defineProps({
     default: null
   }
 })
+const markerSvgIdPrefix = useId().replace(/[^a-zA-Z0-9_-]/g, '-')
 
 const generationClass = computed(() => `gen-${String(props.generation).replace('.', '-')}`)
 const isAngelGeneration = computed(() =>
@@ -349,20 +430,79 @@ const customMarkerSettings = computed(() => ({
   ...CUSTOM_MARKER_DEFAULTS,
   ...props.customMarkerSettings
 }))
+const autoCustomMarkerState = ref('idle')
+const autoCustomMorphDuration = ref(-1)
+let customTransformTimer = null
+const customTransformMode = computed(() => (
+  ['reverse', 'reset'].includes(customMarkerSettings.value.transition?.transformMode)
+    ? customMarkerSettings.value.transition.transformMode
+    : 'none'
+))
+const customTransformAutoEnabled = computed(() => (
+  props.markerType === 'custom'
+  && !props.isTargetMoving
+  && !['idle', 'moving', 'transform'].includes(props.customMarkerState)
+  && customTransformMode.value !== 'none'
+))
+const resolvedCustomMarkerState = computed(() => (
+  ['idle', 'moving', 'transform'].includes(props.customMarkerState)
+    ? props.customMarkerState
+    : props.isTargetMoving ? 'moving' : autoCustomMarkerState.value
+))
 const customMarkerAppearance = computed(() => {
-  const state = props.isTargetMoving ? 'moving' : 'idle'
-  return {
+  const state = resolvedCustomMarkerState.value
+  const legacySize = Number(customMarkerSettings.value.size) || 100
+  const stateAppearance = customMarkerSettings.value.appearance?.[state] || {}
+  const appearance = {
     shape: customMarkerSettings.value.shape,
-    size: customMarkerSettings.value.size,
+    size: legacySize,
+    width: legacySize,
+    height: legacySize,
     opacity: customMarkerSettings.value.opacity,
     showCenterDot: customMarkerSettings.value.showCenterDot,
-    ...(customMarkerSettings.value.appearance?.[state] || {})
+    ...stateAppearance
+  }
+  return {
+    ...appearance,
+    width: Number(stateAppearance.width) || Number(stateAppearance.size) || appearance.width,
+    height: Number(stateAppearance.height) || Number(stateAppearance.size) || appearance.height
   }
 })
+const customWholeMotion = computed(() => {
+  const state = resolvedCustomMarkerState.value
+  return {
+    enabled: false,
+    rotateEnabled: false,
+    pulseEnabled: false,
+    glowEnabled: false,
+    rotateDuration: 8,
+    pulseDuration: 3,
+    glowDuration: 2,
+    glowMin: 4,
+    glowMax: 14,
+    direction: 'normal',
+    delay: 0,
+    pulseAmount: 18,
+    repeat: true,
+    ...(customMarkerSettings.value.wholeMotion?.[state] || {})
+  }
+})
+const isCustomWholeMotionEnabled = computed(() => customWholeMotion.value.enabled !== false)
+const customWholeMotionStyle = computed(() => ({
+  '--custom-whole-rotate-duration': `${Math.max(0.4, Number(customWholeMotion.value.rotateDuration) || 8)}s`,
+  '--custom-whole-pulse-duration': `${Math.max(0.4, Number(customWholeMotion.value.pulseDuration) || 3)}s`,
+  '--custom-whole-glow-duration': `${Math.max(0.4, Number(customWholeMotion.value.glowDuration) || 2)}s`,
+  '--custom-whole-glow-min': `${Math.max(0, Number(customWholeMotion.value.glowMin) || 0)}px`,
+  '--custom-whole-glow-max': `${Math.max(0, Number(customWholeMotion.value.glowMax) || 0)}px`,
+  '--custom-whole-pulse-amount': String(Math.min(45, Math.max(2, Number(customWholeMotion.value.pulseAmount) || 18)) / 100),
+  '--custom-whole-direction': customWholeMotion.value.direction === 'reverse' ? 'reverse' : 'normal',
+  '--custom-whole-delay': `${Math.max(0, Number(customWholeMotion.value.delay) || 0)}s`,
+  '--custom-whole-iteration': customWholeMotion.value.repeat === false ? '1' : 'infinite'
+}))
 const customRings = computed(() => {
   const configuredRings = customMarkerSettings.value.rings
   if (Array.isArray(configuredRings) && configuredRings.length > 0) {
-    const state = props.isTargetMoving ? 'moving' : 'idle'
+    const state = resolvedCustomMarkerState.value
     return configuredRings.map(ring => ({
       ...ring,
       ...(ring.appearance?.[state] || {})
@@ -415,18 +555,26 @@ const customRings = computed(() => {
 })
 const customMarkerStyle = computed(() => ({
   '--custom-marker-color': customMarkerSettings.value.color,
-  '--custom-marker-size': `${Math.min(180, Math.max(40, Number(customMarkerAppearance.value.size) || 100))}%`,
+  '--custom-marker-width': `${Math.min(180, Math.max(10, Number(customMarkerAppearance.value.width) || Number(customMarkerAppearance.value.size) || 100))}%`,
+  '--custom-marker-height': `${Math.min(180, Math.max(10, Number(customMarkerAppearance.value.height) || Number(customMarkerAppearance.value.size) || 100))}%`,
   '--custom-marker-opacity': String(Math.min(100, Math.max(10, Number(customMarkerAppearance.value.opacity) || 88)) / 100),
-  '--custom-morph-duration': `${Math.max(0, Number(props.isTargetMoving
-    ? customMarkerSettings.value.transition?.morphInDuration
-    : customMarkerSettings.value.transition?.morphOutDuration) || 0)}ms`,
+  '--custom-morph-duration': `${Math.max(0, Number(
+    autoCustomMorphDuration.value >= 0 && customTransformAutoEnabled.value
+      ? autoCustomMorphDuration.value
+      : resolvedCustomMarkerState.value === 'idle'
+        ? customMarkerSettings.value.transition?.morphOutDuration
+        : resolvedCustomMarkerState.value === 'transform'
+          ? customMarkerSettings.value.transition?.transformDuration ?? customMarkerSettings.value.transition?.morphInDuration
+          : customMarkerSettings.value.transition?.morphInDuration
+  ) || 0)}ms`,
   '--custom-morph-easing': ['linear', 'ease-in', 'ease-out', 'ease-in-out'].includes(customMarkerSettings.value.transition?.easing)
     ? customMarkerSettings.value.transition.easing
     : 'ease-in-out'
 }))
 const getCustomRingMotion = ring => {
-  const state = props.isTargetMoving ? 'moving' : 'idle'
+  const state = resolvedCustomMarkerState.value
   if (ring.motion?.[state]) return ring.motion[state]
+  if (state === 'transform' && ring.motion?.idle) return ring.motion.idle
 
   const trigger = ring.animationTrigger || 'always'
   return {
@@ -444,8 +592,33 @@ const getCustomRingMotion = ring => {
 const isCustomRingAnimated = ring => getCustomRingMotion(ring).enabled !== false
 const isCustomRingRotationEnabled = ring => getCustomRingMotion(ring).rotateEnabled === true
 const isCustomRingPulseEnabled = ring => getCustomRingMotion(ring).pulseEnabled === true
+const isCustomTextRing = ring => getCustomRenderMode(ring) === 'textRing'
+const isCustomTextOnlyRotating = ring => isCustomTextRing(ring)
+  && isCustomRingAnimated(ring)
+  && isCustomRingRotationEnabled(ring)
+  && getCustomRingMotion(ring).rotateTarget === 'text'
+const isCustomWholeRotationEnabled = ring => isCustomRingRotationEnabled(ring) && !isCustomTextOnlyRotating(ring)
+const isCustomTextCounterRotating = ring => ring.textOrientation === 'upright'
+  && isCustomRingAnimated(ring)
+  && isCustomWholeRotationEnabled(ring)
 const getCustomRingSplitCount = ring => Math.min(8, Math.max(1, Number(ring.splitCount) || 1))
-const CUSTOM_RENDER_MODES = new Set(['continuous', 'segmentedArc', 'circumference', 'free', 'center', 'connection'])
+const CUSTOM_TEXT_LIMIT = 64
+const splitCustomText = value => {
+  const text = String(value || '')
+  if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+    const segmenter = new Intl.Segmenter('ja', { granularity: 'grapheme' })
+    return Array.from(segmenter.segment(text), segment => segment.segment).slice(0, CUSTOM_TEXT_LIMIT)
+  }
+  return Array.from(text).slice(0, CUSTOM_TEXT_LIMIT)
+}
+const getCustomTextItems = ring => {
+  if (ring.textMode === 'labels') {
+    const count = Math.min(CUSTOM_TEXT_LIMIT, Math.max(1, Number(ring.splitCount) || 1))
+    return Array.from({ length: count }, (_, index) => String(ring.segmentLabels?.[index] || ''))
+  }
+  return splitCustomText(ring.textContent)
+}
+const CUSTOM_RENDER_MODES = new Set(['continuous', 'segmentedArc', 'circumference', 'connection', 'textRing'])
 const getCustomRenderMode = ring => CUSTOM_RENDER_MODES.has(ring.renderMode)
   ? ring.renderMode
   : ring.layout === 'arc' ? 'circumference' : 'continuous'
@@ -461,6 +634,7 @@ const getCustomSegmentAnimationClasses = ring => ({
 })
 const CUSTOM_SHAPE_PATHS = {
   circle: 'M50 4 A46 46 0 1 1 49.99 4 Z',
+  point: 'M50 22 A28 28 0 1 1 49.99 22 Z',
   square: 'M5 5 H95 V95 H5 Z',
   triangle: 'M50 5 L95 92 H5 Z',
   diamond: 'M50 4 L96 50 L50 96 L4 50 Z',
@@ -471,16 +645,81 @@ const CUSTOM_SHAPE_PATHS = {
   arc: 'M8 68 A46 46 0 0 1 92 68',
   tick: 'M50 5 V30',
   star: 'M50 4 L61 36 L95 36 L68 56 L78 90 L50 70 L22 90 L32 56 L5 36 L39 36 Z',
+  // 2つの正三角形を同じ中心へ重ねた正六芒星。
+  hexagram: 'M50 4 L90 73 H10 Z M10 27 H90 L50 96 Z',
+  octagram: 'M50 3 L61 27 L84 16 L73 39 L97 50 L73 61 L84 84 L61 73 L50 97 L39 73 L16 84 L27 61 L3 50 L27 39 L16 16 L39 27 Z',
   sparkle: 'M50 3 C56 35 65 44 97 50 C65 56 56 65 50 97 C44 65 35 56 3 50 C35 44 44 35 50 3 Z',
+  heart: 'M50 92 C42 81 8 61 8 34 C8 15 31 7 50 29 C69 7 92 15 92 34 C92 61 58 81 50 92 Z',
+  sun: 'M50 22 A28 28 0 1 1 49.99 22 Z M50 2 L56 16 H44 Z M50 98 L44 84 H56 Z M2 50 L16 44 V56 Z M98 50 L84 56 V44 Z M16 16 L31 22 L22 31 Z M84 16 L78 31 L69 22 Z M16 84 L22 69 L31 78 Z M84 84 L69 78 L78 69 Z',
   arrow: 'M5 34 H55 V14 L96 50 L55 86 V66 H5 Z',
   arrowhead: 'M12 8 L92 50 L12 92 L34 50 Z',
   sector: 'M50 50 L50 5 A45 45 0 0 1 95 50 Z',
   // G5/G5.5のorbitと同じ、二つの長い円弧と欠けで構成するリング。
   wave: 'M50 4 A46 46 0 1 1 49.99 4 Z'
 }
-const getCustomMagitechWavePath = () => {
-  const pointCount = 96
-  const waveCount = 12
+const CUSTOM_TEXT_PATH_POLYLINES = {
+  square: [[5, 5], [95, 5], [95, 95], [5, 95]],
+  triangle: [[50, 5], [95, 92], [5, 92]],
+  diamond: [[50, 4], [96, 50], [50, 96], [4, 50]],
+  star: [[50, 4], [61, 36], [95, 36], [68, 56], [78, 90], [50, 70], [22, 90], [32, 56], [5, 36], [39, 36]]
+}
+const getPolylinePoint = (points, progress) => {
+  const segments = points.map((point, index) => {
+    const next = points[(index + 1) % points.length]
+    return { point, next, length: Math.hypot(next[0] - point[0], next[1] - point[1]) }
+  })
+  const totalLength = segments.reduce((sum, segment) => sum + segment.length, 0)
+  let remaining = ((progress % 1) + 1) % 1 * totalLength
+  for (const segment of segments) {
+    if (remaining <= segment.length) {
+      const ratio = segment.length === 0 ? 0 : remaining / segment.length
+      const x = segment.point[0] + (segment.next[0] - segment.point[0]) * ratio
+      const y = segment.point[1] + (segment.next[1] - segment.point[1]) * ratio
+      return { x, y, tangent: Math.atan2(segment.next[1] - segment.point[1], segment.next[0] - segment.point[0]) * 180 / Math.PI }
+    }
+    remaining -= segment.length
+  }
+  return { x: points[0][0], y: points[0][1], tangent: 0 }
+}
+const getCustomTextPathPoint = (shape, progress) => {
+  const points = CUSTOM_TEXT_PATH_POLYLINES[shape]
+  if (points) return getPolylinePoint(points, progress)
+  const angle = -90 + progress * 360
+  const radians = angle * Math.PI / 180
+  return {
+    x: 50 + Math.cos(radians) * 46,
+    y: 50 + Math.sin(radians) * 46,
+    tangent: angle + 90
+  }
+}
+// 分割リングを基準にする場合は、輪郭を分割片ごとに等分する。
+// 文字群は担当する片の輪郭上だけへ配置されるため、四角や星でも形に沿う。
+const getCustomSegmentedTextPathProgress = (startAngle, direction, textIndex, textCount, ring) => {
+  const count = Math.min(8, Math.max(1, Number(ring?.splitCount) || 1))
+  const startProgress = ((startAngle + 90) / 360 % 1 + 1) % 1
+  if (count <= 1) return startProgress
+
+  const segmentLength = 1 / count
+  const requestedGap = Math.max(0, Number(ring?.splitGap) || 0) / 100
+  const gap = Math.min(segmentLength * 0.8, requestedGap)
+  const visibleLength = segmentLength - gap
+  const logicalSegmentIndex = Math.min(count - 1, Math.floor(textIndex * count / textCount))
+  const firstTextIndex = Math.ceil(logicalSegmentIndex * textCount / count)
+  const afterLastTextIndex = Math.ceil((logicalSegmentIndex + 1) * textCount / count)
+  const textCountInSegment = Math.max(1, afterLastTextIndex - firstTextIndex)
+  const textIndexInSegment = Math.max(0, textIndex - firstTextIndex)
+  const localProgress = textCountInSegment <= 1 ? 0.5 : textIndexInSegment / (textCountInSegment - 1)
+  const startSegment = Math.floor(startProgress * count) % count
+  const segmentIndex = (startSegment + direction * logicalSegmentIndex + count) % count
+  const progressInSegment = direction === -1 ? 1 - localProgress : localProgress
+  return segmentIndex * segmentLength + gap / 2 + progressInSegment * visibleLength
+}
+const getCustomMagitechWavePath = ring => {
+  const waveCount = Math.min(24, Math.max(1, Number(ring?.waveCount) || 12))
+  const pointCount = Math.max(48, waveCount * 8)
+  const amplitude = Math.min(10, Math.max(0, Number.isFinite(Number(ring?.waveAmplitude)) ? Number(ring.waveAmplitude) : 4))
+  const randomness = Math.min(1, Math.max(0, (Number.isFinite(Number(ring?.waveRandomness)) ? Number(ring.waveRandomness) : 55) / 100))
+  const speed = Math.min(3, Math.max(0, Number.isFinite(Number(ring?.waveSpeed)) ? Number(ring.waveSpeed) : 1))
   const points = []
   for (let index = 0; index <= pointCount; index += 1) {
     const progress = index / pointCount
@@ -490,43 +729,357 @@ const getCustomMagitechWavePath = () => {
     const interpolation = (1 - Math.cos(waveProgress * Math.PI)) / 2
     const random = seededUnit(20, waveIndex) * (1 - interpolation)
       + seededUnit(20, waveIndex + 1) * interpolation
-    const amplitude = 2.2 + random * 3.2
-    const phase = magitechLinkWavePhase.value * (0.75 + random * 0.55) + random * Math.PI * 2
-    const radius = 42 + Math.sin(progress * Math.PI * 2 * waveCount + phase) * amplitude
+    const localAmplitude = amplitude * (1 - randomness * 0.55 + random * randomness * 1.1)
+    const phase = magitechLinkWavePhase.value * speed * (0.75 + random * randomness * 0.55) + random * Math.PI * 2
+    const radius = 42 + Math.sin(progress * Math.PI * 2 * waveCount + phase) * localAmplitude
     const angle = -Math.PI / 2 + progress * Math.PI * 2
     points.push([50 + Math.cos(angle) * radius, 50 + Math.sin(angle) * radius])
   }
   return points.map(([x, y], index) => `${index === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`).join(' ') + ' Z'
 }
-const getCustomShapePath = shape => shape === 'magitechWave'
-  ? getCustomMagitechWavePath()
-  : CUSTOM_SHAPE_PATHS[shape] || CUSTOM_SHAPE_PATHS.circle
+const getCustomMoonPath = ring => {
+  const phase = Math.min(100, Math.max(0, Number(ring?.moonPhase) || 0))
+  if (phase <= 0) return CUSTOM_SHAPE_PATHS.circle
+
+  const radius = 46
+  const centerDistance = 88 - phase * 0.74
+  const intersectionX = 50 + centerDistance / 2
+  const intersectionOffsetY = Math.sqrt(Math.max(0, radius ** 2 - (centerDistance / 2) ** 2))
+  const topY = 50 - intersectionOffsetY
+  const bottomY = 50 + intersectionOffsetY
+  return `M ${intersectionX.toFixed(2)} ${topY.toFixed(2)} A ${radius} ${radius} 0 1 0 ${intersectionX.toFixed(2)} ${bottomY.toFixed(2)} A ${radius} ${radius} 0 0 1 ${intersectionX.toFixed(2)} ${topY.toFixed(2)} Z`
+}
+const getCustomSharpMoonPath = ring => {
+  const phase = Math.min(100, Math.max(0, Number(ring?.moonPhase) || 0))
+  const outerRadius = 46
+  const innerRadius = 4 + phase * 0.42
+  const angle = Math.min(359, Math.max(0, Number(ring?.innerCircleAngle) || 0)) * Math.PI / 180
+  const tangentDistance = outerRadius - innerRadius
+  const innerCenterX = 50 + Math.cos(angle) * tangentDistance
+  const innerCenterY = 50 + Math.sin(angle) * tangentDistance
+  const innerTopY = innerCenterY - innerRadius
+
+  // 内円を外円へ内接させ、指定角度の接点を保ったまま大きさを変える。
+  return [
+    `M 50 ${50 - outerRadius}`,
+    `A ${outerRadius} ${outerRadius} 0 1 1 49.99 ${50 - outerRadius}`,
+    'Z',
+    `M ${innerCenterX.toFixed(2)} ${innerTopY.toFixed(2)}`,
+    `A ${innerRadius.toFixed(2)} ${innerRadius.toFixed(2)} 0 1 1 ${(innerCenterX - 0.01).toFixed(2)} ${innerTopY.toFixed(2)}`,
+    'Z'
+  ].join(' ')
+}
+const getCustomGearPath = (ring, mode = 'spoked') => {
+  const toothCount = Math.min(32, Math.max(6, Math.round(Number(ring?.gearTeeth) || 12)))
+  const spokeCount = mode === 'matched' ? toothCount : Math.max(3, Math.round(toothCount / 3))
+  const innerSize = Math.min(90, Math.max(5, Number(ring?.gearInnerSize) || 38))
+  const outerRadius = 47
+  const rootRadius = 38
+  const innerRadius = rootRadius * innerSize / 100
+  const toothStep = Math.PI * 2 / toothCount
+  const points = []
+
+  for (let index = 0; index < toothCount; index += 1) {
+    const centerAngle = -Math.PI / 2 + index * toothStep
+    const toothPoints = [
+      [centerAngle - toothStep * 0.5, rootRadius],
+      [centerAngle - toothStep * 0.32, rootRadius],
+      [centerAngle - toothStep * 0.22, outerRadius],
+      [centerAngle + toothStep * 0.22, outerRadius],
+      [centerAngle + toothStep * 0.32, rootRadius]
+    ]
+    toothPoints.forEach(([angle, radius]) => {
+      points.push([
+        50 + Math.cos(angle) * radius,
+        50 + Math.sin(angle) * radius
+      ])
+    })
+  }
+
+  const path = [
+    points.map(([x, y], index) => `${index === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`).join(' '),
+    'Z'
+  ]
+
+  if (mode === 'fill') return path.join(' ')
+  if (mode === 'bodyFill') {
+    const innerFillRadius = rootRadius * 0.63
+    path.push(
+      `M 50 ${(50 - innerFillRadius).toFixed(2)}`,
+      `A ${innerFillRadius.toFixed(2)} ${innerFillRadius.toFixed(2)} 0 1 0 50 ${(50 + innerFillRadius).toFixed(2)}`,
+      `A ${innerFillRadius.toFixed(2)} ${innerFillRadius.toFixed(2)} 0 1 0 50 ${(50 - innerFillRadius).toFixed(2)}`,
+      'Z'
+    )
+    return path.join(' ')
+  }
+
+  if (mode === 'outline') {
+    path.push(getCustomGearSupportPath(ring))
+    return path.join(' ')
+  }
+
+  path.push(
+    `M 50 ${(50 - rootRadius).toFixed(2)}`,
+    `A ${rootRadius} ${rootRadius} 0 1 0 50 ${(50 + rootRadius).toFixed(2)}`,
+    `A ${rootRadius} ${rootRadius} 0 1 0 50 ${(50 - rootRadius).toFixed(2)}`,
+    'Z'
+  )
+
+  // 支柱は線ではなく閉じた棒として、中央ハブから歯車の内周へ接続する。
+  const spokeHalfWidth = Math.min(3.2, Math.max(1.2, 10 / Math.sqrt(Math.max(1, spokeCount))))
+  for (let index = 0; index < spokeCount; index += 1) {
+    const angle = -Math.PI / 2 + Math.PI * 2 * index / spokeCount
+    const perpendicular = angle + Math.PI / 2
+    const startRadius = innerRadius
+    const startX = 50 + Math.cos(angle) * startRadius
+    const startY = 50 + Math.sin(angle) * startRadius
+    const endX = 50 + Math.cos(angle) * rootRadius
+    const endY = 50 + Math.sin(angle) * rootRadius
+    const offsetX = Math.cos(perpendicular) * spokeHalfWidth
+    const offsetY = Math.sin(perpendicular) * spokeHalfWidth
+    path.push(
+      `M ${(startX + offsetX).toFixed(2)} ${(startY + offsetY).toFixed(2)}`,
+      `L ${(endX + offsetX).toFixed(2)} ${(endY + offsetY).toFixed(2)}`,
+      `L ${(endX - offsetX).toFixed(2)} ${(endY - offsetY).toFixed(2)}`,
+      `L ${(startX - offsetX).toFixed(2)} ${(startY - offsetY).toFixed(2)}`,
+      'Z'
+    )
+  }
+  path.push(
+    `M 50 ${(50 - innerRadius).toFixed(2)}`,
+    `A ${innerRadius.toFixed(2)} ${innerRadius.toFixed(2)} 0 1 1 50 ${(50 + innerRadius).toFixed(2)}`,
+    `A ${innerRadius.toFixed(2)} ${innerRadius.toFixed(2)} 0 1 1 50 ${(50 - innerRadius).toFixed(2)}`,
+    'Z'
+  )
+  return path.join(' ')
+}
+const getCustomGearSupportPath = ring => {
+  if (ring?.gearSupportsEnabled !== true) return ''
+
+  const rootRadius = 38
+  const supportCount = Math.min(16, Math.max(1, Math.round(Number(ring.gearSupportCount) || 3)))
+  const supportOffset = Math.min(30, Math.max(-30, Number(ring.gearSupportOffset) || 0)) / 100 * rootRadius
+  const supportThickness = rootRadius * 0.36
+  const supportCenterRadius = rootRadius * 0.62 + supportOffset
+  const supportOuterRadius = Math.min(rootRadius - 2, supportCenterRadius + supportThickness / 2)
+  const supportInnerRadius = Math.max(4, supportCenterRadius - supportThickness / 2)
+  const supportStep = Math.PI * 2 / supportCount
+  const supportSpan = supportStep * 0.62
+  const path = []
+
+  for (let index = 0; index < supportCount; index += 1) {
+    const centerAngle = -Math.PI / 2 + supportStep * index
+    const startAngle = centerAngle - supportSpan / 2
+    const endAngle = centerAngle + supportSpan / 2
+    const outerStartX = 50 + Math.cos(startAngle) * supportOuterRadius
+    const outerStartY = 50 + Math.sin(startAngle) * supportOuterRadius
+    const outerEndX = 50 + Math.cos(endAngle) * supportOuterRadius
+    const outerEndY = 50 + Math.sin(endAngle) * supportOuterRadius
+    const innerEndX = 50 + Math.cos(endAngle) * supportInnerRadius
+    const innerEndY = 50 + Math.sin(endAngle) * supportInnerRadius
+    const innerStartX = 50 + Math.cos(startAngle) * supportInnerRadius
+    const innerStartY = 50 + Math.sin(startAngle) * supportInnerRadius
+    path.push(
+      `M ${outerStartX.toFixed(2)} ${outerStartY.toFixed(2)}`,
+      `A ${supportOuterRadius.toFixed(2)} ${supportOuterRadius.toFixed(2)} 0 0 1 ${outerEndX.toFixed(2)} ${outerEndY.toFixed(2)}`,
+      `L ${innerEndX.toFixed(2)} ${innerEndY.toFixed(2)}`,
+      `A ${supportInnerRadius.toFixed(2)} ${supportInnerRadius.toFixed(2)} 0 0 0 ${innerStartX.toFixed(2)} ${innerStartY.toFixed(2)}`,
+      'Z'
+    )
+  }
+  return path.join(' ')
+}
+const getCustomSegmentedRingPath = ring => {
+  const count = Math.min(8, Math.max(2, Math.round(Number(ring?.splitCount) || 2)))
+  const segmentLength = 100 / count
+  const requestedGap = Math.max(0, Number(ring?.splitGap) || 0)
+  const gap = Math.min(segmentLength * 0.8, requestedGap)
+  const step = Math.PI * 2 / count
+  const gapAngle = step * gap / segmentLength
+  const visibleAngle = step - gapAngle
+  const radius = 46
+  const path = []
+
+  for (let index = 0; index < count; index += 1) {
+    const startAngle = -Math.PI / 2 + step * index + gapAngle / 2
+    const endAngle = startAngle + visibleAngle
+    const startX = 50 + Math.cos(startAngle) * radius
+    const startY = 50 + Math.sin(startAngle) * radius
+    const endX = 50 + Math.cos(endAngle) * radius
+    const endY = 50 + Math.sin(endAngle) * radius
+    path.push(
+      `M ${startX.toFixed(2)} ${startY.toFixed(2)}`,
+      `A ${radius} ${radius} 0 ${visibleAngle > Math.PI ? 1 : 0} 1 ${endX.toFixed(2)} ${endY.toFixed(2)}`
+    )
+  }
+  return path.join(' ')
+}
+const getCustomShapePath = (shape, ring) => {
+  if (shape === 'magitechWave') return getCustomMagitechWavePath(ring)
+  if (shape === 'moon') return getCustomMoonPath(ring)
+  if (shape === 'sharpMoon') return getCustomSharpMoonPath(ring)
+  if (shape === 'segmentedRing') return getCustomSegmentedRingPath(ring)
+  if (shape === 'polygon') return getCustomConnectionPath(ring)
+  if (shape === 'gear') return getCustomGearPath(ring, 'outline')
+  if (shape === 'gear2') return getCustomGearPath(ring, 'matched')
+  return CUSTOM_SHAPE_PATHS[shape] || CUSTOM_SHAPE_PATHS.circle
+}
+const getCustomShapeFillPath = (shape, ring) => {
+  if (shape === 'gear') {
+    return ring.gearFillBody !== false ? getCustomShapeMaskPath(shape, ring) : ''
+  }
+  return getCustomShapePath(shape, ring)
+}
+const getCustomShapeMaskPath = (shape, ring) => {
+  if (shape === 'gear') return [getCustomGearPath(ring, 'fill'), getCustomGearSupportPath(ring)].join(' ')
+  return getCustomShapePath(shape, ring)
+}
+const getCustomShapeFillRule = shape => ['sharpMoon', 'gear'].includes(shape) ? 'evenodd' : null
+const getCustomCutoutMaskId = (ring, segmentIndex) => `${markerSvgIdPrefix}-custom-cutout-${String(ring.id).replace(/[^a-zA-Z0-9_-]/g, '-')}-${segmentIndex}`
+const getCustomCutoutTransform = ring => {
+  const scale = Math.min(0.9, Math.max(0.1, (Number(ring.cutoutSize) || 62) / 100))
+  return `translate(50 50) scale(${scale}) translate(-50 -50)`
+}
 const getCustomRingSplitDirection = ring => {
   const legacySize = Number(ring.size) || 100
   const width = Number(ring.width) || legacySize
   const height = Number(ring.height) || legacySize
   return width >= height ? 'is-split-horizontal' : 'is-split-vertical'
 }
+const getCustomDashPattern = (ring, index, lineStyle, flowing) => {
+  if (ring.shape === 'wave') return '96 48 96 48'
+  if (flowing) return '14 8'
+  if (lineStyle === 'dotted') return '2 7'
+  if (lineStyle !== 'dashed') return 'none'
+
+  const dashLength = Math.min(40, Math.max(1, Number(ring.dashLength) || 14))
+  const dashGap = Math.min(40, Math.max(1, Number(ring.dashGap) || 8))
+  const randomness = Math.min(100, Math.max(0, Number(ring.dashRandomness) || 0)) / 100
+  if (randomness <= 0) return `${dashLength} ${dashGap}`
+
+  let seed = `${ring.id || 'ring'}-${index}`.split('').reduce((value, character) => (
+    Math.imul(value ^ character.charCodeAt(0), 16777619) >>> 0
+  ), 2166136261)
+  const nextRandom = () => {
+    seed ^= seed << 13
+    seed ^= seed >>> 17
+    seed ^= seed << 5
+    return (seed >>> 0) / 4294967295
+  }
+  return Array.from({ length: 10 }, () => {
+    const variedLength = dashLength * (1 + (nextRandom() * 2 - 1) * randomness * 0.8)
+    const variedGap = dashGap * (1 + (nextRandom() * 2 - 1) * randomness * 0.8)
+    return `${Math.max(1, variedLength).toFixed(1)} ${Math.max(1, variedGap).toFixed(1)}`
+  }).join(' ')
+}
 const getCustomSegmentVisualStyle = (ring, index = 0) => {
-  const count = getCustomRingSplitCount(ring)
+  const count = getCustomRenderMode(ring) === 'textRing'
+    ? Math.max(1, getCustomTextItems(ring).length)
+    : getCustomRingSplitCount(ring)
   const motion = getCustomRingMotion(ring)
   const segmentColor = ring.useSegmentColors
     ? ring.segmentColors?.[index] || ring.color || customMarkerSettings.value.color
     : ring.color || customMarkerSettings.value.color
   const lineStyle = ring.lineStyle || 'solid'
   const flowing = motion.lineFlowEnabled === true
+  const doubleLineGap = Math.min(100, Math.max(0, Number.isFinite(Number(ring.doubleLineGap)) ? Number(ring.doubleLineGap) : 18))
   return {
     '--custom-segment-color': segmentColor,
     '--custom-segment-fill': ring.fillColor || segmentColor,
     '--custom-segment-fill-opacity': String(ring.fillEnabled ? Math.min(100, Math.max(0, Number(ring.fillOpacity) || 0)) / 100 : 0),
-    '--custom-segment-dash': ring.shape === 'wave' ? '96 48 96 48' : flowing ? '14 8' : lineStyle === 'dashed' ? '14 8' : lineStyle === 'dotted' ? '2 7' : 'none',
+    '--custom-segment-dash': getCustomDashPattern(ring, index, lineStyle, flowing),
+    '--custom-segment-dash-offset': String(Math.min(40, Math.max(-40, Number(ring.dashOffset) || 0))),
+    '--custom-line-cap': ['butt', 'round', 'square'].includes(ring.lineCap) ? ring.lineCap : 'butt',
+    '--custom-line-join': ['miter', 'round', 'bevel'].includes(ring.lineJoin) ? ring.lineJoin : 'miter',
+    '--custom-line-miter-limit': String(Math.min(20, Math.max(1, Number(ring.miterLimit) || 4))),
+    '--custom-double-line-scale': String(1 - doubleLineGap / 100),
+    '--custom-double-line-offset': `${doubleLineGap / 2}px`,
     '--custom-segment-delay': `${index * Math.max(0.1, Number(motion.segmentSequenceDuration) || 2) / count}s`
+  }
+}
+const getCustomTextItemStyle = (ring, index) => {
+  const items = getCustomTextItems(ring)
+  const count = Math.max(1, items.length)
+  const radius = Math.min(70, Math.max(0, Number(ring.textRadius) || 45))
+  const spacing = Math.min(200, Math.max(25, Number(ring.textSpacing) || 100)) / 100
+  const startAngle = Math.min(359, Math.max(0, Number(ring.arcAngle) || 270))
+  const direction = ring.textDirection === 'counterclockwise' ? -1 : 1
+  const evenSpacing = ring.textEvenSpacing === true
+  const arcSpread = Math.min(360, Math.max(1, Number(ring.textArcSpread) || 360))
+  const interval = evenSpacing
+    ? (arcSpread === 360 ? 360 / count : count > 1 ? arcSpread / (count - 1) : 0)
+    : 360 / count * spacing
+  const angle = startAngle + direction * interval * index
+  const radians = angle * Math.PI / 180
+  const orientation = ['outward', 'inward', 'centerFacing', 'upright', 'tangent'].includes(ring.textOrientation)
+    ? ring.textOrientation
+    : 'outward'
+  const referenceRing = ring.textReferenceRingId && ring.textReferenceRingId !== 'self'
+    ? customRings.value.find(candidate => candidate.id === ring.textReferenceRingId)
+    : null
+  const usesShapePath = ring.textLayout === 'shape' || referenceRing !== null
+  const unsegmentedPathProgress = (startAngle + 90 + direction * interval * index) / 360
+  const textDivisionCount = Math.min(8, Math.max(1, Number(ring.textDivisionCount) || 1))
+  const divisionRing = textDivisionCount > 1
+    ? { ...ring, splitCount: textDivisionCount }
+    : referenceRing && getCustomRingSplitCount(referenceRing) > 1
+      ? referenceRing
+      : null
+  const pathProgress = divisionRing
+    ? getCustomSegmentedTextPathProgress(startAngle, direction, index, count, divisionRing)
+    : unsegmentedPathProgress
+  const pathShape = referenceRing?.shape || ring.shape
+  const rawPathPoint = usesShapePath ? getCustomTextPathPoint(pathShape, pathProgress) : null
+  const referenceLegacySize = Number(referenceRing?.size) || 100
+  const referenceWidth = Math.min(140, Math.max(1, Number(referenceRing?.width) || referenceLegacySize))
+  const referenceHeight = Math.min(140, Math.max(1, Number(referenceRing?.height) || referenceLegacySize))
+  const referenceScale = Math.min(160, Math.max(50, Number(ring.textReferenceScale) || 100)) / 100
+  const referenceOffsetX = Math.min(50, Math.max(-50, Number(referenceRing?.offsetX) || 0))
+  const referenceOffsetY = Math.min(50, Math.max(-50, Number(referenceRing?.offsetY) || 0))
+  const referenceAngle = Math.min(359, Math.max(0, Number(referenceRing?.angle) || 0))
+  const referenceRadians = referenceAngle * Math.PI / 180
+  const scaledPathX = rawPathPoint ? (rawPathPoint.x - 50) * referenceWidth / 100 * referenceScale : 0
+  const scaledPathY = rawPathPoint ? (rawPathPoint.y - 50) * referenceHeight / 100 * referenceScale : 0
+  const positionX = referenceRing
+    ? 50 + referenceOffsetX + scaledPathX * Math.cos(referenceRadians) - scaledPathY * Math.sin(referenceRadians)
+    : rawPathPoint?.x ?? 50 + Math.cos(radians) * radius
+  const positionY = referenceRing
+    ? 50 + referenceOffsetY + scaledPathX * Math.sin(referenceRadians) + scaledPathY * Math.cos(referenceRadians)
+    : rawPathPoint?.y ?? 50 + Math.sin(radians) * radius
+  const radialAngle = Math.atan2(positionY - 50, positionX - 50) * 180 / Math.PI
+  const centerFacingAngle = Math.atan2(50 - positionY, 50 - positionX) * 180 / Math.PI + 90
+  const textAngle = orientation === 'upright'
+    ? 0
+    : orientation === 'centerFacing'
+      ? centerFacingAngle
+    : orientation === 'tangent' && rawPathPoint
+      ? rawPathPoint.tangent + referenceAngle
+      : orientation === 'inward'
+        ? radialAngle - 90
+        : radialAngle + 90
+  const fontSize = Math.min(40, Math.max(6, Number(ring.textSize) || 14))
+  const fontWeight = ['normal', 'bold'].includes(ring.textWeight) ? ring.textWeight : 'bold'
+  const fontFamily = ring.textFontPreset === 'custom' && String(ring.textCustomFontFamily || '').trim()
+    ? String(ring.textCustomFontFamily).trim()
+    : TEXT_FONT_FAMILY_MAP[ring.textFontPreset] || TEXT_FONT_FAMILY_MAP.cyber
+
+  return {
+    ...getCustomSegmentVisualStyle(ring, index),
+    left: usesShapePath ? `${positionX}%` : `calc(50% + ${Math.cos(radians) * radius}%)`,
+    top: usesShapePath ? `${positionY}%` : `calc(50% + ${Math.sin(radians) * radius}%)`,
+    width: 'auto',
+    height: 'auto',
+    translate: '-50% -50%',
+    rotate: `${textAngle}deg`,
+    fontSize: `${fontSize}px`,
+    fontWeight,
+    fontFamily
   }
 }
 const getCustomRingSegmentStyle = (ring, index) => {
   const legacySize = Number(ring.size) || 100
-  const width = Math.min(140, Math.max(10, Number(ring.width) || legacySize))
-  const height = Math.min(140, Math.max(10, Number(ring.height) || legacySize))
+  const width = Math.min(140, Math.max(1, Number(ring.width) || legacySize))
+  const height = Math.min(140, Math.max(1, Number(ring.height) || legacySize))
   const count = getCustomRingSplitCount(ring)
   const commonStyle = getCustomSegmentVisualStyle(ring, index)
 
@@ -614,7 +1167,9 @@ const getCustomSegmentedArcStyle = ring => {
   }
 }
 const getCustomConnectionPath = ring => {
-  const count = Math.max(2, getCustomRingSplitCount(ring))
+  const count = ring.shape === 'polygon'
+    ? Math.min(24, Math.max(3, Math.round(Number(ring.polygonSides) || 3)))
+    : Math.max(2, getCustomRingSplitCount(ring))
   const radius = Math.min(45, Math.max(2, Number(ring.arcRadius) || 45) / 70 * 45)
   const startAngle = (Number(ring.arcAngle) || 270) * Math.PI / 180
   const points = Array.from({ length: count }, (_, index) => {
@@ -628,8 +1183,8 @@ const getCustomConnectionStyle = ring => getCustomSegmentVisualStyle(ring)
 const getCustomRingStyle = ring => {
   const motion = getCustomRingMotion(ring)
   const legacySize = Number(ring.size) || 100
-  const width = Math.min(140, Math.max(10, Number(ring.width) || legacySize))
-  const height = Math.min(140, Math.max(10, Number(ring.height) || legacySize))
+  const width = Math.min(140, Math.max(1, Number(ring.width) || legacySize))
+  const height = Math.min(140, Math.max(1, Number(ring.height) || legacySize))
   const angle = Math.min(359, Math.max(0, Number(ring.angle) || 0))
   const offsetX = Math.min(50, Math.max(-50, Number(ring.offsetX) || 0))
   const offsetY = Math.min(50, Math.max(-50, Number(ring.offsetY) || 0))
@@ -641,12 +1196,11 @@ const getCustomRingStyle = ring => {
   const color = ring.color || customMarkerSettings.value.color
   const glowColor = ring.glowColor || color
   const mode = getCustomRenderMode(ring)
-  const isArc = mode === 'circumference'
-  const isCentered = ['continuous', 'segmentedArc', 'center', 'connection'].includes(mode)
+  const isArc = ['circumference', 'textRing'].includes(mode)
   const useEvenSpacing = !isArc && ring.evenSpacing && renderCount > 1
   return {
-    left: isArc ? '0' : `calc(50% + ${isCentered ? 0 : offsetX}%)`,
-    top: isArc ? '0' : `calc(50% + ${isCentered ? 0 : offsetY}%)`,
+    left: isArc ? `calc(0% + ${offsetX}%)` : `calc(50% + ${offsetX}%)`,
+    top: isArc ? `calc(0% + ${offsetY}%)` : `calc(50% + ${offsetY}%)`,
     width: isArc ? '100%' : `${width}%`,
     height: isArc ? '100%' : `${height}%`,
     opacity: String(opacity / 100),
@@ -664,6 +1218,67 @@ const getCustomRingStyle = ring => {
     '--custom-ring-pulse-amount': String(Math.min(45, Math.max(2, Number(motion.pulseAmount) || 18)) / 100),
     translate: isArc ? 'none' : '-50% -50%',
     rotate: isArc ? 'none' : `${angle}deg`
+  }
+}
+const getCustomRingTransformStyle = ring => ({
+  mixBlendMode: ['normal', 'screen', 'plus-lighter', 'lighten'].includes(ring.blendMode) ? ring.blendMode : 'normal',
+  scale: `${ring.flipX === true ? -1 : 1} ${ring.flipY === true ? -1 : 1}`
+})
+const getCustomLayerMaskId = ring => `${markerSvgIdPrefix}-custom-layer-mask-${String(ring.id).replace(/[^a-zA-Z0-9_-]/g, '-')}`
+const getCustomLayerOrder = ring => {
+  const index = customRings.value.findIndex(candidate => candidate.id === ring.id)
+  return {
+    zIndex: Math.min(32, Math.max(0, Number(ring.zIndex) || 0)),
+    index
+  }
+}
+const isCustomLayerAbove = (candidate, target) => {
+  const candidateOrder = getCustomLayerOrder(candidate)
+  const targetOrder = getCustomLayerOrder(target)
+  return candidateOrder.zIndex > targetOrder.zIndex
+    || (candidateOrder.zIndex === targetOrder.zIndex && candidateOrder.index < targetOrder.index)
+}
+const getCustomErasersAbove = ring => customRings.value.filter(candidate => (
+  candidate.eraseBelow === true
+  && candidate.visible !== false
+  && getCustomRenderMode(candidate) === 'continuous'
+  && isCustomLayerAbove(candidate, ring)
+))
+const getCustomLayerEraseTransform = ring => {
+  const legacySize = Number(ring.size) || 100
+  const widthScale = Math.min(140, Math.max(1, Number(ring.width) || legacySize)) / 10000
+  const heightScale = Math.min(140, Math.max(1, Number(ring.height) || legacySize)) / 10000
+  const flipX = ring.flipX === true ? -1 : 1
+  const flipY = ring.flipY === true ? -1 : 1
+  const offsetX = Math.min(50, Math.max(-50, Number(ring.offsetX) || 0)) / 100
+  const offsetY = Math.min(50, Math.max(-50, Number(ring.offsetY) || 0)) / 100
+  const centerX = 0.5 + offsetX * flipX
+  const centerY = 0.5 + offsetY * flipY
+  const angle = Math.min(359, Math.max(0, Number(ring.angle) || 0))
+  const overallWidth = Math.max(10, Number(customMarkerAppearance.value.width) || Number(customMarkerAppearance.value.size) || 100)
+  const overallHeight = Math.max(10, Number(customMarkerAppearance.value.height) || Number(customMarkerAppearance.value.size) || 100)
+  const aspectRatio = overallWidth / overallHeight
+
+  // CSSは実ピクセル上で回転するため、objectBoundingBox座標の縦横比を補正して同じ位置へ合わせる。
+  return [
+    `translate(${centerX} ${centerY})`,
+    `scale(${flipX} ${flipY})`,
+    `scale(${1 / aspectRatio} 1)`,
+    `rotate(${angle})`,
+    `scale(${aspectRatio * widthScale} ${heightScale})`,
+    'translate(-50 -50)'
+  ].join(' ')
+}
+const getCustomLayerFrameStyle = ring => {
+  const erasers = getCustomErasersAbove(ring)
+  const maskValue = erasers.length > 0 ? `url(#${getCustomLayerMaskId(ring)})` : undefined
+  const order = getCustomLayerOrder(ring)
+  const layerCount = customRings.value.length
+  return {
+    // 同じ重なり順では、レイヤー番号が小さいほど前面に描画する。
+    zIndex: String(order.zIndex * (layerCount + 1) + (layerCount - order.index)),
+    mask: maskValue,
+    WebkitMask: maskValue
   }
 }
 const getCustomRingMotionStyle = ring => {
@@ -797,6 +1412,72 @@ const magitechLinkStyle = index => {
   }
 }
 
+const clearCustomTransformTimer = () => {
+  if (customTransformTimer) clearTimeout(customTransformTimer)
+  customTransformTimer = null
+}
+const scheduleCustomTransformStep = (callback, delay) => {
+  clearCustomTransformTimer()
+  customTransformTimer = setTimeout(() => {
+    customTransformTimer = null
+    callback()
+  }, Math.max(0, delay))
+}
+const restartCustomTransformAnimation = () => {
+  clearCustomTransformTimer()
+  autoCustomMarkerState.value = 'idle'
+  autoCustomMorphDuration.value = customTransformAutoEnabled.value ? 0 : -1
+  if (!customTransformAutoEnabled.value) return
+
+  const transition = customMarkerSettings.value.transition || {}
+  const duration = Math.min(10000, Math.max(100, Number(transition.transformDuration) || 1200))
+  const returnDuration = Math.min(10000, Math.max(100, Number(transition.transformReturnDuration) || duration))
+  const startDelay = Math.min(10000, Math.max(0, Number(transition.transformStartDelay) || 0))
+  const holdDuration = Math.min(10000, Math.max(0, Number(transition.transformHoldDuration) || 0))
+  const scheduleNextCycle = () => {
+    autoCustomMorphDuration.value = duration
+    scheduleCustomTransformStep(runTransformCycle, startDelay)
+  }
+  const returnToIdle = () => {
+    if (!customTransformAutoEnabled.value) {
+      restartCustomTransformAnimation()
+      return
+    }
+    if (customTransformMode.value === 'reverse') {
+      autoCustomMorphDuration.value = returnDuration
+      autoCustomMarkerState.value = 'idle'
+      scheduleCustomTransformStep(scheduleNextCycle, returnDuration)
+      return
+    }
+    autoCustomMorphDuration.value = 0
+    autoCustomMarkerState.value = 'idle'
+    scheduleCustomTransformStep(scheduleNextCycle, 32)
+  }
+  const runTransformCycle = () => {
+    if (!customTransformAutoEnabled.value) {
+      restartCustomTransformAnimation()
+      return
+    }
+    autoCustomMorphDuration.value = duration
+    autoCustomMarkerState.value = 'transform'
+    scheduleCustomTransformStep(returnToIdle, duration + holdDuration)
+  }
+  scheduleNextCycle()
+}
+
+watch(
+  () => [
+    props.customMarkerState,
+    props.isTargetMoving,
+    customTransformMode.value,
+    customMarkerSettings.value.transition?.transformDuration,
+    customMarkerSettings.value.transition?.transformReturnDuration,
+    customMarkerSettings.value.transition?.transformStartDelay,
+    customMarkerSettings.value.transition?.transformHoldDuration
+  ],
+  restartCustomTransformAnimation
+)
+
 onMounted(() => {
   let lastTimestamp = performance.now()
 
@@ -808,10 +1489,12 @@ onMounted(() => {
   }
 
   magitechLinkWaveAnimationFrame = requestAnimationFrame(animateLinkWaves)
+  restartCustomTransformAnimation()
 })
 
 onBeforeUnmount(() => {
   cancelAnimationFrame(magitechLinkWaveAnimationFrame)
+  clearCustomTransformTimer()
 })
 </script>
 
@@ -2917,8 +3600,8 @@ onBeforeUnmount(() => {
   right: auto;
   bottom: auto;
   left: 50%;
-  width: var(--custom-marker-size);
-  height: var(--custom-marker-size);
+  width: var(--custom-marker-width);
+  height: var(--custom-marker-height);
   opacity: var(--custom-marker-opacity);
   transform: translate(-50%, -50%);
   transition:
@@ -2928,6 +3611,40 @@ onBeforeUnmount(() => {
 }
 
 .custom-marker-motion {
+  position: absolute;
+  inset: 0;
+}
+
+.custom-marker-whole-orbit,
+.custom-marker-whole-pulse,
+.custom-marker-whole-glow {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+}
+
+.custom-marker-whole-orbit.is-animated {
+  animation: customMarkerOrbit var(--custom-whole-rotate-duration) linear var(--custom-whole-delay) var(--custom-whole-iteration);
+  animation-direction: var(--custom-whole-direction);
+}
+
+.custom-marker-whole-pulse.is-animated {
+  animation: customWholeMarkerPulse var(--custom-whole-pulse-duration) ease-in-out var(--custom-whole-delay) var(--custom-whole-iteration);
+}
+
+.custom-marker-whole-glow.is-animated {
+  animation: customWholeMarkerGlow var(--custom-whole-glow-duration) ease-in-out var(--custom-whole-delay) var(--custom-whole-iteration);
+}
+
+.custom-layer-mask-definitions {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.custom-marker-layer-frame {
   position: absolute;
   inset: 0;
 }
@@ -2981,6 +3698,29 @@ onBeforeUnmount(() => {
     rotate var(--custom-morph-duration) var(--custom-morph-easing);
 }
 
+.custom-text-item {
+  position: absolute;
+  display: block;
+  color: var(--custom-segment-color);
+  line-height: 1;
+  white-space: pre;
+  text-align: center;
+  text-shadow: 0 0 var(--custom-ring-glow-size) var(--custom-ring-glow-color);
+  filter: drop-shadow(0 0 var(--custom-ring-glow-size) var(--custom-ring-glow-color));
+  user-select: none;
+}
+.custom-text-glyph {
+  display: block;
+}
+.custom-text-glyph.is-counter-rotating {
+  animation: customTextCounterOrbit var(--custom-ring-rotate-duration) linear var(--custom-ring-delay) var(--custom-ring-iteration);
+  animation-direction: var(--custom-ring-direction);
+}
+.custom-text-glyph.is-text-rotating {
+  animation: customTextOrbit var(--custom-ring-rotate-duration) linear var(--custom-ring-delay) var(--custom-ring-iteration);
+  animation-direction: var(--custom-ring-direction);
+}
+
 .custom-segment-fill,
 .custom-segment-line {
   vector-effect: non-scaling-stroke;
@@ -3004,22 +3744,59 @@ onBeforeUnmount(() => {
 .custom-shape-tick .custom-segment-fill,
 .custom-shape-wave .custom-segment-fill,
 .custom-shape-magitechWave .custom-segment-fill { fill: none; }
+.custom-shape-segmentedRing .custom-segment-fill { fill: none; }
+.custom-shape-gear .custom-segment-line {
+  fill: none !important;
+  stroke: var(--custom-segment-color) !important;
+}
+.custom-shape-gear2 .custom-segment-fill {
+  fill: none;
+}
+.custom-shape-gear2 .custom-segment-line {
+  fill: var(--custom-segment-color);
+  stroke: none;
+}
+.custom-shape-gear2 .custom-segment-line-inner {
+  display: none;
+}
 .custom-segment-line {
   fill: none;
   stroke: var(--custom-segment-color);
   stroke-width: var(--custom-ring-line-width);
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  stroke-linecap: var(--custom-line-cap, round);
+  stroke-linejoin: var(--custom-line-join, round);
+  stroke-miterlimit: var(--custom-line-miter-limit, 4);
   stroke-dasharray: var(--custom-segment-dash);
+  stroke-dashoffset: var(--custom-segment-dash-offset, 0);
   filter: drop-shadow(0 0 var(--custom-ring-glow-size) var(--custom-ring-glow-color));
 }
 .custom-segment-line-inner {
-  stroke: color-mix(in srgb, var(--custom-segment-color) 35%, transparent);
-  stroke-width: 1px;
+  stroke: color-mix(in srgb, var(--custom-segment-color) 82%, white 18%);
+  stroke-width: max(1.25px, calc(var(--custom-ring-line-width) * 0.65));
+  filter: drop-shadow(0 0 calc(var(--custom-ring-glow-size) * 0.6) var(--custom-ring-glow-color));
+}
+.custom-marker-ring-segment:not(.custom-special-layer) .custom-segment-line-inner,
+.custom-marker-ring.is-mode-connection .custom-segment-line-inner {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  transform: scale(var(--custom-double-line-scale, 0.82));
+}
+.custom-shape-line .custom-segment-line-inner {
+  transform: translateY(var(--custom-double-line-offset, 7px));
 }
 .custom-marker-ring-segment.is-sequenced {
   animation: customSegmentSequence var(--custom-sequence-duration) linear infinite;
   animation-delay: var(--custom-segment-delay);
+}
+.custom-text-item.is-glow-animated {
+  animation: customGlowPulse var(--custom-glow-duration) ease-in-out infinite;
+}
+.custom-text-item.is-sequenced.is-glow-animated {
+  animation-name: customSegmentSequence, customGlowPulse;
+  animation-duration: var(--custom-sequence-duration), var(--custom-glow-duration);
+  animation-timing-function: linear, ease-in-out;
+  animation-iteration-count: infinite, infinite;
+  animation-delay: var(--custom-segment-delay), 0s;
 }
 .custom-marker-ring-segment.is-glow-animated .custom-segment-line {
   animation: customGlowPulse var(--custom-glow-duration) ease-in-out infinite;
@@ -3045,6 +3822,7 @@ onBeforeUnmount(() => {
   position: absolute;
 }
 
+.custom-marker-layer-frame.is-hidden,
 .custom-marker-ring-orbit.is-hidden { display: none; }
 .custom-marker-ring-orbit.is-animated,
 .custom-marker-ring.is-animated {
@@ -3083,9 +3861,27 @@ onBeforeUnmount(() => {
   to { transform: rotate(360deg); }
 }
 
+@keyframes customTextCounterOrbit {
+  to { rotate: -360deg; }
+}
+
+@keyframes customTextOrbit {
+  to { rotate: 360deg; }
+}
+
 @keyframes customMarkerPulse {
   0%, 100% { scale: calc(1 - var(--custom-ring-pulse-amount)); }
   50% { scale: calc(1 + var(--custom-ring-pulse-amount)); }
+}
+
+@keyframes customWholeMarkerPulse {
+  0%, 100% { scale: calc(1 - var(--custom-whole-pulse-amount)); }
+  50% { scale: calc(1 + var(--custom-whole-pulse-amount)); }
+}
+
+@keyframes customWholeMarkerGlow {
+  0%, 100% { filter: drop-shadow(0 0 var(--custom-whole-glow-min) var(--custom-marker-color)); }
+  50% { filter: drop-shadow(0 0 var(--custom-whole-glow-max) var(--custom-marker-color)); }
 }
 
 @keyframes customEditorRingFlash {

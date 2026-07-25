@@ -1,0 +1,4 @@
+
+> game-project@1.0.0 dev:client
+> vite --host --host 127.0.0.1 --port 5173
+

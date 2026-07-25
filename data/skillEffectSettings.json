@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": [
+    { "id": "slash", "label": "切断", "effectName": "斬撃", "seKey": "", "seVolume": 80, "seDelayMs": 0, "speed": 100, "size": 100, "angleDeg": 0, "effectDelayMs": 0, "hitCount": 1 },
+    { "id": "pierce", "label": "貫通", "effectName": "刺突", "seKey": "", "seVolume": 80, "seDelayMs": 0, "speed": 100, "size": 100, "angleDeg": 0, "effectDelayMs": 0, "hitCount": 1 },
+    { "id": "strike", "label": "打撃", "effectName": "打撃連撃", "seKey": "", "seVolume": 80, "seDelayMs": 0, "speed": 100, "size": 100, "angleDeg": 0, "effectDelayMs": 0, "hitCount": 1 },
+    { "id": "shot", "label": "射撃", "effectName": "射撃3", "seKey": "", "seVolume": 80, "seDelayMs": 0, "speed": 100, "size": 100, "angleDeg": 0, "effectDelayMs": 0, "hitCount": 1 },
+    { "id": "bow", "label": "弓", "effectName": "矢2", "seKey": "", "seVolume": 80, "seDelayMs": 0, "speed": 100, "size": 100, "angleDeg": 0, "effectDelayMs": 0, "hitCount": 1 },
+    { "id": "fist", "label": "拳", "effectName": "小打撃", "seKey": "", "seVolume": 80, "seDelayMs": 0, "speed": 100, "size": 100, "angleDeg": 0, "effectDelayMs": 0, "hitCount": 1 }
+  ]
+}

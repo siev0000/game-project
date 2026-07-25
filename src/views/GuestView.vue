@@ -21,6 +21,9 @@
         <button @click="openDialogueTest">▶ メッセージテスト</button>
         <button @click="showUI = true">▶ UI情報</button>
         <button @click="showImageGallery = true">▶ イメージギャラリー</button>
+        <button @click="showSkillEffectEditor = true">▶ SE作成</button>
+        <button @click="showFontPreview = true">▶ フォント確認</button>
+        <button @click="openElectronicLifeLab">▶ 電子生命体ラボ</button>
       </div>
 
       <div class="back">
@@ -71,12 +74,25 @@
       v-if="showImageGallery"
       @close="showImageGallery = false"
     />
+    <SkillEffectEditorModal
+      v-if="showSkillEffectEditor"
+      initial-mode="sound"
+      :effect-options="effectOptions"
+      :skills="skillEffectEditorSkills"
+      :get-effect-sprite="getEffectSprite"
+      @close="showSkillEffectEditor = false"
+      @apply="applySkillEffectSettings"
+    />
+    <FontPreviewModal
+      v-if="showFontPreview"
+      @close="showFontPreview = false"
+    />
   </div>
 </template>
 
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { applyGlobalScale } from '@/components/useScale.js'
 import TutorialModal from '../components/modals/robot/TutorialModal.vue'
@@ -87,6 +103,14 @@ import BattleVer2Modal from '../components/modals/robot/BattleView_ver2.vue'
 import DialogueMessageModal from '../components/modals/robot/DialogueMessageModal.vue'
 import UIModal from '../components/modals/robot/UIModal.vue'
 import ImageGalleryModal from '../components/modals/robot/ImageGalleryModal.vue'
+import SkillEffectEditorModal from '../components/modals/robot/SkillEffectEditorModal.vue'
+import FontPreviewModal from '../components/modals/robot/FontPreviewModal.vue'
+import savedSkillEffectSettings from '../../data/skillEffectSettings.json'
+import {
+  ATTACK_EFFECT_TYPES,
+  EFFECT_OPTIONS,
+  getEffectSprite
+} from '../components/modals/data/battleEffects.js'
 
 const showTutorial = ref(false)
 const showWorld = ref(false)
@@ -96,6 +120,18 @@ const showBattleVer2 = ref(false)
 const showDialogueTest = ref(false)
 const showUI = ref(false)
 const showImageGallery = ref(false)
+const showSkillEffectEditor = ref(false)
+const showFontPreview = ref(false)
+const effectOptions = EFFECT_OPTIONS
+const skillEffectSettings = ref(Object.fromEntries(
+  (savedSkillEffectSettings.skills || []).map(skill => [skill.id, { ...skill }])
+))
+const skillEffectEditorSkills = computed(() => ATTACK_EFFECT_TYPES.map(type => ({
+  id: type.key,
+  label: type.label,
+  effectName: type.effectName,
+  ...skillEffectSettings.value[type.key]
+})))
 const dialogueTestName = ref('TEST-UNIT')
 const dialogueTestMessage = ref('テストモードを起動しました。\nTYPEと音声設定を調整してください。')
 const dialogueTestType = ref(1)
@@ -118,6 +154,14 @@ const goBack = () => {
 const openDialogueTest = () => {
   dialogueTestMessageId.value += 1
   showDialogueTest.value = true
+}
+
+const openElectronicLifeLab = () => {
+  router.push('/electronic-life')
+}
+
+const applySkillEffectSettings = skills => {
+  skillEffectSettings.value = Object.fromEntries(skills.map(skill => [skill.id, { ...skill }]))
 }
 </script>
 

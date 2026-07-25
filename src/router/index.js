@@ -12,7 +12,8 @@ const routes = [
   { path: '/dashboard', component: Dashboard },
   { path: '/characterCreateView', component: CharacterCreateView },
   { path: '/characterSelectView', component: CharacterSelectView },
-  { path: '/guest', component: () => import('../views/GuestView.vue')}
+  { path: '/guest', component: () => import('../views/GuestView.vue')},
+  { path: '/electronic-life', component: () => import('../views/ElectronicLifeView.vue') }
 ]
 
 export const router = createRouter({

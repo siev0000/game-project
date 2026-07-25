@@ -1,12 +1,13 @@
 <template>
   <BaseBattleModal @close="$emit('close')">
-    <div class="battle-root">
+    <div class="battle-root" :class="{ 'is-custom-marker-editor-open': showCustomMarkerModal }">
 
       <!-- ===== 上：バトルフィールド（40%） ===== -->
       <div
         ref="battleFieldRef"
         class="battle-field"
         :style="{ backgroundImage: `url(${battleFieldBg})` }"
+        @click="handleBattleFieldClick"
       >
         <UIModal
           v-if="showUIModal"
@@ -71,10 +72,12 @@
         <OptionsModal
           v-if="showOptionsModal"
           :seVolume="seVolume"
+          :spark-effect-enabled="sparkEffectEnabled"
           :gen4MarkerNodes="gen4MarkerNodes"
           :gen45MarkerNodes="gen45MarkerNodes"
           @close="showOptionsModal = false"
           @update-se-volume="onSeVolumeChange"
+          @update-spark-effect-enabled="onSparkEffectEnabled"
           @update-marker-node-count="onMarkerNodeCountChange"
           @update-marker-node-color="onMarkerNodeColorChange"
           @update-marker-node-strength="onMarkerNodeStrengthChange"
@@ -88,6 +91,36 @@
           @close="showCustomMarkerModal = false"
           @save="onCustomMarkerSave"
         />
+          <SkillEffectEditorModal
+            v-if="showSkillEffectEditor"
+            :effect-options="effectOptions"
+            :skills="skillEffectEditorSkills"
+            :get-effect-sprite="getEffectSprite"
+            @close="showSkillEffectEditor = false"
+            @apply="applySkillEffectSettings"
+          />
+        <div ref="effectCanvasRef" class="battle-effect-canvas" aria-hidden="true"></div>
+        <div class="spark-effect-layer" aria-hidden="true">
+          <div
+            v-for="spark in sparkEffects"
+            :key="spark.id"
+            class="spark-burst"
+            :style="{ left: `${spark.x}%`, top: `${spark.y}%` }"
+          >
+            <span class="spark-core"></span>
+            <span
+              v-for="particle in spark.particles"
+              :key="particle.id"
+              class="spark-particle"
+              :style="{
+                '--spark-angle': `${particle.angle}deg`,
+                '--spark-distance': `${particle.distance}px`,
+                '--spark-size': `${particle.size}px`,
+                '--spark-delay': `${particle.delay}ms`
+              }"
+            ></span>
+          </div>
+        </div>
         <!-- ===== メッセージモーダル設定 送信先 ===== -->
         <!-- name / message: 表示テキスト -->
         <!-- type: タイプ番号（SEはモーダル側で解決） -->
@@ -228,7 +261,87 @@
         </div>
 
         <div class="info-panel">
-          <template v-if="selectedCommand === 'ui'">
+          <template v-if="selectedCommand === 'attack'">
+            <div class="attack-effect-test">
+              <div class="attack-effect-title-row">
+                <p class="info-title">ATTACK EFFECT TEST</p>
+                <button type="button" class="attack-effect-editor-open" @click="showSkillEffectEditor = true">技演出設定</button>
+              </div>
+              <div class="attack-effect-setting">
+                <span class="attack-effect-label">ATTACK TYPE</span>
+                <div class="attack-type-buttons">
+                  <button
+                    v-for="type in attackEffectTypes"
+                    :key="type.key"
+                    :class="{ active: attackEffectType === type.key }"
+                    @click="selectAttackEffectType(type.key)"
+                  >
+                    {{ type.label }}
+                  </button>
+                </div>
+              </div>
+              <div class="attack-effect-setting">
+                <label class="attack-effect-label" for="attack-effect-asset">EFFECT ASSET</label>
+                <select id="attack-effect-asset" v-model="attackEffectAsset" class="attack-effect-select">
+                  <option v-for="effectName in effectOptions" :key="effectName" :value="effectName">
+                    {{ effectName }}
+                  </option>
+                </select>
+              </div>
+              <div class="attack-effect-setting">
+                <span class="attack-effect-label">DIRECTION</span>
+                <div class="attack-direction-buttons">
+                  <button
+                    v-for="direction in attackEffectDirections"
+                    :key="direction.key"
+                    :class="{ active: attackEffectDirection === direction.key }"
+                    @click="attackEffectDirection = direction.key"
+                  >
+                    {{ direction.label }}
+                  </button>
+                </div>
+              </div>
+              <div class="attack-effect-range-grid">
+                <div class="attack-effect-setting attack-effect-range-setting">
+                  <label class="attack-effect-label" for="attack-effect-speed">
+                    SPEED <strong>{{ attackEffectSpeed }}%</strong>
+                  </label>
+                  <input
+                    id="attack-effect-speed"
+                    v-model.number="attackEffectSpeed"
+                    type="range"
+                    min="25"
+                    max="300"
+                    step="5"
+                  >
+                </div>
+                <div class="attack-effect-setting attack-effect-range-setting">
+                  <label class="attack-effect-label" for="attack-effect-size">
+                    SIZE <strong>{{ attackEffectSize }}%</strong>
+                  </label>
+                  <input
+                    id="attack-effect-size"
+                    v-model.number="attackEffectSize"
+                    type="range"
+                    min="10"
+                    max="400"
+                    step="5"
+                  >
+                </div>
+              </div>
+              <div class="attack-effect-setting attack-count-setting">
+                <span class="attack-effect-label">HIT COUNT</span>
+                <div class="attack-count-controls">
+                  <button @click="changeAttackEffectCount(-1)">-</button>
+                  <strong>{{ attackEffectCount }}</strong>
+                  <button @click="changeAttackEffectCount(1)">+</button>
+                </div>
+                <button class="attack-effect-execute" @click="triggerAttackEffect">TEST EXECUTE</button>
+              </div>
+              <p class="attack-effect-note">種別と回数を選んで実行します。未選択時はフィールド中央を対象にします。</p>
+            </div>
+          </template>
+          <template v-else-if="selectedCommand === 'ui'">
             <div v-if="targetSelectMode" class="target-select">
               <div class="target-select-label">TARGET SLOT</div>
               <div class="target-select-buttons">
@@ -281,14 +394,30 @@
 </template>
 
 <script setup>
-import { reactive, computed, onMounted, ref, nextTick, watch } from 'vue'
+import { reactive, computed, onBeforeUnmount, onMounted, ref, nextTick, watch } from 'vue'
+import Phaser from 'phaser'
+import PhaserEffectPlayer from '@/components/effects/phaser-effect-player.mjs'
+import { playSynthSE } from '@/components/effects/soundEffectSynth.js'
 import BaseBattleModal from './BaseBattleModal.vue'
 import UIModal from './UIModal.vue'
 import OptionsModal from './OptionsModal.vue'
 import CustomMarkerModal from './CustomMarkerModal.vue'
 import DialogueMessageModal from './DialogueMessageModal.vue'
+import SkillEffectEditorModal from './SkillEffectEditorModal.vue'
 import { battleAllies, battleEnemies } from '../data/battleAllies.js'
-import { getBackgroundIllust, getCharIllust, getSEMasterVolume, setSEMasterVolume } from '@/constants/statData.js'
+import savedSkillEffectSettings from '../../../../data/skillEffectSettings.json'
+import {
+  ATTACK_EFFECT_DIRECTIONS,
+  ATTACK_EFFECT_TYPES,
+  EFFECT_OPTIONS,
+  SPARK_EFFECT,
+  createAttackImpactPoints,
+  createSparkParticles,
+  getAttackEffectDirection,
+  getAttackEffectType,
+  getEffectSprite
+} from '../data/battleEffects.js'
+import { getBackgroundIllust, getCharIllust, getSEMasterVolume, playSE, setSEMasterVolume } from '@/constants/statData.js'
 defineEmits(['close'])
 const DIALOGUE_SETTINGS_STORAGE_KEY = 'battle-dialogue-settings-v1'
 const CUSTOM_MARKER_SETTINGS_STORAGE_KEY = 'battle-custom-target-marker-settings-v1'
@@ -495,9 +624,11 @@ const targetPos = ref({ x: 0, y: 0 })
 const targetPositions = reactive({})
 const enemyRenderOffsets = reactive({})
 const battleFieldRef = ref(null)
+const effectCanvasRef = ref(null)
 const allyIconRefs = ref([])
 const showOptionsModal = ref(false)
 const showCustomMarkerModal = ref(false)
+const showSkillEffectEditor = ref(false)
 const gen4MarkerNodes = ref([
   { color: '#63f58c', connectionStrength: 0.7 },
   { color: '#ffe45c', connectionStrength: 0.55 },
@@ -516,6 +647,34 @@ const gen45MarkerNodes = ref([
 const showDialogueModal = ref(false)
 const dialogueTestMode = ref(false)
 const seVolume = ref(Math.round(getSEMasterVolume() * 100))
+const sparkEffectEnabled = ref(false)
+const sparkEffects = ref([])
+let sparkEffectId = 0
+const sparkEffectTimers = new Map()
+const attackEffectTimers = new Set()
+const activeEffectPlayers = new Set()
+let effectGame = null
+let effectScene = null
+let effectCanvasResizeObserver = null
+const attackEffectType = ref('slash')
+const attackEffectDirection = ref('right')
+const attackEffectCount = ref(1)
+const attackEffectSpeed = ref(100)
+const attackEffectSize = ref(100)
+const attackEffectTypes = ATTACK_EFFECT_TYPES
+const attackEffectDirections = ATTACK_EFFECT_DIRECTIONS
+const effectOptions = EFFECT_OPTIONS
+const attackEffectAsset = ref(getAttackEffectType(attackEffectType.value).effectName)
+// 技演出の初期設定はソース内の JSON を正とする。
+const skillEffectSettings = ref(Object.fromEntries(
+  (savedSkillEffectSettings.skills || []).map(skill => [skill.id, { ...skill }])
+))
+const skillEffectEditorSkills = computed(() => ATTACK_EFFECT_TYPES.map(type => ({
+  id: type.key,
+  label: type.label,
+  effectName: type.effectName,
+  ...skillEffectSettings.value[type.key]
+})))
 const allyTargetGeneration = ref(1)
 const targetMarkerType = ref('standard')
 const CUSTOM_MARKER_DEFAULTS = {
@@ -761,6 +920,161 @@ const onAllyTargetGenerationChange = (value) => {
   allyTargetGeneration.value = numeric
   uiModalRef.value?.setTargetGeneration?.(numeric)
 }
+const onSparkEffectEnabled = (enabled) => {
+  sparkEffectEnabled.value = enabled === true
+}
+const createSparkEffect = (x, y) => {
+  const spark = {
+    id: ++sparkEffectId,
+    x: Math.min(100, Math.max(0, x)),
+    y: Math.min(100, Math.max(0, y)),
+    particles: createSparkParticles()
+  }
+  sparkEffects.value.push(spark)
+  const timer = window.setTimeout(() => {
+    sparkEffects.value = sparkEffects.value.filter(effect => effect.id !== spark.id)
+    sparkEffectTimers.delete(spark.id)
+  }, SPARK_EFFECT.lifetime)
+  sparkEffectTimers.set(spark.id, timer)
+}
+const resizeEffectCanvas = () => {
+  const field = battleFieldRef.value
+  if (!field || !effectGame) return
+
+  effectGame.scale.resize(Math.max(1, field.clientWidth), Math.max(1, field.clientHeight))
+}
+
+const initializeEffectCanvas = () => {
+  if (effectGame || !effectCanvasRef.value || !battleFieldRef.value) return
+
+  const field = battleFieldRef.value
+  effectGame = new Phaser.Game({
+    type: Phaser.CANVAS,
+    parent: effectCanvasRef.value,
+    width: Math.max(1, field.clientWidth),
+    height: Math.max(1, field.clientHeight),
+    transparent: true,
+    banner: false,
+    scene: {
+      create () {
+        effectScene = this
+      }
+    }
+  })
+  effectCanvasResizeObserver = new ResizeObserver(resizeEffectCanvas)
+  effectCanvasResizeObserver.observe(field)
+}
+
+const playAttackSpriteEffect = async ({ x, y, source, rotation, scale, frameDurationMs }) => {
+  if (!effectScene || !battleFieldRef.value) return
+
+  const field = battleFieldRef.value
+  const rect = field.getBoundingClientRect()
+  if (!rect.width || !rect.height) return
+
+  // targetPos is measured from the scaled battle field. Phaser uses its unscaled canvas coordinates.
+  const worldX = x / rect.width * field.clientWidth
+  const worldY = y / rect.height * field.clientHeight
+  const player = new PhaserEffectPlayer(effectScene)
+  activeEffectPlayers.add(player)
+  try {
+    await player.play({
+      src: source,
+      x: worldX,
+      y: worldY,
+      angleDeg: rotation,
+      scalePercent: Math.max(1, scale * 100),
+      frameDurationMs,
+      renderStyle: 'none'
+    })
+  } finally {
+    player.destroy()
+    activeEffectPlayers.delete(player)
+  }
+}
+const changeAttackEffectCount = (amount) => {
+  attackEffectCount.value = Math.max(1, Math.min(8, attackEffectCount.value + amount))
+}
+const selectAttackEffectType = (type) => {
+  const effectType = getAttackEffectType(type)
+  attackEffectType.value = effectType.key
+  attackEffectAsset.value = effectType.effectName
+}
+const scheduleSkillSE = (config) => {
+  const isSynth = config.seMode === 'synth' && config.seSynth
+  if (!isSynth && !config.seKey) return
+  const delay = Math.max(0, Number(config.seDelayMs) || 0)
+  const timer = window.setTimeout(() => {
+    const rawVolume = Number(config.seVolume)
+    const volume = Math.max(0, Math.min(1, (Number.isFinite(rawVolume) ? rawVolume : 80) / 100))
+    if (isSynth) playSynthSE(config.seSynth, { volume: volume * getSEMasterVolume() })
+    else playSE(config.seKey, { volume })
+    attackEffectTimers.delete(timer)
+  }, delay)
+  attackEffectTimers.add(timer)
+}
+const triggerAttackEffect = async (overrides = {}) => {
+  const field = battleFieldRef.value
+  if (!field || !effectScene) return
+
+  const rect = field.getBoundingClientRect()
+  if (!rect.width || !rect.height) return
+  const targetX = targetPos.value.x / rect.width * 100
+  const targetY = targetPos.value.y / rect.height * 100
+  const baseX = Number.isFinite(targetX) && targetX > 0 ? targetX : 50
+  const baseY = Number.isFinite(targetY) && targetY > 0 ? targetY : 42
+  const configuredSkill = skillEffectSettings.value[attackEffectType.value] || {}
+  const config = { ...configuredSkill, ...overrides }
+  const hitCount = Math.max(1, Math.min(8, Number(config.hitCount) || attackEffectCount.value))
+  const impacts = createAttackImpactPoints({
+    type: attackEffectType.value,
+    count: hitCount,
+    baseX,
+    baseY
+  })
+  const effectType = getAttackEffectType(attackEffectType.value)
+  const direction = getAttackEffectDirection(attackEffectDirection.value)
+  const sprite = getEffectSprite(config.effectName || attackEffectAsset.value, effectType.duration)
+  const sizeMultiplier = Math.max(0.1, Number(config.size) / 100 || Number(attackEffectSize.value) / 100 || 1)
+  const speedMultiplier = Math.max(0.25, Number(config.speed) / 100 || Number(attackEffectSpeed.value) / 100 || 1)
+  const scale = sizeMultiplier
+  // All effects use the same per-frame speed; only the number of frames changes the total duration.
+  const frameDurationMs = Math.max(16, Math.round(100 / speedMultiplier))
+  const effectDelayMs = Math.max(0, Number(config.effectDelayMs) || 0)
+  const rotation = Number.isFinite(Number(config.angleDeg)) ? Number(config.angleDeg) : direction.rotation
+  scheduleSkillSE(config)
+
+  impacts.forEach(({ x, y, delay }) => {
+    const timer = window.setTimeout(() => {
+      void playAttackSpriteEffect({
+        x: x / 100 * rect.width,
+        y: y / 100 * rect.height,
+        source: sprite.source,
+        rotation,
+        scale,
+        frameDurationMs
+      })
+      attackEffectTimers.delete(timer)
+    }, effectDelayMs + delay)
+    attackEffectTimers.add(timer)
+  })
+}
+const applySkillEffectSettings = (skills) => {
+  skillEffectSettings.value = Object.fromEntries(skills.map(skill => [skill.id, { ...skill }]))
+  showSkillEffectEditor.value = false
+}
+const handleBattleFieldClick = (event) => {
+  if (!sparkEffectEnabled.value || !battleFieldRef.value) return
+  // BaseBattleModal itself uses `.modal-overlay`, so excluding it would reject every field click.
+  if (event.target.closest('button, input, select, textarea, label')) return
+
+  const rect = battleFieldRef.value.getBoundingClientRect()
+  if (!rect.width || !rect.height) return
+  createSparkEffect(
+    (event.clientX - rect.left) / rect.width * 100,
+    (event.clientY - rect.top) / rect.height * 100
+  )
+}
 
 const onTargetMarkerTypeChange = (value) => {
   const markerTypes = ['standard', 'angel', 'tactical', 'diamond', 'radar', 'rift', 'custom']
@@ -949,11 +1263,26 @@ const segmentFill = (current, max, index) => {
   return Math.max(0, Math.min(1, fill))
 }
 
+onBeforeUnmount(() => {
+  sparkEffectTimers.forEach(timer => window.clearTimeout(timer))
+  sparkEffectTimers.clear()
+  attackEffectTimers.forEach(timer => window.clearTimeout(timer))
+  attackEffectTimers.clear()
+  activeEffectPlayers.forEach(player => player.destroy())
+  activeEffectPlayers.clear()
+  effectCanvasResizeObserver?.disconnect()
+  effectCanvasResizeObserver = null
+  effectGame?.destroy(true)
+  effectGame = null
+  effectScene = null
+})
+
 // 起動時に HP / MP を 0 → 現在値までアニメーション
 onMounted(() => {
   loadDialoguePlaybackSettings()
   loadCustomMarkerSettings()
   nextTick(() => {
+    initializeEffectCanvas()
     loadUiButtons()
     const field = battleFieldRef.value
     if (field) {
@@ -1049,6 +1378,16 @@ onMounted(() => {
   font-weight: 700;
 }
 
+.battle-root.is-custom-marker-editor-open .battle-field > *,
+.battle-root.is-custom-marker-editor-open .command-area {
+  visibility: hidden;
+}
+
+.battle-root.is-custom-marker-editor-open .battle-field *,
+.battle-root.is-custom-marker-editor-open .command-area * {
+  animation-play-state: paused !important;
+}
+
 .battle-field .ui-modal {
   position: absolute;
   inset: 0;
@@ -1084,6 +1423,74 @@ onMounted(() => {
 .battle-field > * {
   position: relative;
   z-index: 1;
+}
+
+.spark-effect-layer {
+  position: absolute !important;
+  inset: 0;
+  z-index: 80 !important;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.battle-effect-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 79;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.battle-effect-canvas :deep(canvas) {
+  display: block;
+}
+
+.spark-burst {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.spark-core {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff7c4;
+  box-shadow: 0 0 6px 2px #fff1a2, 0 0 17px 5px rgba(255, 138, 53, 0.85);
+  animation: sparkCoreFlash 0.48s ease-out forwards;
+}
+
+.spark-particle {
+  position: absolute;
+  top: calc(var(--spark-size) / -2);
+  left: 0;
+  width: var(--spark-size);
+  height: var(--spark-size);
+  border-radius: 50%;
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, #fffbe0 0%, #ffd34d 42%, #ff6b2c 100%);
+  box-shadow: 0 0 5px 1px rgba(255, 184, 64, 0.95);
+  animation: sparkParticleBurst 0.68s cubic-bezier(0.12, 0.63, 0.36, 1) var(--spark-delay) forwards;
+}
+
+@keyframes sparkCoreFlash {
+  0% { opacity: 1; scale: 0.4; }
+  35% { opacity: 1; scale: 1.5; }
+  100% { opacity: 0; scale: 0; }
+}
+
+@keyframes sparkParticleBurst {
+  0% {
+    opacity: 1;
+    transform: rotate(var(--spark-angle)) translateX(0) scaleX(1.8);
+  }
+  55% { opacity: 1; }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--spark-angle)) translateX(var(--spark-distance)) scaleX(0.25);
+  }
 }
 
 .enemy-area {
@@ -1417,6 +1824,145 @@ onMounted(() => {
   margin: 0 0 6px;
   font-size: 12px;
   color: #9feaff;
+}
+
+.attack-effect-test {
+  display: grid;
+  gap: 5px;
+}
+
+.attack-effect-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.attack-effect-title-row .info-title {
+  margin: 0;
+}
+
+.attack-effect-editor-open {
+  min-height: 27px;
+  border: 1px solid #51dff8;
+  color: #e1fbff;
+  background: #0c3a4b;
+  padding: 0 8px;
+  font-family: Consolas, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.attack-effect-editor-open:hover {
+  background: #175d70;
+}
+
+.attack-effect-setting {
+  display: grid;
+  gap: 3px;
+}
+
+.attack-effect-label {
+  color: #ffd878;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.attack-effect-label strong {
+  float: right;
+  color: #f6fff0;
+}
+
+.attack-effect-range-setting input[type='range'] {
+  width: 100%;
+  accent-color: #ffd15c;
+}
+
+.attack-effect-range-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.attack-effect-select {
+  width: 100%;
+  min-height: 32px;
+  border: 1px solid #ffd15c;
+  background: #25190d;
+  color: #fff2c2;
+  font-family: Consolas, monospace;
+  font-size: 12px;
+  padding: 3px 6px;
+}
+
+.attack-type-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.attack-direction-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.attack-type-buttons button,
+.attack-direction-buttons button,
+.attack-count-controls button,
+.attack-effect-execute {
+  min-height: 30px;
+  border: 1px solid #ffd15c;
+  background: linear-gradient(180deg, #5a3d1d, #25190d);
+  color: #fff2c2;
+  font-family: Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.attack-type-buttons button:hover,
+.attack-type-buttons button.active,
+.attack-direction-buttons button:hover,
+.attack-direction-buttons button.active,
+.attack-count-controls button:hover,
+.attack-effect-execute:hover {
+  background: linear-gradient(180deg, #805526, #352211);
+  box-shadow: 0 0 10px rgba(255, 185, 68, 0.5);
+}
+
+.attack-count-setting {
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+}
+
+.attack-count-setting .attack-effect-label {
+  grid-column: 1 / -1;
+}
+
+.attack-count-controls {
+  display: grid;
+  grid-template-columns: 34px 40px 34px;
+  align-items: center;
+  gap: 4px;
+}
+
+.attack-count-controls strong {
+  color: #fff6d1;
+  font-size: 18px;
+  text-align: center;
+}
+
+.attack-effect-execute {
+  min-height: 34px;
+}
+
+.attack-effect-note {
+  margin: 0;
+  color: #a8c2ca;
+  font-size: 10px;
+  line-height: 1.45;
 }
 
 .ui-controls {

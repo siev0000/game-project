@@ -1,5 +1,13 @@
 <template>
-  <BaseHudModal @close="$emit('close')">
+  <Teleport to="body">
+  <BaseHudModal
+    :closeOnOverlay="false"
+    frameWidth="min(1180px, 94vw)"
+    frameHeight="min(90vh, 1050px)"
+    frameMaxHeight="90vh"
+    frameOverflow="hidden"
+    @close="$emit('close')"
+  >
     <div class="options-modal">
       <div class="options-header">
         <div class="options-title">OPTIONS</div>
@@ -7,6 +15,7 @@
           CLOSE
         </button>
       </div>
+      <div class="options-body">
       <div class="options-section">
         <div class="options-section-title">SOUND</div>
         <div class="options-row">
@@ -22,6 +31,14 @@
           />
           <span class="options-value">{{ seVolume }}%</span>
         </div>
+      </div>
+      <div class="options-section">
+        <div class="options-section-title">EFFECT TEST</div>
+        <label class="options-toggle-row">
+          <span class="options-label">SPARK ON CLICK</span>
+          <input type="checkbox" :checked="sparkEffectEnabled" @change="emit('update-spark-effect-enabled', $event.target.checked)" />
+          <span class="options-toggle-value">{{ sparkEffectEnabled ? 'ON' : 'OFF' }}</span>
+        </label>
       </div>
       <div class="options-section">
         <div class="options-section-title">G4 TARGET MARKER</div>
@@ -87,15 +104,18 @@
           <span class="options-value">{{ Math.round(node.connectionStrength * 100) }}%</span>
         </div>
       </div>
+      </div>
     </div>
   </BaseHudModal>
+  </Teleport>
 </template>
 
 <script setup>
 import BaseHudModal from './BaseHudModal.vue'
 
-const { seVolume, gen4MarkerNodes, gen45MarkerNodes } = defineProps({
+const { seVolume, sparkEffectEnabled, gen4MarkerNodes, gen45MarkerNodes } = defineProps({
   seVolume: { type: Number, default: 100 },
+  sparkEffectEnabled: { type: Boolean, default: false },
   gen4MarkerNodes: { type: Array, default: () => [] },
   gen45MarkerNodes: { type: Array, default: () => [] }
 })
@@ -103,6 +123,7 @@ const { seVolume, gen4MarkerNodes, gen45MarkerNodes } = defineProps({
 const emit = defineEmits([
   'close',
   'update-se-volume',
+  'update-spark-effect-enabled',
   'update-marker-node-count',
   'update-marker-node-color',
   'update-marker-node-strength',
@@ -124,7 +145,11 @@ const onSeVolumeInput = (event) => {
 
 <style scoped>
 .options-modal {
-  padding: 18px 20px 22px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 22px 26px;
   color: #bff6ff;
   font-family: Consolas, monospace;
 }
@@ -133,37 +158,54 @@ const onSeVolumeInput = (event) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  flex: 0 0 auto;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(95, 225, 255, 0.36);
 }
 
 .options-title {
-  font-size: 16px;
+  font-size: 22px;
   letter-spacing: 0.2em;
 }
 
 .options-close {
-  padding: 6px 10px;
+  min-width: 124px;
+  padding: 10px 16px;
   border-radius: 6px;
   border: 1px solid rgba(160, 230, 255, 0.45);
   background: rgba(8, 16, 24, 0.8);
   color: #bff6ff;
-  font-size: 12px;
+  font-size: 16px;
   cursor: pointer;
 }
+
+.options-body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  gap: 16px;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 10px 20px 2px;
+  scrollbar-color: #53dcf4 #07131c;
+  scrollbar-width: thin;
+}
+
+.options-body::-webkit-scrollbar { width: 12px; }
+.options-body::-webkit-scrollbar-track { background: #07131c; border-left: 1px solid #1b5970; }
+.options-body::-webkit-scrollbar-thumb { background: linear-gradient(#9cf8ff, #2086ab); border: 2px solid #07131c; border-radius: 8px; }
 
 .options-section {
   border: 1px solid rgba(160, 230, 255, 0.2);
   border-radius: 10px;
-  padding: 12px;
+  min-width: 0;
+  padding: 16px;
   background: rgba(6, 12, 20, 0.6);
 }
 
-.options-section + .options-section {
-  margin-top: 12px;
-}
-
 .options-section-title {
-  font-size: 12px;
+  font-size: 16px;
   letter-spacing: 0.12em;
   color: rgba(180, 245, 255, 0.8);
   margin-bottom: 10px;
@@ -174,7 +216,24 @@ const onSeVolumeInput = (event) => {
   grid-template-columns: auto 1fr auto;
   gap: 10px;
   align-items: center;
-  font-size: 12px;
+  font-size: 16px;
+}
+
+.options-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.options-toggle-row input {
+  accent-color: #60eaff;
+}
+
+.options-toggle-value {
+  min-width: 28px;
+  color: #fff1a8;
 }
 
 .options-gen-row {
@@ -229,7 +288,7 @@ const onSeVolumeInput = (event) => {
   display: grid;
   grid-template-columns: 58px 28px 1fr 42px;
   margin-top: 8px;
-  font-size: 11px;
+  font-size: 15px;
 }
 
 .marker-color-input {
