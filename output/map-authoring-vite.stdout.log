@@ -1,0 +1,18 @@
+
+> game-project@1.0.0 dev:client
+> vite --host --host 127.0.0.1 --port 4178
+
+
+  VITE v7.0.6  ready in 244 ms
+
+  ➜  Local:   http://127.0.0.1:4178/
+  ➜  press h + enter to show help
+21:23:10 [vite] (client) hmr update /src/components/exploration/MapPartLibraryEditor.vue?vue&type=style&index=0&scoped=91bc9b50&lang.css
+21:23:10 [vite] (client) hmr update /src/components/exploration/AreaMapDraftEditor.vue, /src/components/exploration/AreaMapDraftEditor.vue?vue&type=style&index=0&scoped=87aa9efa&lang.css
+21:23:42 [vite] (client) hmr update /src/components/exploration/AreaMapDraftEditor.vue?vue&type=style&index=0&scoped=87aa9efa&lang.css
+21:24:33 [vite] (client) hmr update /src/views/AreaExplorationView.vue
+21:24:52 [vite] (client) hmr update /src/components/exploration/MapPartLibraryEditor.vue?vue&type=style&index=0&scoped=91bc9b50&lang.css
+21:25:25 [vite] (client) hmr update /src/components/exploration/MapPartLibraryEditor.vue?vue&type=style&index=0&scoped=91bc9b50&lang.css
+21:26:36 [vite] tools/areaMasterDevApi.mjs changed, restarting server...
+21:26:36 [vite] (client) hmr update /src/components/exploration/AreaMapDraftEditor.vue
+21:26:36 [vite] server restarted.

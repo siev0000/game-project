@@ -16,7 +16,7 @@
         <button type="button" @click="$emit('close')">閉じる</button>
       </header>
 
-      <p>カード内の文字が実際の表示例です。選択するとすぐ文字レイヤーへ反映します。</p>
+      <p>{{ description }}</p>
 
       <div class="font-select-list">
         <button
@@ -67,6 +67,10 @@ defineProps({
   customFamily: {
     type: String,
     default: ''
+  },
+  description: {
+    type: String,
+    default: 'カード内の文字が実際の表示例です。選択するとすぐ文字レイヤーへ反映します。'
   }
 })
 

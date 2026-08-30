@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "field": {
+    "enemyOuterTop": {
+      "x": 2,
+      "y": 41
+    },
+    "enemyOuterBottom": {
+      "x": 2,
+      "y": 83.5
+    },
+    "centerTop": {
+      "x": 50,
+      "y": 41
+    },
+    "centerBottom": {
+      "x": 50,
+      "y": 83.5
+    },
+    "allyOuterTop": {
+      "x": 100,
+      "y": 41
+    },
+    "allyOuterBottom": {
+      "x": 100,
+      "y": 83.5
+    }
+  },
+  "columnBreaks": [
+    0.3333,
+    0.6667
+  ],
+  "rowBreaks": [
+    0.3333,
+    0.6667
+  ],
+  "style": {
+    "lineWidth": 0.75
+  }
+}

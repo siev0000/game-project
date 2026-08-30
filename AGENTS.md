@@ -52,3 +52,23 @@ $old  = (Test-Path $file) ? ([IO.File]::ReadAllText($file,$enc)) : ''
 Write-Utf8NoBom -Path $file -Content ($old+"`nYOUR_TEXT_HERE`n")
 "'
 ```
+
+---
+
+## 3) SCENARIO DOCUMENTS
+
+Before creating, editing, reviewing, or implementing scenario content, read:
+
+- `docs/world/scenario/00_シナリオ作成ルール_v1.md`
+
+Treat that file as the entry point for source-of-truth boundaries, IDs, status values, reading order, and the handoff from scenario documents to game data.
+
+---
+
+## 4) 2D BONE EDITOR TERMINOLOGY
+
+Before discussing, diagnosing, or modifying `2d_bone_editor_split/`, read:
+
+- `docs/ui/00_2Dボーン編集_名称メモ_v1.md`
+
+Use the names in that file to distinguish the bone body, resize box, image crop, mesh range, and rendered mesh width. If a request is still ambiguous after checking the memo, confirm the visible shape and screen before editing.

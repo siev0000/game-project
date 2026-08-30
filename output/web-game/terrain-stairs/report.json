@@ -1,0 +1,32 @@
+{
+  "editorTerrain": {
+    "id": "stairs_1",
+    "type": "stairs",
+    "x": 1920,
+    "width": 384,
+    "startY": 570,
+    "endY": 410
+  },
+  "saveStatus": 200,
+  "movement": {
+    "before": {
+      "x": 180,
+      "y": 570,
+      "spawnId": "entrance_main",
+      "surfaceId": "verification_stairs"
+    },
+    "after": {
+      "x": 588,
+      "y": 451,
+      "spawnId": "entrance_main",
+      "surfaceId": "verification_stairs"
+    }
+  },
+  "stairsStyle": {
+    "clipPath": "polygon(0% 54.5455%, 10% 54.5455%, 10% 49.0909%, 20% 49.0909%, 20% 43.6364%, 30% 43.6364%, 30% 38.1818%, 40% 38.1818%, 40% 32.7273%, 50% 32.7273%, 50% 27.2727%, 60% 27.2727%, 60% 21.8182%, 70% 21.8182%, 70% 16.3636%, 80% 16.3636%, 80% 10.9091%, 90% 10.9091%, 90% 5.45455%, 100% 5.45455%, 100% 0%, 100% 100%, 0px 100%)",
+    "width": "620px",
+    "height": "252.078px"
+  },
+  "tileBackgroundImage": "url(\"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22%3E%3Crect width=%2264%22 height=%2264%22 fill=%22%2374b85a%22/%3E%3C/svg%3E\")",
+  "errors": []
+}

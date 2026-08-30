@@ -87,7 +87,7 @@
                   <span class="value strong">
                     {{
                       Math.round(
-                        physicalTypes.reduce((sum, t) => sum + getNumber(selectedItem[t]), 0)
+                        PHYSICAL_TYPES.reduce((sum, t) => sum + getNumber(selectedItem[t]), 0)
                       )
                     }}
                   </span>
@@ -99,7 +99,7 @@
                 <div class="weapon-subline" v-if="hasPhysicalDamage(selectedItem)">
                   <span class="sub-label">└</span>
 
-                  <template v-for="type in physicalTypes" :key="type">
+                  <template v-for="type in PHYSICAL_TYPES" :key="type">
                     <span
                       v-if="getNumber(selectedItem[type]) > 0"
                       class="sub-value"
@@ -383,13 +383,12 @@
 
 <script setup>
 import { logEquipment } from "@/constants/statData";
+import { ARMOR_TYPES, PHYSICAL_TYPES, WEAPON_TYPES } from "@/constants/equipmentDisplay.js";
 import { ref, onMounted, onBeforeUnmount, nextTick, reactive  } from "vue";
 import { loadItemData, rebuildInventory } from "@/constants/itemFactory.js";
 import "../modals_css/inventoryTab.css";
 
 // ===== 種別判定配列 =====
-const WEAPON_TYPES = ["武器", "弓", "杖", "盾", "銃", "素手"];
-const ARMOR_TYPES  = ["頭", "腕", "足", "体", "服", "装飾"];
 const ITEM_TYPES   = ["素材", "道具", "休憩"];
 const sortOrder = ["武器", "武器2", "頭", "体", "足", "装飾", "装飾2"];
 function getEquipIcon(slot) {
@@ -445,14 +444,11 @@ const getValidAttributes = (item) => {
 };
 // 物理内訳の最大値を取得
 const getMaxPhysical = (item) =>
-  Math.max(...physicalTypes.map((t) => getNumber(item[t])));
-
-// 物理タイプの定義
-const physicalTypes = ["切断", "貫通", "打撃"];
+  Math.max(...PHYSICAL_TYPES.map((t) => getNumber(item[t])));
 
 // 合計判定・存在チェック・最大値算出
 const hasPhysicalDamage = (item) =>
-  physicalTypes.some((t) => getNumber(item[t]) > 0);
+  PHYSICAL_TYPES.some((t) => getNumber(item[t]) > 0);
 
 // 属性内訳の最大値を取得
 const getMaxAttribute = (item) => {

@@ -1,0 +1,116 @@
+[33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m
+[2m23:35:14[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+4  |          
+5  |        <div v-if="activeTab !== '魔法'" class="exp-div">
+6  |          <td class="exp-btn-cell">
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+7  |            <button 
+   |  ^^^^^^^^^^^^^^^^^^
+8  |              class="lvup-btn"
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+9  |              :class="{ 'lvup-active': character.stats.experience >= character.stats.nextLevelExp }"
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+10 |              :disabled="character.stats.experience < character.stats.nextLevelExp"
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+11 |              @click="levelUpMode = !levelUpMode"
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+12 |            >
+   |  ^^^^^^^^^^^
+13 |              Lvアップ
+   |  ^^^^^^^^^^^^^^^^^
+14 |            </button>
+   |  ^^^^^^^^^^^^^^^^^^^
+15 |          </td>
+   |  ^^^^^^^^^^^^^[39m
+  Plugin: [35mvite:vue[39m
+  File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[2m23:35:14[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+14 |            </button>
+15 |          </td>
+16 |          <td class="exp-btn-cell">
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+17 |            <button
+   |  ^^^^^^^^^^^^^^^^^
+18 |              class="addclass-btn"
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+19 |              :class="{ 'lvup-active': character.stats.experience >= character.stats.nextLevelExp }"
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+20 |              :disabled="character.stats.experience < character.stats.nextLevelExp"
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+21 |              @click="openAddClassModal"
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+22 |            >
+   |  ^^^^^^^^^^^
+23 |              新規取得
+   |  ^^^^^^^^^^^^^^^^
+24 |            </button>
+   |  ^^^^^^^^^^^^^^^^^^^
+25 |          </td>
+   |  ^^^^^^^^^^^^^[39m
+  Plugin: [35mvite:vue[39m
+  File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[2m23:35:14[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+24 |            </button>
+25 |          </td>
+26 |          <td class="exp-cell">
+   |          ^^^^^^^^^^^^^^^^^^^^^
+27 |            EXP {{ character.stats.experience }} / {{ character.stats.nextLevelExp }}
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+28 |            （残り: {{ character.stats.nextLevelExp - character.stats.experience }}）
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+29 |          </td>
+   |  ^^^^^^^^^^^^^[39m
+  Plugin: [35mvite:vue[39m
+  File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[2m23:35:14[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+29 |          </td>
+30 |            <!-- ★ テスト用：EXP増減ボタン -->
+31 |          <td class="exp-cell">
+   |          ^^^^^^^^^^^^^^^^^^^^^
+32 |            <button @click="addExp(-500)" class="exp-btn minus">-500</button>
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+33 |          </td>
+   |  ^^^^^^^^^^^^^[39m
+  Plugin: [35mvite:vue[39m
+  File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[2m23:35:14[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+32 |            <button @click="addExp(-500)" class="exp-btn minus">-500</button>
+33 |          </td>
+34 |          <td class="exp-cell">
+   |          ^^^^^^^^^^^^^^^^^^^^^
+35 |            <button @click="addExp(500)"  class="exp-btn plus">+500</button>
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+36 |          </td>
+   |  ^^^^^^^^^^^^^[39m
+  Plugin: [35mvite:vue[39m
+  File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[2m23:35:14[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: <td> cannot be child of <div>, according to HTML specifications. This can cause hydration errors or potentially disrupt future functionality.
+37 |        </div>
+38 |        <div v-else class="magic-exp-row">
+39 |          <td class="exp-cell">
+   |          ^^^^^^^^^^^^^^^^^^^^^
+40 |            <button
+   |  ^^^^^^^^^^^^^^^^^
+41 |            :class="{ 'lvup-active': props.character.attribute.selected.length < props.character.magic.magicRank }"
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+42 |            :disabled="!(props.character.attribute.selected.length < props.character.magic.magicRank)"
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+43 |            @click="openAttributeModal">
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+44 |            属性を追加する
+   |  ^^^^^^^^^^^^^^^^^
+45 |            </button>
+   |  ^^^^^^^^^^^^^^^^^^^
+46 |          </td>
+   |  ^^^^^^^^^^^^^[39m
+  Plugin: [35mvite:vue[39m
+  File: [36mC:/Users/skkt3/ドキュメント/Github/game-project/src/components/modals/status/StatsTab.vue[39m
+[33mThe glob option "as" has been deprecated in favour of "query". Please update `as: 'url'` to `query: '?url', import: 'default'`.[39m

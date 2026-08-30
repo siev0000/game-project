@@ -63,8 +63,7 @@
 import { ref, onMounted, computed } from 'vue'
 import RaceDetailModal from '@/components/modals/RaceDetailModal.vue'
 import { applyGlobalScale } from '@/components/useScale.js'
-import { getAttrIcon, getAttackIcon, getCharIllust, getRollIcon
-} from '@/constants/statData.js';
+import { getRollIcon } from '@/constants/statData.js';
 onMounted(() => {
   applyGlobalScale('race-modal') // ← ここで ID を渡す
 })
@@ -120,18 +119,6 @@ onMounted(async () => {
   const data = await res.json()
   allRaces.value = data.filter(r => tabTypes.includes(r.分類))
 })
-
-const imageMap = import.meta.glob('@/assets/images/**/*', { eager: true, import: 'default' })
-const getImageUrl = (relativePath) => {
-  try {
-    const match = Object.entries(imageMap).find(([key]) => key.endsWith(relativePath))
-    console.log("getImageUrl : ", match, relativePath)
-
-    return match ? match[1] : ''
-  } catch {
-    return ''
-  }
-}
 
 </script>
 

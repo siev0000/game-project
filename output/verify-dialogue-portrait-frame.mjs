@@ -1,0 +1,26 @@
+import { chromium } from 'file:///C:/Users/skkt3/.codex/skills/develop-web-game/node_modules/playwright/index.mjs'
+
+const browser = await chromium.launch({ headless: true })
+const page = await browser.newPage({ viewport: { width: 1040, height: 1051 } })
+const errors = []
+page.on('console', message => { if (message.type() === 'error') errors.push(message.text()) })
+page.on('pageerror', error => errors.push(String(error)))
+
+await page.goto('http://192.168.0.209:5173/dialogue-events', { waitUntil: 'networkidle' })
+await page.locator('.event-card').first().click()
+await page.locator('.sequence-card').first().click()
+await page.getByLabel('顔表示').selectOption('portrait')
+const liveFrame = await page.locator('.live-face-frame').boundingBox()
+const liveFrameSize = await page.locator('.live-face-frame').evaluate(element => ({ width: element.clientWidth, height: element.clientHeight }))
+const liveTransform = await page.locator('.live-face-frame img').evaluate(element => getComputedStyle(element).transform)
+await page.getByRole('button', { name: 'この発言を確認' }).click()
+await page.waitForTimeout(250)
+const dialogueFrame = await page.locator('.preview-overlay .dialogue-portrait').boundingBox()
+const dialogueFrameSize = await page.locator('.preview-overlay .dialogue-portrait').evaluate(element => ({ width: element.clientWidth, height: element.clientHeight }))
+const dialogueTransform = await page.locator('.preview-overlay .dialogue-portrait img').evaluate(element => getComputedStyle(element).transform)
+if (!liveFrame || liveFrameSize.width !== 128 || liveFrameSize.height !== 140) throw new Error(`編集側の顔枠が不正です: ${JSON.stringify(liveFrameSize)}`)
+if (!dialogueFrame || dialogueFrameSize.width !== 128 || dialogueFrameSize.height !== 140) throw new Error(`再生側の顔枠が不正です: ${JSON.stringify(dialogueFrameSize)}`)
+if (liveTransform !== dialogueTransform) throw new Error(`位置・拡大の変形が一致しません: ${liveTransform} / ${dialogueTransform}`)
+await page.screenshot({ path: 'output/dialogue-portrait-frame-1040x1051.png', fullPage: false })
+console.log(JSON.stringify({ errors, liveFrame, dialogueFrame, liveFrameSize, dialogueFrameSize, liveTransform, dialogueTransform }, null, 2))
+await browser.close()

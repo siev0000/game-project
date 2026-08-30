@@ -216,25 +216,77 @@
               v-for="ring in customRings"
               :id="getCustomLayerMaskId(ring)"
               :key="getCustomLayerMaskId(ring)"
-              x="-1"
-              y="-1"
-              width="3"
-              height="3"
+              x="-8"
+              y="-8"
+              width="17"
+              height="17"
               maskUnits="objectBoundingBox"
               maskContentUnits="objectBoundingBox"
             >
-              <rect x="-1" y="-1" width="3" height="3" fill="white" />
-              <path
-                v-for="eraser in getCustomErasersAbove(ring)"
-                :key="eraser.id"
-                :d="getCustomShapeMaskPath(eraser.shape || customMarkerAppearance.shape, eraser)"
-                :transform="getCustomLayerEraseTransform(eraser)"
-                :fill-rule="getCustomShapeFillRule(eraser.shape || customMarkerAppearance.shape)"
-                fill="black"
-                :stroke="(eraser.shape || customMarkerAppearance.shape) === 'gear' ? 'none' : 'black'"
-              />
+              <rect x="-8" y="-8" width="17" height="17" fill="white" />
+              <g transform="translate(0.4 0.4) scale(0.2)">
+                <template v-for="eraser in getCustomErasersAbove(ring)" :key="eraser.id">
+                  <g
+                    v-for="part in getCustomLayerEraseParts(eraser)"
+                    :key="part.key"
+                  >
+                    <path
+                      v-if="getCustomRenderMode(eraser) === 'connection'"
+                      :d="getCustomConnectionPath(eraser)"
+                      :transform="part.transform"
+                      fill="none"
+                      stroke="black"
+                      :stroke-width="getCustomLayerEraseLineWidth(eraser)"
+                      :stroke-linecap="getCustomLayerEraseLineCap(eraser)"
+                      :stroke-linejoin="getCustomLayerEraseLineJoin(eraser)"
+                    />
+                    <path
+                      v-else
+                      :d="getCustomShapeMaskPath(eraser.shape || customMarkerAppearance.shape, eraser)"
+                      :transform="part.transform"
+                      :fill-rule="getCustomShapeFillRule(eraser.shape || customMarkerAppearance.shape)"
+                      fill="black"
+                      :stroke="(eraser.shape || customMarkerAppearance.shape) === 'gear' ? 'none' : 'black'"
+                    />
+                  </g>
+                </template>
+              </g>
             </mask>
           </defs>
+        </svg>
+        <svg
+          v-if="enableEraseDebugPreview"
+          class="custom-layer-erase-debug"
+          viewBox="0 0 1 1"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <template v-for="eraser in customRings" :key="`erase-debug-${eraser.id}`">
+            <g v-if="isCustomLayerEraseDebugEnabled(eraser)">
+              <g
+                v-for="part in getCustomLayerEraseParts(eraser)"
+                :key="`erase-debug-${part.key}`"
+              >
+                <path
+                  v-if="getCustomRenderMode(eraser) === 'connection'"
+                  :d="getCustomConnectionPath(eraser)"
+                  :transform="part.transform"
+                  fill="none"
+                  class="custom-layer-erase-debug-line"
+                  :stroke-width="getCustomLayerEraseLineWidth(eraser)"
+                  :stroke-linecap="getCustomLayerEraseLineCap(eraser)"
+                  :stroke-linejoin="getCustomLayerEraseLineJoin(eraser)"
+                />
+                <path
+                  v-else
+                  :d="getCustomShapeMaskPath(eraser.shape || customMarkerAppearance.shape, eraser)"
+                  :transform="part.transform"
+                  :fill-rule="getCustomShapeFillRule(eraser.shape || customMarkerAppearance.shape)"
+                  class="custom-layer-erase-debug-shape"
+                />
+              </g>
+            </g>
+          </template>
         </svg>
         <span
           v-for="ring in customRings"
@@ -243,10 +295,15 @@
           :class="{ 'is-hidden': ring.visible === false }"
           :style="getCustomLayerFrameStyle(ring)"
         >
+          <span class="custom-marker-layer-plane">
           <span
             class="custom-marker-ring-orbit"
-            :class="{ 'is-animated': isCustomRingAnimated(ring) && isCustomWholeRotationEnabled(ring) }"
-            :style="getCustomRingMotionStyle(ring)"
+            :class="{
+              'is-animated': isCustomRingAnimated(ring) && isCustomWholeRotationEnabled(ring) && !isCustomRingSelfRotating(ring) && !isCustomRingRotationMasked(ring),
+              'is-self-animated': isCustomRingAnimated(ring) && isCustomWholeRotationEnabled(ring) && isCustomRingSelfRotating(ring) && !isCustomRingRotationMasked(ring),
+              'is-self-origin': isCustomRingSelfRotating(ring)
+            }"
+            :style="getCustomRingOrbitStyle(ring)"
           >
             <span
               class="custom-marker-ring-highlight"
@@ -263,7 +320,7 @@
                   'is-animated': isCustomRingAnimated(ring) && isCustomRingPulseEnabled(ring)
                 }
               ]"
-              :style="getCustomRingStyle(ring)"
+              :style="getCustomRingContentStyle(ring)"
             >
             <template v-if="getCustomRenderMode(ring) === 'textRing'">
               <span
@@ -309,7 +366,24 @@
               :class="getCustomSegmentAnimationClasses(ring)"
               :style="getCustomConnectionStyle(ring)"
             >
-              <path class="custom-segment-fill" :d="getCustomConnectionPath(ring)" />
+              <defs v-if="needsCustomFillMask(ring)">
+                <mask :id="getCustomCutoutMaskId(ring, 0)">
+                  <path :d="getCustomConnectionPath(ring)" fill="white" />
+                  <path
+                    v-if="isCustomDoubleLineFill(ring)"
+                    :d="getCustomConnectionPath(ring)"
+                    :transform="getCustomDoubleLineTransform(ring)"
+                    fill="black"
+                  />
+                  <path
+                    v-if="ring.cutoutEnabled"
+                    :d="getCustomConnectionPath(ring)"
+                    :transform="getCustomCutoutTransform(ring)"
+                    fill="black"
+                  />
+                </mask>
+              </defs>
+              <path class="custom-segment-fill" :d="getCustomConnectionPath(ring)" :mask="needsCustomFillMask(ring) ? `url(#${getCustomCutoutMaskId(ring, 0)})` : null" />
               <path class="custom-segment-line" :d="getCustomConnectionPath(ring)" />
               <path
                 v-if="ring.lineStyle === 'double'"
@@ -327,10 +401,18 @@
               :class="[`custom-shape-${ring.shape || customMarkerAppearance.shape}`, getCustomSegmentAnimationClasses(ring)]"
               :style="getCustomRingSegmentStyle(ring, segmentIndex - 1)"
             >
-              <defs v-if="ring.cutoutEnabled">
+              <defs v-if="needsCustomFillMask(ring)">
                 <mask :id="getCustomCutoutMaskId(ring, segmentIndex)">
                   <rect width="100" height="100" fill="white" />
                   <path
+                    v-if="isCustomDoubleLineFill(ring)"
+                    :d="getCustomShapeMaskPath(ring.shape || customMarkerAppearance.shape, ring)"
+                    :transform="getCustomDoubleLineTransform(ring)"
+                    :fill-rule="getCustomShapeFillRule(ring.shape || customMarkerAppearance.shape)"
+                    fill="black"
+                  />
+                  <path
+                    v-if="ring.cutoutEnabled"
                     :d="getCustomShapeMaskPath(ring.shape || customMarkerAppearance.shape, ring)"
                     :transform="getCustomCutoutTransform(ring)"
                     :fill-rule="getCustomShapeFillRule(ring.shape || customMarkerAppearance.shape)"
@@ -342,7 +424,7 @@
               <path
                 class="custom-segment-fill"
                 :d="getCustomShapeFillPath(ring.shape || customMarkerAppearance.shape, ring)"
-                :mask="ring.cutoutEnabled ? `url(#${getCustomCutoutMaskId(ring, segmentIndex)})` : null"
+                :mask="needsCustomFillMask(ring) ? `url(#${getCustomCutoutMaskId(ring, segmentIndex)})` : null"
                 :fill-rule="getCustomShapeFillRule(ring.shape || customMarkerAppearance.shape)"
               />
               <path
@@ -358,6 +440,7 @@
             </span>
             </span>
           </span>
+          </span>
         </span>
       </div>
       <span v-if="customMarkerAppearance.showCenterDot" class="custom-marker-core"></span>
@@ -369,7 +452,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 import { getUillust } from '@/constants/statData.js'
 import { TEXT_FONT_FAMILY_MAP } from '../data/textFontPresets.js'
 
@@ -405,6 +488,10 @@ const props = defineProps({
   highlightRingId: {
     type: [String, Number],
     default: null
+  },
+  enableEraseDebugPreview: {
+    type: Boolean,
+    default: false
   }
 })
 const markerSvgIdPrefix = useId().replace(/[^a-zA-Z0-9_-]/g, '-')
@@ -432,45 +519,290 @@ const customMarkerSettings = computed(() => ({
 }))
 const autoCustomMarkerState = ref('idle')
 const autoCustomMorphDuration = ref(-1)
-let customTransformTimer = null
+const customLayerRotationStart = typeof performance === 'undefined' ? 0 : performance.now()
+const customLayerRotationClock = ref(customLayerRotationStart)
+const splitCountTransitionActive = ref(false)
+const splitCountTransitionProgress = ref(1)
+const splitCountTransitionElapsed = ref(0)
+const splitCountTransitionFromState = ref('idle')
+const splitCountTransitionToState = ref('idle')
+const customTransformCycleCompleting = ref(false)
+let splitCountTransitionFrame = 0
+let splitCountTransitionStart = 0
 const customTransformMode = computed(() => (
   ['reverse', 'reset'].includes(customMarkerSettings.value.transition?.transformMode)
     ? customMarkerSettings.value.transition.transformMode
     : 'none'
 ))
+const getConfiguredRingTransformMode = ring => {
+  const timing = ring?.transformTiming || {}
+  if (timing.useGlobal !== false) return customTransformMode.value
+  return ['reverse', 'reset'].includes(timing.transformMode) ? timing.transformMode : 'none'
+}
+const hasCustomReverseMode = computed(() => (
+  customTransformMode.value === 'reverse'
+  || (customMarkerSettings.value.rings || []).some(ring => getConfiguredRingTransformMode(ring) === 'reverse')
+))
+const hasCustomTransformMode = computed(() => (
+  customTransformMode.value !== 'none'
+  || (customMarkerSettings.value.rings || []).some(ring => getConfiguredRingTransformMode(ring) !== 'none')
+))
 const customTransformAutoEnabled = computed(() => (
   props.markerType === 'custom'
   && !props.isTargetMoving
   && !['idle', 'moving', 'transform'].includes(props.customMarkerState)
-  && customTransformMode.value !== 'none'
+  && hasCustomTransformMode.value
 ))
 const resolvedCustomMarkerState = computed(() => (
   ['idle', 'moving', 'transform'].includes(props.customMarkerState)
     ? props.customMarkerState
     : props.isTargetMoving ? 'moving' : autoCustomMarkerState.value
 ))
+const getGlobalAppearanceState = state => (
+  customTransformAutoEnabled.value && state === 'transform' && customTransformMode.value === 'none'
+    ? 'idle'
+    : state
+)
+const getRingAppearanceState = (ring, state) => (
+  customTransformAutoEnabled.value && state === 'transform' && getConfiguredRingTransformMode(ring) === 'none'
+    ? 'idle'
+    : state
+)
+const getTransitionEasedProgress = (progress, easing = customMarkerSettings.value.transition?.easing) => {
+  const value = Math.min(1, Math.max(0, Number(progress) || 0))
+  switch (easing) {
+    case 'ease-in':
+      return value * value
+    case 'ease-out':
+      return 1 - (1 - value) * (1 - value)
+    case 'ease-in-out':
+      return value < 0.5
+        ? 2 * value * value
+        : 1 - Math.pow(-2 * value + 2, 2) / 2
+    default:
+      return value
+  }
+}
+const parseTransitionColor = value => {
+  const match = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(value || '').trim())
+  if (!match) return null
+  const hex = match[1].length === 3
+    ? match[1].split('').map(character => character + character).join('')
+    : match[1]
+  return [
+    Number.parseInt(hex.slice(0, 2), 16),
+    Number.parseInt(hex.slice(2, 4), 16),
+    Number.parseInt(hex.slice(4, 6), 16)
+  ]
+}
+const interpolateTransitionColor = (fromValue, toValue, progress) => {
+  const from = parseTransitionColor(fromValue)
+  const to = parseTransitionColor(toValue)
+  if (!from || !to) return null
+  const channels = from.map((channel, index) => Math.round(channel + (to[index] - channel) * progress))
+  return `#${channels.map(channel => channel.toString(16).padStart(2, '0')).join('')}`
+}
+const interpolateTransitionSettings = (fromSettings, toSettings, progress, excludedKeys = []) => {
+  const excluded = new Set(excludedKeys)
+  const result = { ...toSettings }
+  Object.keys(toSettings).forEach(key => {
+    if (excluded.has(key)) return
+    const fromValue = fromSettings?.[key]
+    const toValue = toSettings[key]
+    if (
+      typeof fromValue === 'number'
+      && Number.isFinite(fromValue)
+      && typeof toValue === 'number'
+      && Number.isFinite(toValue)
+    ) {
+      result[key] = fromValue + (toValue - fromValue) * progress
+      return
+    }
+    const color = interpolateTransitionColor(fromValue, toValue, progress)
+    if (color) {
+      result[key] = color
+      return
+    }
+    result[key] = progress < 0.5 && fromValue !== undefined ? fromValue : toValue
+  })
+  return result
+}
+const isCustomStateTransitionActive = () => (
+  splitCountTransitionActive.value
+  && splitCountTransitionFromState.value !== splitCountTransitionToState.value
+)
+const clampTransitionProgress = value => Math.min(1, Math.max(0, Number(value) || 0))
+const isAutomaticTransformCycle = () => (
+  customTransformAutoEnabled.value
+  && splitCountTransitionFromState.value === 'idle'
+  && splitCountTransitionToState.value === 'transform'
+)
+const getTransformPhaseProgress = ({
+  mode,
+  delay,
+  duration,
+  holdDuration,
+  returnDuration
+}) => {
+  if (mode === 'none') return 0
+  const cycleDuration = getTransformPhaseDuration({
+    mode,
+    delay,
+    duration,
+    holdDuration,
+    returnDuration
+  })
+  const elapsed = cycleDuration > 0
+    ? splitCountTransitionElapsed.value % cycleDuration
+    : 0
+  const forwardStart = Math.max(0, delay)
+  const forwardDuration = Math.max(0, duration)
+  const forwardEnd = forwardStart + forwardDuration
+  if (elapsed < forwardStart) return 0
+  if (elapsed < forwardEnd) {
+    return forwardDuration <= 0 ? 1 : clampTransitionProgress((elapsed - forwardStart) / forwardDuration)
+  }
+  const holdEnd = forwardEnd + Math.max(0, holdDuration)
+  if (elapsed < holdEnd) return 1
+  if (mode === 'reset') return 0
+  const reverseDuration = Math.max(0, returnDuration)
+  return reverseDuration <= 0
+    ? 0
+    : 1 - clampTransitionProgress((elapsed - holdEnd) / reverseDuration)
+}
+const getTransformPhaseDuration = ({
+  mode,
+  delay,
+  duration,
+  holdDuration,
+  returnDuration
+}) => (
+  mode === 'none'
+    ? 0
+    : Math.max(0, delay)
+      + Math.max(0, duration)
+      + Math.max(0, holdDuration)
+      + (mode === 'reverse' ? Math.max(0, returnDuration) : 0)
+)
+const getGlobalTransformProgress = () => {
+  const transition = customMarkerSettings.value.transition || {}
+  const fromState = splitCountTransitionFromState.value
+  const toState = splitCountTransitionToState.value
+  if (isAutomaticTransformCycle()) {
+    return getTransformPhaseProgress({
+      mode: customTransformMode.value,
+      delay: Number(transition.transformStartDelay) || 0,
+      duration: Number(transition.transformDuration) || 0,
+      holdDuration: Number(transition.transformHoldDuration) || 0,
+      returnDuration: Number(transition.transformReturnDuration)
+        || Number(transition.transformDuration)
+        || 0
+    })
+  }
+  if (toState === 'transform') {
+    if (customTransformMode.value === 'none') return 0
+    const delay = Math.max(0, Number(transition.transformStartDelay) || 0)
+    const duration = Math.max(0, Number(transition.transformDuration) || 0)
+    return duration <= 0 ? 1 : clampTransitionProgress((splitCountTransitionElapsed.value - delay) / duration)
+  }
+  if (fromState === 'transform' && toState === 'idle') {
+    if (customTransformMode.value !== 'reverse') return 1
+    const duration = Math.max(
+      0,
+      Number(transition.transformReturnDuration) || Number(transition.transformDuration) || 0
+    )
+    return duration <= 0 ? 1 : clampTransitionProgress(splitCountTransitionElapsed.value / duration)
+  }
+  return splitCountTransitionProgress.value
+}
+const getRingTransformTiming = ring => {
+  const timing = ring?.transformTiming || {}
+  const duration = Math.min(10000, Math.max(100, Number(timing.duration) || 1200))
+  const holdDuration = Number(timing.holdDuration)
+  return {
+    useGlobal: timing.useGlobal !== false,
+    transformMode: ['reverse', 'reset'].includes(timing.transformMode) ? timing.transformMode : 'none',
+    delay: Math.min(10000, Math.max(0, Number(timing.delay) || 0)),
+    duration,
+    returnDuration: Math.min(10000, Math.max(100, Number(timing.returnDuration) || duration)),
+    holdDuration: Math.min(10000, Math.max(0, Number.isFinite(holdDuration) ? holdDuration : 500)),
+    easing: ['linear', 'ease-in', 'ease-out', 'ease-in-out'].includes(timing.easing)
+      ? timing.easing
+      : 'ease-in-out'
+  }
+}
+const getRingTransitionProgress = ring => {
+  const fromState = splitCountTransitionFromState.value
+  const toState = splitCountTransitionToState.value
+  if (toState !== 'transform' && fromState !== 'transform') {
+    return {
+      raw: splitCountTransitionProgress.value,
+      eased: getTransitionEasedProgress(splitCountTransitionProgress.value)
+    }
+  }
+  const timing = getRingTransformTiming(ring)
+  const mode = getConfiguredRingTransformMode(ring)
+  const raw = isAutomaticTransformCycle()
+    ? timing.useGlobal
+      ? getGlobalTransformProgress()
+      : getTransformPhaseProgress({
+          mode,
+          delay: timing.delay,
+          duration: timing.duration,
+          holdDuration: timing.holdDuration,
+          returnDuration: timing.returnDuration
+        })
+    : mode === 'none'
+    ? toState === 'transform' ? 0 : 1
+    : fromState === 'transform' && toState === 'idle' && mode === 'reset'
+      ? 1
+      : timing.useGlobal
+        ? getGlobalTransformProgress()
+        : toState === 'transform'
+          ? clampTransitionProgress((splitCountTransitionElapsed.value - timing.delay) / timing.duration)
+          : clampTransitionProgress(splitCountTransitionElapsed.value / timing.returnDuration)
+  return {
+    raw,
+    eased: getTransitionEasedProgress(
+      raw,
+      timing.useGlobal ? customMarkerSettings.value.transition?.easing : timing.easing
+    )
+  }
+}
 const customMarkerAppearance = computed(() => {
-  const state = resolvedCustomMarkerState.value
+  const state = getGlobalAppearanceState(resolvedCustomMarkerState.value)
   const legacySize = Number(customMarkerSettings.value.size) || 100
-  const stateAppearance = customMarkerSettings.value.appearance?.[state] || {}
-  const appearance = {
+  const baseAppearance = {
     shape: customMarkerSettings.value.shape,
     size: legacySize,
     width: legacySize,
     height: legacySize,
     opacity: customMarkerSettings.value.opacity,
-    showCenterDot: customMarkerSettings.value.showCenterDot,
-    ...stateAppearance
+    showCenterDot: customMarkerSettings.value.showCenterDot
   }
+  const stateAppearance = customMarkerSettings.value.appearance?.[state] || {}
+  const targetAppearance = { ...baseAppearance, ...stateAppearance }
+  const appearance = isCustomStateTransitionActive()
+    ? interpolateTransitionSettings(
+        {
+          ...baseAppearance,
+          ...(customMarkerSettings.value.appearance?.[
+            getGlobalAppearanceState(splitCountTransitionFromState.value)
+          ] || {})
+        },
+        targetAppearance,
+        getTransitionEasedProgress(getGlobalTransformProgress())
+      )
+    : targetAppearance
   return {
     ...appearance,
-    width: Number(stateAppearance.width) || Number(stateAppearance.size) || appearance.width,
-    height: Number(stateAppearance.height) || Number(stateAppearance.size) || appearance.height
+    width: Number(appearance.width) || Number(appearance.size) || legacySize,
+    height: Number(appearance.height) || Number(appearance.size) || legacySize
   }
 })
 const customWholeMotion = computed(() => {
-  const state = resolvedCustomMarkerState.value
-  return {
+  const state = getGlobalAppearanceState(resolvedCustomMarkerState.value)
+  const baseMotion = {
     enabled: false,
     rotateEnabled: false,
     pulseEnabled: false,
@@ -483,9 +815,26 @@ const customWholeMotion = computed(() => {
     direction: 'normal',
     delay: 0,
     pulseAmount: 18,
-    repeat: true,
-    ...(customMarkerSettings.value.wholeMotion?.[state] || {})
+    repeat: true
   }
+  const resolveWholeMotion = motionState => {
+    const configuredMotion = customMarkerSettings.value.wholeMotion?.[motionState] || {}
+    if (['moving', 'transform'].includes(motionState) && configuredMotion.traceIdle === true) {
+      return {
+        ...baseMotion,
+        ...(customMarkerSettings.value.wholeMotion?.idle || {}),
+        traceIdle: true
+      }
+    }
+    return { ...baseMotion, ...configuredMotion }
+  }
+  const targetMotion = resolveWholeMotion(state)
+  if (!isCustomStateTransitionActive()) return targetMotion
+  return interpolateTransitionSettings(
+    resolveWholeMotion(getGlobalAppearanceState(splitCountTransitionFromState.value)),
+    targetMotion,
+    getTransitionEasedProgress(getGlobalTransformProgress())
+  )
 })
 const isCustomWholeMotionEnabled = computed(() => customWholeMotion.value.enabled !== false)
 const customWholeMotionStyle = computed(() => ({
@@ -499,14 +848,158 @@ const customWholeMotionStyle = computed(() => ({
   '--custom-whole-delay': `${Math.max(0, Number(customWholeMotion.value.delay) || 0)}s`,
   '--custom-whole-iteration': customWholeMotion.value.repeat === false ? '1' : 'infinite'
 }))
+const getSplitCountTransitionDuration = (fromState, toState) => {
+  const transition = customMarkerSettings.value.transition || {}
+  if (toState === 'moving') return Math.max(0, Number(transition.morphInDuration) || 0)
+  if (fromState === 'moving' && toState === 'idle') return Math.max(0, Number(transition.morphOutDuration) || 0)
+  if (toState === 'transform') {
+    if (customTransformAutoEnabled.value) {
+      const globalCycleDuration = getTransformPhaseDuration({
+        mode: customTransformMode.value,
+        delay: Number(transition.transformStartDelay) || 0,
+        duration: Number(transition.transformDuration) || 0,
+        holdDuration: Number(transition.transformHoldDuration) || 0,
+        returnDuration: Number(transition.transformReturnDuration)
+          || Number(transition.transformDuration)
+          || 0
+      })
+      return Math.max(
+        globalCycleDuration,
+        ...(customMarkerSettings.value.rings || []).map(ring => {
+          const timing = getRingTransformTiming(ring)
+          if (timing.useGlobal) return globalCycleDuration
+          return getTransformPhaseDuration({
+            mode: getConfiguredRingTransformMode(ring),
+            delay: timing.delay,
+            duration: timing.duration,
+            holdDuration: timing.holdDuration,
+            returnDuration: timing.returnDuration
+          })
+        })
+      )
+    }
+    const globalDuration = customTransformMode.value === 'none'
+      ? 0
+      : Math.max(0, Number(transition.transformStartDelay) || 0)
+        + Math.max(0, Number(transition.transformDuration) || 0)
+    return Math.max(
+      globalDuration,
+      ...(customMarkerSettings.value.rings || []).map(ring => {
+        const timing = getRingTransformTiming(ring)
+        const mode = getConfiguredRingTransformMode(ring)
+        if (mode === 'none') return 0
+        return timing.useGlobal ? globalDuration : timing.delay + timing.duration
+      })
+    )
+  }
+  if (customTransformCycleCompleting.value && fromState === 'transform' && toState === 'idle') return 0
+  if (fromState === 'transform' && toState === 'idle' && hasCustomReverseMode.value) {
+    const globalDuration = customTransformMode.value === 'reverse'
+      ? Math.max(
+          0,
+          Number(transition.transformReturnDuration) || Number(transition.transformDuration) || 0
+        )
+      : 0
+    return Math.max(
+      globalDuration,
+      ...(customMarkerSettings.value.rings || []).map(ring => {
+        const timing = getRingTransformTiming(ring)
+        if (getConfiguredRingTransformMode(ring) !== 'reverse') return 0
+        return timing.useGlobal ? globalDuration : timing.returnDuration
+      })
+    )
+  }
+  return 0
+}
+const stopSplitCountTransition = () => {
+  if (splitCountTransitionFrame) cancelAnimationFrame(splitCountTransitionFrame)
+  splitCountTransitionFrame = 0
+}
+const animateSplitCountTransition = timestamp => {
+  const duration = getSplitCountTransitionDuration(
+    splitCountTransitionFromState.value,
+    splitCountTransitionToState.value
+  )
+  if (isAutomaticTransformCycle()) {
+    const elapsed = Math.max(0, timestamp - splitCountTransitionStart)
+    splitCountTransitionElapsed.value = elapsed
+    splitCountTransitionProgress.value = duration <= 0
+      ? 0
+      : (elapsed % duration) / duration
+    splitCountTransitionFrame = requestAnimationFrame(animateSplitCountTransition)
+    return
+  }
+  const progress = duration <= 0
+    ? 1
+    : Math.min(1, Math.max(0, (timestamp - splitCountTransitionStart) / duration))
+  splitCountTransitionProgress.value = progress
+  splitCountTransitionElapsed.value = duration <= 0
+    ? duration
+    : Math.min(duration, Math.max(0, timestamp - splitCountTransitionStart))
+  if (progress >= 1) {
+    splitCountTransitionActive.value = false
+    splitCountTransitionFrame = 0
+    return
+  }
+  splitCountTransitionFrame = requestAnimationFrame(animateSplitCountTransition)
+}
+const startSplitCountTransition = (state, previousState) => {
+  stopSplitCountTransition()
+  if (typeof previousState !== 'string' || state === previousState) {
+    splitCountTransitionActive.value = false
+    splitCountTransitionProgress.value = 1
+    splitCountTransitionElapsed.value = 0
+    return
+  }
+  const duration = getSplitCountTransitionDuration(previousState, state)
+  splitCountTransitionFromState.value = previousState
+  splitCountTransitionToState.value = state
+  splitCountTransitionProgress.value = 0
+  splitCountTransitionElapsed.value = 0
+  if (duration <= 0) {
+    splitCountTransitionActive.value = false
+    splitCountTransitionProgress.value = 1
+    return
+  }
+  splitCountTransitionActive.value = true
+  splitCountTransitionStart = performance.now()
+  splitCountTransitionFrame = requestAnimationFrame(animateSplitCountTransition)
+}
+watch(
+  () => resolvedCustomMarkerState.value,
+  (state, previousState) => startSplitCountTransition(state, previousState),
+  { immediate: true }
+)
 const customRings = computed(() => {
   const configuredRings = customMarkerSettings.value.rings
   if (Array.isArray(configuredRings) && configuredRings.length > 0) {
-    const state = resolvedCustomMarkerState.value
-    return configuredRings.map(ring => ({
-      ...ring,
-      ...(ring.appearance?.[state] || {})
-    }))
+    const transitionActive = splitCountTransitionActive.value
+      && splitCountTransitionFromState.value !== splitCountTransitionToState.value
+    return configuredRings.map(ring => {
+      const state = getRingAppearanceState(ring, resolvedCustomMarkerState.value)
+      const targetAppearance = { ...ring, ...(ring.appearance?.[state] || {}) }
+      if (!transitionActive) return targetAppearance
+      const fromState = getRingAppearanceState(ring, splitCountTransitionFromState.value)
+      const fromAppearance = { ...ring, ...(ring.appearance?.[fromState] || {}) }
+      const transitionProgress = getRingTransitionProgress(ring)
+      const interpolatedAppearance = interpolateTransitionSettings(
+        fromAppearance,
+        targetAppearance,
+        transitionProgress.eased,
+        ['splitCount']
+      )
+      const fromCount = getCustomRingSplitCount(fromAppearance)
+      const toCount = getCustomRingSplitCount(targetAppearance)
+      if (fromCount === toCount) return interpolatedAppearance
+      return {
+        ...interpolatedAppearance,
+        __splitCountTransition: {
+          fromCount,
+          toCount,
+          progress: transitionProgress.raw
+        }
+      }
+    })
   }
 
   const count = Math.min(8, Math.max(1, Number(customMarkerSettings.value.ringCount) || 1))
@@ -553,27 +1046,62 @@ const customRings = computed(() => {
     }
   }))
 })
-const customMarkerStyle = computed(() => ({
-  '--custom-marker-color': customMarkerSettings.value.color,
-  '--custom-marker-width': `${Math.min(180, Math.max(10, Number(customMarkerAppearance.value.width) || Number(customMarkerAppearance.value.size) || 100))}%`,
-  '--custom-marker-height': `${Math.min(180, Math.max(10, Number(customMarkerAppearance.value.height) || Number(customMarkerAppearance.value.size) || 100))}%`,
-  '--custom-marker-opacity': String(Math.min(100, Math.max(10, Number(customMarkerAppearance.value.opacity) || 88)) / 100),
-  '--custom-morph-duration': `${Math.max(0, Number(
-    autoCustomMorphDuration.value >= 0 && customTransformAutoEnabled.value
-      ? autoCustomMorphDuration.value
-      : resolvedCustomMarkerState.value === 'idle'
-        ? customMarkerSettings.value.transition?.morphOutDuration
-        : resolvedCustomMarkerState.value === 'transform'
-          ? customMarkerSettings.value.transition?.transformDuration ?? customMarkerSettings.value.transition?.morphInDuration
-          : customMarkerSettings.value.transition?.morphInDuration
-  ) || 0)}ms`,
-  '--custom-morph-easing': ['linear', 'ease-in', 'ease-out', 'ease-in-out'].includes(customMarkerSettings.value.transition?.easing)
-    ? customMarkerSettings.value.transition.easing
-    : 'ease-in-out'
-}))
+const customMarkerStyle = computed(() => {
+  const overallWidth = Math.min(180, Math.max(10, Number(customMarkerAppearance.value.width) || Number(customMarkerAppearance.value.size) || 100))
+  const overallHeight = Math.min(180, Math.max(10, Number(customMarkerAppearance.value.height) || Number(customMarkerAppearance.value.size) || 100))
+  const applyAspectToLayers = customMarkerAppearance.value.applyAspectToLayers === true
+  const normalizedSize = Math.min(overallWidth, overallHeight)
+  const cssMorphDuration = isCustomStateTransitionActive()
+    ? 0
+    : Math.max(0, Number(
+        autoCustomMorphDuration.value >= 0 && customTransformAutoEnabled.value
+          ? autoCustomMorphDuration.value
+          : resolvedCustomMarkerState.value === 'idle'
+            ? customMarkerSettings.value.transition?.morphOutDuration
+            : resolvedCustomMarkerState.value === 'transform'
+              ? customMarkerSettings.value.transition?.transformDuration ?? customMarkerSettings.value.transition?.morphInDuration
+              : customMarkerSettings.value.transition?.morphInDuration
+      ) || 0)
+  return {
+    '--custom-marker-color': customMarkerSettings.value.color,
+    // OFFは従来どおり矩形の描画領域をそのまま使う。ON時だけ正方形の基準面を
+    // 先に縦横へ伸縮するため、全体回転にも横幅・縦幅が反映される。
+    '--custom-marker-width': `${applyAspectToLayers ? normalizedSize : overallWidth}%`,
+    '--custom-marker-height': `${applyAspectToLayers ? normalizedSize : overallHeight}%`,
+    '--custom-layer-scale-x': String(applyAspectToLayers ? overallWidth / normalizedSize : 1),
+    '--custom-layer-scale-y': String(applyAspectToLayers ? overallHeight / normalizedSize : 1),
+    '--custom-marker-opacity': String(Math.min(100, Math.max(10, Number(customMarkerAppearance.value.opacity) || 88)) / 100),
+    '--custom-morph-duration': `${cssMorphDuration}ms`,
+    '--custom-morph-easing': ['linear', 'ease-in', 'ease-out', 'ease-in-out'].includes(customMarkerSettings.value.transition?.easing)
+      ? customMarkerSettings.value.transition.easing
+      : 'ease-in-out'
+  }
+})
 const getCustomRingMotion = ring => {
-  const state = resolvedCustomMarkerState.value
-  if (ring.motion?.[state]) return ring.motion[state]
+  const state = getRingAppearanceState(ring, resolvedCustomMarkerState.value)
+  const resolveRingMotion = motionState => {
+    const configuredMotion = ring.motion?.[motionState]
+    if (['moving', 'transform'].includes(motionState) && configuredMotion?.traceIdle === true) {
+      return {
+        ...(ring.motion?.idle || configuredMotion),
+        traceIdle: true
+      }
+    }
+    return configuredMotion
+  }
+  const targetMotion = resolveRingMotion(state)
+  if (targetMotion) {
+    if (!isCustomStateTransitionActive()) return targetMotion
+    const fromState = getRingAppearanceState(ring, splitCountTransitionFromState.value)
+    const fromMotion = resolveRingMotion(fromState)
+      || (fromState === 'transform' ? ring.motion?.idle : null)
+      || targetMotion
+    return interpolateTransitionSettings(
+      fromMotion,
+      targetMotion,
+      getRingTransitionProgress(ring).eased
+    )
+  }
   if (state === 'transform' && ring.motion?.idle) return ring.motion.idle
 
   const trigger = ring.animationTrigger || 'always'
@@ -598,10 +1126,45 @@ const isCustomTextOnlyRotating = ring => isCustomTextRing(ring)
   && isCustomRingRotationEnabled(ring)
   && getCustomRingMotion(ring).rotateTarget === 'text'
 const isCustomWholeRotationEnabled = ring => isCustomRingRotationEnabled(ring) && !isCustomTextOnlyRotating(ring)
+const isCustomRingSelfRotating = ring => (
+  getCustomRingMotion(ring).rotateOrigin === 'self'
+  && !isCustomTextRing(ring)
+)
+const isCustomRingRotationMasked = ring => (
+  ring.eraseBelow === true
+  && isCustomRingAnimated(ring)
+  && isCustomWholeRotationEnabled(ring)
+)
+const getCustomRingRotationDegrees = ring => {
+  if (!isCustomRingRotationMasked(ring)) return 0
+  const motion = getCustomRingMotion(ring)
+  const duration = Math.max(400, (Number(motion.rotateDuration) || 8) * 1000)
+  const delay = Math.max(0, Number(motion.delay) || 0) * 1000
+  const elapsed = Math.max(0, customLayerRotationClock.value - customLayerRotationStart - delay)
+  const progress = motion.repeat === false ? Math.min(1, elapsed / duration) : (elapsed % duration) / duration
+  return (motion.direction === 'reverse' ? -1 : 1) * progress * 360
+}
 const isCustomTextCounterRotating = ring => ring.textOrientation === 'upright'
   && isCustomRingAnimated(ring)
   && isCustomWholeRotationEnabled(ring)
-const getCustomRingSplitCount = ring => Math.min(8, Math.max(1, Number(ring.splitCount) || 1))
+const getCustomRingSplitCount = ring => {
+  const transition = ring.__splitCountTransition
+  if (transition) {
+    const delta = transition.toCount - transition.fromCount
+    const progress = Math.min(1, Math.max(0, transition.progress))
+    const steps = progress <= 0
+      ? 0
+      : Math.ceil(Math.abs(delta) * progress - 0.000001)
+    return Math.min(8, Math.max(1, transition.fromCount + Math.sign(delta) * steps))
+  }
+  return Math.min(8, Math.max(1, Number(ring.splitCount) || 1))
+}
+const getCustomRingLayoutCount = ring => {
+  const transition = ring.__splitCountTransition
+  if (!transition) return getCustomRingSplitCount(ring)
+  const progress = Math.min(1, Math.max(0, transition.progress))
+  return transition.fromCount + (transition.toCount - transition.fromCount) * progress
+}
 const CUSTOM_TEXT_LIMIT = 64
 const splitCustomText = value => {
   const text = String(value || '')
@@ -935,7 +1498,14 @@ const getCustomShapeMaskPath = (shape, ring) => {
   return getCustomShapePath(shape, ring)
 }
 const getCustomShapeFillRule = shape => ['sharpMoon', 'gear'].includes(shape) ? 'evenodd' : null
+const isCustomDoubleLineFill = ring => ring.fillEnabled === true && ring.lineStyle === 'double' && ring.fillBetweenDoubleLines === true
+const needsCustomFillMask = ring => ring.cutoutEnabled === true || isCustomDoubleLineFill(ring)
 const getCustomCutoutMaskId = (ring, segmentIndex) => `${markerSvgIdPrefix}-custom-cutout-${String(ring.id).replace(/[^a-zA-Z0-9_-]/g, '-')}-${segmentIndex}`
+const getCustomDoubleLineTransform = ring => {
+  const gap = Math.min(100, Math.max(0, Number(ring.doubleLineGap) || 18))
+  const scale = 1 - gap / 100
+  return `translate(50 50) scale(${scale}) translate(-50 -50)`
+}
 const getCustomCutoutTransform = ring => {
   const scale = Math.min(0.9, Math.max(0.1, (Number(ring.cutoutSize) || 62) / 100))
   return `translate(50 50) scale(${scale}) translate(-50 -50)`
@@ -1062,6 +1632,10 @@ const getCustomTextItemStyle = (ring, index) => {
   const fontFamily = ring.textFontPreset === 'custom' && String(ring.textCustomFontFamily || '').trim()
     ? String(ring.textCustomFontFamily).trim()
     : TEXT_FONT_FAMILY_MAP[ring.textFontPreset] || TEXT_FONT_FAMILY_MAP.cyber
+  const overallWidth = Math.min(180, Math.max(10, Number(customMarkerAppearance.value.width) || Number(customMarkerAppearance.value.size) || 100))
+  const overallHeight = Math.min(180, Math.max(10, Number(customMarkerAppearance.value.height) || Number(customMarkerAppearance.value.size) || 100))
+  const baseScale = Math.min(overallWidth, overallHeight) / 100
+  const usesAspectRotation = customMarkerAppearance.value.applyAspectToLayers === true
 
   return {
     ...getCustomSegmentVisualStyle(ring, index),
@@ -1073,7 +1647,11 @@ const getCustomTextItemStyle = (ring, index) => {
     rotate: `${textAngle}deg`,
     fontSize: `${fontSize}px`,
     fontWeight,
-    fontFamily
+    fontFamily,
+    // 文字サイズはpx指定のため、全体枠の縦横比だけでは伸縮しない。
+    // 全体回転を有効にした場合は親側の伸縮分を差し引いて、二重に拡大しないようにする。
+    '--custom-text-global-scale-x': String(usesAspectRotation ? baseScale : overallWidth / 100),
+    '--custom-text-global-scale-y': String(usesAspectRotation ? baseScale : overallHeight / 100)
   }
 }
 const getCustomRingSegmentStyle = (ring, index) => {
@@ -1121,16 +1699,17 @@ const getCustomRingSegmentStyle = (ring, index) => {
       : { ...commonStyle, width: '100%', height: 'auto', aspectRatio: '1', alignSelf: 'center' }
   }
 
+  const layoutCount = getCustomRingLayoutCount(ring)
   const radius = Math.min(70, Math.max(0, Number(ring.arcRadius) || 0))
   const spread = Math.min(360, Math.max(0, Number(ring.arcSpread) || 0))
   const centerAngle = Math.min(359, Math.max(0, Number(ring.arcAngle) || 0))
-  const progress = count <= 1 ? 0 : index / (count - 1) - 0.5
-  const angle = (ring.evenSpacing || spread >= 360) && count > 1
-    ? centerAngle + 360 * index / count
+  const progress = layoutCount <= 1 ? 0 : index / (layoutCount - 1) - 0.5
+  const angle = (ring.evenSpacing || spread >= 360) && layoutCount > 1
+    ? centerAngle + 360 * index / layoutCount
     : centerAngle + spread * progress
   const radians = angle * Math.PI / 180
-  let segmentWidth = width >= height ? width / count : width
-  let segmentHeight = width >= height ? height : height / count
+  let segmentWidth = width >= height ? width / layoutCount : width
+  let segmentHeight = width >= height ? height : height / layoutCount
   if (ring.equalizeSegments) {
     const side = width >= height ? segmentHeight : segmentWidth
     segmentWidth = side
@@ -1216,8 +1795,41 @@ const getCustomRingStyle = ring => {
     '--custom-ring-glow-color': glowColor,
     '--custom-ring-glow-size': `${glow}px`,
     '--custom-ring-pulse-amount': String(Math.min(45, Math.max(2, Number(motion.pulseAmount) || 18)) / 100),
+    '--custom-segment-morph-duration': ring.__splitCountTransition ? '0ms' : undefined,
     translate: isArc ? 'none' : '-50% -50%',
     rotate: isArc ? 'none' : `${angle}deg`
+  }
+}
+const getCustomRingOrbitStyle = ring => {
+  const motionStyle = getCustomRingMotionStyle(ring)
+  const manualRotation = isCustomRingRotationMasked(ring)
+    ? { rotate: `${getCustomRingRotationDegrees(ring)}deg` }
+    : {}
+  if (!isCustomRingSelfRotating(ring)) return { ...motionStyle, ...manualRotation }
+  const ringStyle = getCustomRingStyle(ring)
+  return {
+    ...motionStyle,
+    ...manualRotation,
+    left: ringStyle.left,
+    top: ringStyle.top,
+    right: 'auto',
+    bottom: 'auto',
+    width: ringStyle.width,
+    height: ringStyle.height,
+    translate: ringStyle.translate,
+    rotate: manualRotation.rotate || 'none'
+  }
+}
+const getCustomRingContentStyle = ring => {
+  const ringStyle = getCustomRingStyle(ring)
+  if (!isCustomRingSelfRotating(ring)) return ringStyle
+  return {
+    ...ringStyle,
+    left: '0',
+    top: '0',
+    width: '100%',
+    height: '100%',
+    translate: 'none'
   }
 }
 const getCustomRingTransformStyle = ring => ({
@@ -1241,26 +1853,84 @@ const isCustomLayerAbove = (candidate, target) => {
 const getCustomErasersAbove = ring => customRings.value.filter(candidate => (
   candidate.eraseBelow === true
   && candidate.visible !== false
-  && getCustomRenderMode(candidate) === 'continuous'
+  && ['continuous', 'circumference', 'connection'].includes(getCustomRenderMode(candidate))
   && isCustomLayerAbove(candidate, ring)
 ))
-const getCustomLayerEraseTransform = ring => {
-  const legacySize = Number(ring.size) || 100
-  const widthScale = Math.min(140, Math.max(1, Number(ring.width) || legacySize)) / 10000
-  const heightScale = Math.min(140, Math.max(1, Number(ring.height) || legacySize)) / 10000
+const isCustomLayerEraseDebugEnabled = ring => (
+  props.enableEraseDebugPreview
+  && ring.eraseBelow === true
+  && ring.eraseDebug === true
+  && ring.visible !== false
+  && ['continuous', 'circumference', 'connection'].includes(getCustomRenderMode(ring))
+)
+const getCustomLayerEraseLineWidth = ring => Math.min(8, Math.max(1, Number(ring.lineWidth) || 2))
+const getCustomLayerEraseLineCap = ring => (
+  ['butt', 'round', 'square'].includes(ring.lineCap) ? ring.lineCap : 'butt'
+)
+const getCustomLayerEraseLineJoin = ring => (
+  ['miter', 'round', 'bevel'].includes(ring.lineJoin) ? ring.lineJoin : 'miter'
+)
+const isCustomLayerEraseRotating = ring => (
+  isCustomRingAnimated(ring)
+  && isCustomWholeRotationEnabled(ring)
+)
+const getCustomLayerEraseRotationCenter = (ring, part) => {
+  if (!isCustomRingSelfRotating(ring)) return { x: 0.5, y: 0.5 }
   const flipX = ring.flipX === true ? -1 : 1
   const flipY = ring.flipY === true ? -1 : 1
   const offsetX = Math.min(50, Math.max(-50, Number(ring.offsetX) || 0)) / 100
   const offsetY = Math.min(50, Math.max(-50, Number(ring.offsetY) || 0)) / 100
-  const centerX = 0.5 + offsetX * flipX
-  const centerY = 0.5 + offsetY * flipY
-  const angle = Math.min(359, Math.max(0, Number(ring.angle) || 0))
+  const localPart = isCustomCircumference(ring) ? null : part
+  return {
+    x: 0.5 + (offsetX + (localPart?.offsetX ?? 0)) * flipX,
+    y: 0.5 + (offsetY + (localPart?.offsetY ?? 0)) * flipY
+  }
+}
+const getCustomLayerEraseRotationFrom = (ring, part) => {
+  const center = getCustomLayerEraseRotationCenter(ring, part)
+  return `0 ${center.x} ${center.y}`
+}
+const getCustomLayerEraseRotationTo = (ring, part) => {
+  const motion = getCustomRingMotion(ring)
+  const center = getCustomLayerEraseRotationCenter(ring, part)
+  return `${motion.direction === 'reverse' ? -360 : 360} ${center.x} ${center.y}`
+}
+const getCustomLayerEraseRotationDuration = ring => `${Math.max(0.4, Number(getCustomRingMotion(ring).rotateDuration) || 8)}s`
+const getCustomLayerEraseRotationDelay = ring => `${Math.max(0, Number(getCustomRingMotion(ring).delay) || 0)}s`
+const getCustomLayerEraseRotationRepeatCount = ring => getCustomRingMotion(ring).repeat === false ? '1' : 'indefinite'
+const getCustomLayerEraseTransform = (ring, part = null) => {
+  const legacySize = Number(ring.size) || 100
+  const width = Math.min(140, Math.max(1, Number(ring.width) || legacySize))
+  const height = Math.min(140, Math.max(1, Number(ring.height) || legacySize))
+  const widthScale = (part?.width ?? width) / 10000
+  const heightScale = (part?.height ?? height) / 10000
+  const flipX = ring.flipX === true ? -1 : 1
+  const flipY = ring.flipY === true ? -1 : 1
+  const offsetX = Math.min(50, Math.max(-50, Number(ring.offsetX) || 0)) / 100
+  const offsetY = Math.min(50, Math.max(-50, Number(ring.offsetY) || 0)) / 100
+  const centerX = 0.5 + (offsetX + (part?.offsetX ?? 0)) * flipX
+  const centerY = 0.5 + (offsetY + (part?.offsetY ?? 0)) * flipY
+  const angle = part?.angle ?? Math.min(359, Math.max(0, Number(ring.angle) || 0))
   const overallWidth = Math.max(10, Number(customMarkerAppearance.value.width) || Number(customMarkerAppearance.value.size) || 100)
   const overallHeight = Math.max(10, Number(customMarkerAppearance.value.height) || Number(customMarkerAppearance.value.size) || 100)
-  const aspectRatio = overallWidth / overallHeight
+  const aspectRatio = customMarkerAppearance.value.applyAspectToLayers === true
+    ? 1
+    : overallWidth / overallHeight
+  const rotationCenter = getCustomLayerEraseRotationCenter(ring, part)
+  const rotation = getCustomRingRotationDegrees(ring)
+  const rotationTransform = isCustomRingRotationMasked(ring)
+    ? [
+        `translate(${rotationCenter.x} ${rotationCenter.y})`,
+        `scale(${1 / aspectRatio} 1)`,
+        `rotate(${rotation})`,
+        `scale(${aspectRatio} 1)`,
+        `translate(${-rotationCenter.x} ${-rotationCenter.y})`
+      ]
+    : []
 
   // CSSは実ピクセル上で回転するため、objectBoundingBox座標の縦横比を補正して同じ位置へ合わせる。
   return [
+    ...rotationTransform,
     `translate(${centerX} ${centerY})`,
     `scale(${flipX} ${flipY})`,
     `scale(${1 / aspectRatio} 1)`,
@@ -1268,6 +1938,55 @@ const getCustomLayerEraseTransform = ring => {
     `scale(${aspectRatio * widthScale} ${heightScale})`,
     'translate(-50 -50)'
   ].join(' ')
+}
+const getCustomLayerEraseParts = ring => {
+  if (!isCustomCircumference(ring)) {
+    return [{ key: `${ring.id}-whole`, transform: getCustomLayerEraseTransform(ring) }]
+  }
+
+  const legacySize = Number(ring.size) || 100
+  const width = Math.min(140, Math.max(1, Number(ring.width) || legacySize))
+  const height = Math.min(140, Math.max(1, Number(ring.height) || legacySize))
+  const count = getCustomRingSplitCount(ring)
+  const layoutCount = getCustomRingLayoutCount(ring)
+  const radius = Math.min(70, Math.max(0, Number(ring.arcRadius) || 0))
+  const spread = Math.min(360, Math.max(0, Number(ring.arcSpread) || 0))
+  const centerAngle = Math.min(359, Math.max(0, Number(ring.arcAngle) || 0))
+  const shapeAngle = Math.min(359, Math.max(0, Number(ring.angle) || 0))
+  const orientation = ['tangent', 'radial', 'fixed'].includes(ring.arcOrientation)
+    ? ring.arcOrientation
+    : 'tangent'
+  let segmentWidth = width >= height ? width / count : width
+  let segmentHeight = width >= height ? height : height / count
+  if (ring.equalizeSegments) {
+    const side = width >= height ? segmentHeight : segmentWidth
+    segmentWidth = side
+    segmentHeight = side
+  }
+
+  return Array.from({ length: count }, (_, index) => {
+    const progress = layoutCount <= 1 ? 0 : index / (layoutCount - 1) - 0.5
+    const angle = (ring.evenSpacing || spread >= 360) && layoutCount > 1
+      ? centerAngle + 360 * index / layoutCount
+      : centerAngle + spread * progress
+    const radians = angle * Math.PI / 180
+    const orientationAngle = orientation === 'fixed'
+      ? 0
+      : orientation === 'radial'
+        ? angle
+        : angle + 90
+    const part = {
+      offsetX: Math.cos(radians) * radius / 100,
+      offsetY: Math.sin(radians) * radius / 100,
+      width: segmentWidth,
+      height: segmentHeight,
+      angle: orientationAngle + shapeAngle
+    }
+    return {
+      key: `${ring.id}-part-${index}`,
+      transform: getCustomLayerEraseTransform(ring, part)
+    }
+  })
 }
 const getCustomLayerFrameStyle = ring => {
   const erasers = getCustomErasersAbove(ring)
@@ -1412,57 +2131,28 @@ const magitechLinkStyle = index => {
   }
 }
 
-const clearCustomTransformTimer = () => {
-  if (customTransformTimer) clearTimeout(customTransformTimer)
-  customTransformTimer = null
-}
-const scheduleCustomTransformStep = (callback, delay) => {
-  clearCustomTransformTimer()
-  customTransformTimer = setTimeout(() => {
-    customTransformTimer = null
-    callback()
-  }, Math.max(0, delay))
-}
 const restartCustomTransformAnimation = () => {
-  clearCustomTransformTimer()
+  customTransformCycleCompleting.value = true
   autoCustomMarkerState.value = 'idle'
   autoCustomMorphDuration.value = customTransformAutoEnabled.value ? 0 : -1
-  if (!customTransformAutoEnabled.value) return
+  if (!customTransformAutoEnabled.value) {
+    nextTick(() => {
+      customTransformCycleCompleting.value = false
+    })
+    return
+  }
 
   const transition = customMarkerSettings.value.transition || {}
   const duration = Math.min(10000, Math.max(100, Number(transition.transformDuration) || 1200))
-  const returnDuration = Math.min(10000, Math.max(100, Number(transition.transformReturnDuration) || duration))
-  const startDelay = Math.min(10000, Math.max(0, Number(transition.transformStartDelay) || 0))
-  const holdDuration = Math.min(10000, Math.max(0, Number(transition.transformHoldDuration) || 0))
-  const scheduleNextCycle = () => {
-    autoCustomMorphDuration.value = duration
-    scheduleCustomTransformStep(runTransformCycle, startDelay)
-  }
-  const returnToIdle = () => {
-    if (!customTransformAutoEnabled.value) {
-      restartCustomTransformAnimation()
-      return
-    }
-    if (customTransformMode.value === 'reverse') {
-      autoCustomMorphDuration.value = returnDuration
-      autoCustomMarkerState.value = 'idle'
-      scheduleCustomTransformStep(scheduleNextCycle, returnDuration)
-      return
-    }
-    autoCustomMorphDuration.value = 0
-    autoCustomMarkerState.value = 'idle'
-    scheduleCustomTransformStep(scheduleNextCycle, 32)
-  }
-  const runTransformCycle = () => {
+  nextTick(() => {
+    customTransformCycleCompleting.value = false
     if (!customTransformAutoEnabled.value) {
       restartCustomTransformAnimation()
       return
     }
     autoCustomMorphDuration.value = duration
     autoCustomMarkerState.value = 'transform'
-    scheduleCustomTransformStep(returnToIdle, duration + holdDuration)
-  }
-  scheduleNextCycle()
+  })
 }
 
 watch(
@@ -1470,10 +2160,13 @@ watch(
     props.customMarkerState,
     props.isTargetMoving,
     customTransformMode.value,
+    hasCustomTransformMode.value,
+    hasCustomReverseMode.value,
     customMarkerSettings.value.transition?.transformDuration,
     customMarkerSettings.value.transition?.transformReturnDuration,
     customMarkerSettings.value.transition?.transformStartDelay,
-    customMarkerSettings.value.transition?.transformHoldDuration
+    customMarkerSettings.value.transition?.transformHoldDuration,
+    JSON.stringify(customMarkerSettings.value.rings?.map(ring => ring.transformTiming || null))
   ],
   restartCustomTransformAnimation
 )
@@ -1484,6 +2177,7 @@ onMounted(() => {
   const animateLinkWaves = timestamp => {
     const elapsed = timestamp - lastTimestamp
     lastTimestamp = timestamp
+    customLayerRotationClock.value = timestamp
     magitechLinkWavePhase.value += elapsed * MAGITECH_LINK_WAVE.speed
     magitechLinkWaveAnimationFrame = requestAnimationFrame(animateLinkWaves)
   }
@@ -1494,7 +2188,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   cancelAnimationFrame(magitechLinkWaveAnimationFrame)
-  clearCustomTransformTimer()
+  stopSplitCountTransition()
 })
 </script>
 
@@ -3613,6 +4307,8 @@ onBeforeUnmount(() => {
 .custom-marker-motion {
   position: absolute;
   inset: 0;
+  scale: var(--custom-layer-scale-x, 1) var(--custom-layer-scale-y, 1);
+  transform-origin: 50% 50%;
 }
 
 .custom-marker-whole-orbit,
@@ -3638,15 +4334,48 @@ onBeforeUnmount(() => {
 
 .custom-layer-mask-definitions {
   position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  overflow: visible;
   pointer-events: none;
+}
+
+.custom-layer-erase-debug {
+  position: absolute;
+  inset: 0;
+  z-index: 9999;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.custom-layer-erase-debug-shape {
+  fill: rgba(255, 27, 198, 0.68);
+  stroke: rgba(255, 220, 248, 0.92);
+  stroke-width: 0.004;
+  vector-effect: non-scaling-stroke;
+}
+
+.custom-layer-erase-debug-line {
+  stroke: rgba(255, 27, 198, 0.86);
 }
 
 .custom-marker-layer-frame {
   position: absolute;
-  inset: 0;
+  left: -200%;
+  top: -200%;
+  width: 500%;
+  height: 500%;
+  pointer-events: none;
+}
+
+.custom-marker-layer-plane {
+  position: absolute;
+  left: 40%;
+  top: 40%;
+  width: 20%;
+  height: 20%;
 }
 
 .custom-marker-ring-orbit {
@@ -3689,13 +4418,13 @@ onBeforeUnmount(() => {
   min-height: 0;
   overflow: visible;
   transition:
-    left var(--custom-morph-duration) var(--custom-morph-easing),
-    top var(--custom-morph-duration) var(--custom-morph-easing),
-    width var(--custom-morph-duration) var(--custom-morph-easing),
-    height var(--custom-morph-duration) var(--custom-morph-easing),
+    left var(--custom-segment-morph-duration, var(--custom-morph-duration)) var(--custom-morph-easing),
+    top var(--custom-segment-morph-duration, var(--custom-morph-duration)) var(--custom-morph-easing),
+    width var(--custom-segment-morph-duration, var(--custom-morph-duration)) var(--custom-morph-easing),
+    height var(--custom-segment-morph-duration, var(--custom-morph-duration)) var(--custom-morph-easing),
     opacity var(--custom-morph-duration) var(--custom-morph-easing),
-    translate var(--custom-morph-duration) var(--custom-morph-easing),
-    rotate var(--custom-morph-duration) var(--custom-morph-easing);
+    translate var(--custom-segment-morph-duration, var(--custom-morph-duration)) var(--custom-morph-easing),
+    rotate var(--custom-segment-morph-duration, var(--custom-morph-duration)) var(--custom-morph-easing);
 }
 
 .custom-text-item {
@@ -3711,6 +4440,8 @@ onBeforeUnmount(() => {
 }
 .custom-text-glyph {
   display: block;
+  scale: var(--custom-text-global-scale-x, 1) var(--custom-text-global-scale-y, 1);
+  transform-origin: 50% 50%;
 }
 .custom-text-glyph.is-counter-rotating {
   animation: customTextCounterOrbit var(--custom-ring-rotate-duration) linear var(--custom-ring-delay) var(--custom-ring-iteration);
@@ -3825,13 +4556,15 @@ onBeforeUnmount(() => {
 .custom-marker-layer-frame.is-hidden,
 .custom-marker-ring-orbit.is-hidden { display: none; }
 .custom-marker-ring-orbit.is-animated,
+.custom-marker-ring-orbit.is-self-animated,
 .custom-marker-ring.is-animated {
   animation-timing-function: linear;
   animation-iteration-count: var(--custom-ring-iteration);
   animation-direction: var(--custom-ring-direction);
   animation-delay: var(--custom-ring-delay);
 }
-.custom-marker-ring-orbit.is-animated {
+.custom-marker-ring-orbit.is-animated,
+.custom-marker-ring-orbit.is-self-animated {
   animation-name: customMarkerOrbit;
   animation-duration: var(--custom-ring-rotate-duration);
 }

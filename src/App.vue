@@ -2,17 +2,24 @@
 import { onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute } from "vue-router";
 import { applyGlobalScale } from "@/components/useScale.js";
+import "@/css/typography.css";
 import useScaleCss from "@/css/useScale.css?url";
 import gestScaleCss from "@/css/gestScale.css?url";
 import electronicLifeCss from "@/css/electronicLife.css?url";
+import explorationFullCss from "@/css/explorationFull.css?url";
+import areaMapPortraitCss from "@/css/areaMapPortrait.css?url";
 
 const route = useRoute();
 const scaleLinkId = "scale-css";
 
 const setScaleCss = (path) => {
-  const href = path === "/guest"
+  const href = path === "/guest" || path === "/machine-adventure" || path === "/machine-shop"
     ? gestScaleCss
-    : path === "/electronic-life"
+    : path === "/exploration" || path === "/area-exploration" || path === "/character-library" || path === "/dialogue-events"
+      ? explorationFullCss
+      : path.startsWith("/area-map/")
+        ? areaMapPortraitCss
+      : path === "/electronic-life"
       ? electronicLifeCss
       : useScaleCss;
   let link = document.getElementById(scaleLinkId);

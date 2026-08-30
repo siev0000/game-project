@@ -1,0 +1,1585 @@
+{
+  "version": 7,
+  "areaStates": {
+    "upper_terminal_concourse": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "upper_shared_spine": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "upper_shared_ring": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "upper_cross_emergency_corridor": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "upper_magitech_gate_corridor": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "upper_magitech_trunk": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "upper_magitech_loop": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "upper_magitech_freight_tunnel": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "upper_eidolon_gate_corridor": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "upper_eidolon_trunk": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "upper_eidolon_loop": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "upper_eidolon_freight_tunnel": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "middle_terminal_concourse": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "middle_public_ring": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "middle_refine_service_road": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "middle_mission_avenue": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "middle_resist_internal_corridor": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "middle_arbora_boulevard": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "middle_arbora_loop": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "middle_botanical_service_tunnel": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "middle_industrial_freight_road": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "middle_cargo_tunnel": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "middle_emergency_bypass": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "lower_terminal_concourse": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "last_hub_ring": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "lower_reclaim_spine": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "lower_recycled_export_tunnel": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "lower_hazard_corridor": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "lower_organic_corridor": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "lower_bio_return_tunnel": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "lower_security_seal_route": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "lower_material_hollow_road": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "lower_emergency_bypass": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "lower_junk_maintenance_path": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "lower_propulsion_service_road": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "hidden_control_ring": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "hidden_core_service_corridor": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "hidden_security_ring": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "hidden_emergency_escape": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "expedition_departure_spine": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "expedition_launch_branch_port": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "expedition_launch_branch_starboard": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "expedition_return_corridor": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "expedition_hangar_service_road": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "expedition_large_dock_port_road": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "expedition_large_dock_starboard_road": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "expedition_emergency_crossroute": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "upper_terminal": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "upper_main_control": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "orbital_sphere": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "information_archive": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "myosphere_field": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "upper_shared_logistics": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "upper_shared_high_grade_fuel": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "upper_shared_security_magitech": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "upper_shared_security_eidolon": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "magitech_residential_area": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "magitech_update_facility": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "magitech_creation_area": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "magitech_weapon_development": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "magitech_research_facility": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "magitech_force_field_lab": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "magitech_attribute_test_area": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "magitech_combat_test_range": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "magitech_prototype_test_facility": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "magitech_high_grade_fuel_lab": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "magitech_secure_storage": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "magitech_military_research_area": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "eidolon_residential_area": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "eidolon_update_facility": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "eidolon_creation_area": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "eidolon_support_equipment_development": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "eidolon_faith_research_facility": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "eidolon_barrier_lab": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "eidolon_radiant_test_area": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "eidolon_life_structure_lab": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "eidolon_combat_test_range": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "eidolon_prototype_test_facility": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "eidolon_sample_storage": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "eidolon_secure_storage": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "eidolon_military_research_area": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "middle_terminal": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "core_shell_refine": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "core_shell_town": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "refine_valley": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "alchimeria_lab": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "resist_link_dome": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "arbora_sector": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "ecosystem_greenhouses": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "water_soil_cycle": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "biological_management": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "bio_material_greenhouse": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "standard_fuel_factory": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "plant_oil_processing": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "fiber_resin_processing": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "middle_material_processing": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "middle_cargo_inspection": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "lower_terminal": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "last_hub": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "heavy_machinery_maintenance": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "junk_rebuild_tank": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "reclaim_belt": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "discard_registration": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "waste_inspection_classification": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "discarded_machine_inspection": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "parts_recovery_area": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "metal_re_refining_area": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "recycled_resource_storage": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "fuel_discharge_neutralization": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "acid_zone_s9": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "lower_general_processing": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "lower_managed_processing": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "lower_hazardous_processing": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "lower_special_isolation": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "lower_emergency_isolation": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "bioreactor": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "organic_waste_intake": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "biological_treatment_tanks": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "sludge_treatment_area": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "waste_heat_recovery": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "reusable_component_recovery": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "material_hollow": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "foreign_object_inspection": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "resource_temporary_storage": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "external_resource_intake": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "hidden_middle_shushinter_control": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "hidden_middle_magic_core": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "hidden_middle_power_core": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "hidden_middle_flight_control": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "hidden_middle_magic_control": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "hidden_middle_system_link": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "hidden_middle_maintenance": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "hidden_middle_security": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "expedition_direct_lift": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "expedition_assembly_area": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "expedition_final_check": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "expedition_boarding_area": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "expedition_launch_bay_port": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "expedition_launch_bay_starboard": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "expedition_recovery_bay": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "expedition_contamination_check": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "expedition_damage_recovery": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "bottom_airship_hangar": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "bottom_expedition_cargo": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "bottom_external_dock_port": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "bottom_external_dock_starboard": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "exterior_grassland": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "exterior_forest": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "exterior_wetland": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "exterior_coast": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "exterior_desert": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "exterior_snowfield": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "exterior_mountain": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "exterior_canyon": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "exterior_cave": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "exterior_underground_cave": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "exterior_volcanic": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    },
+    "exterior_ruins": {
+      "openedDoors": [],
+      "defeatedEnemies": [],
+      "collectedItems": [],
+      "repairedFacilities": [],
+      "rescuedNpcs": [],
+      "alarmState": "normal",
+      "clearedBoss": false,
+      "unlockedExits": []
+    }
+  }
+}

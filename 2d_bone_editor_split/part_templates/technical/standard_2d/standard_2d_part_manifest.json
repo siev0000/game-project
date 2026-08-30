@@ -1,0 +1,294 @@
+{
+  "formatVersion": 1,
+  "rigType": "standard_2d",
+  "referencePose": "通常2D・正面姿勢",
+  "rules": {
+    "keepCanvasSize": true,
+    "transparentBackground": true,
+    "note": "guide PNGの中心線と関節点に合わせて描画し、完成画像ではガイド線を消します。"
+  },
+  "parts": [
+    {
+      "slot": "head",
+      "label": "頭",
+      "canvas": {
+        "width": 512,
+        "height": 512
+      },
+      "bones": [
+        {
+          "key": "head",
+          "name": "頭"
+        }
+      ],
+      "controlPoints": [
+        {
+          "u": 0.5,
+          "v": 0.88,
+          "t": 0,
+          "type": "anchor"
+        }
+      ]
+    },
+    {
+      "slot": "torso",
+      "label": "胴体",
+      "canvas": {
+        "width": 512,
+        "height": 1024
+      },
+      "bones": [
+        {
+          "key": "waist",
+          "name": "腰"
+        },
+        {
+          "key": "chest",
+          "name": "胸"
+        },
+        {
+          "key": "neck",
+          "name": "首"
+        }
+      ],
+      "controlPoints": [
+        {
+          "u": 0.5,
+          "v": 0.06,
+          "t": 0,
+          "leftWidth": 0.44,
+          "rightWidth": 0.44
+        },
+        {
+          "u": 0.5,
+          "v": 0.35333333333333333,
+          "t": 0.3333333333333333,
+          "leftWidth": 0.44,
+          "rightWidth": 0.44
+        },
+        {
+          "u": 0.5,
+          "v": 0.6466666666666667,
+          "t": 0.6666666666666666,
+          "leftWidth": 0.44,
+          "rightWidth": 0.44
+        },
+        {
+          "u": 0.5,
+          "v": 0.94,
+          "t": 1,
+          "leftWidth": 0.44,
+          "rightWidth": 0.44
+        }
+      ]
+    },
+    {
+      "slot": "right_arm",
+      "label": "右腕",
+      "canvas": {
+        "width": 512,
+        "height": 1024
+      },
+      "bones": [
+        {
+          "key": "armRU",
+          "name": "右上腕"
+        },
+        {
+          "key": "armRL",
+          "name": "右前腕"
+        },
+        {
+          "key": "handR",
+          "name": "右手"
+        }
+      ],
+      "controlPoints": [
+        {
+          "u": 0.5,
+          "v": 0.06,
+          "t": 0,
+          "leftWidth": 0.44,
+          "rightWidth": 0.44
+        },
+        {
+          "u": 0.5,
+          "v": 0.35333333333333333,
+          "t": 0.3333333333333333,
+          "leftWidth": 0.44,
+          "rightWidth": 0.44
+        },
+        {
+          "u": 0.5,
+          "v": 0.6466666666666667,
+          "t": 0.6666666666666666,
+          "leftWidth": 0.44,
+          "rightWidth": 0.44
+        },
+        {
+          "u": 0.5,
+          "v": 0.94,
+          "t": 1,
+          "leftWidth": 0.44,
+          "rightWidth": 0.44
+        }
+      ]
+    },
+    {
+      "slot": "left_arm",
+      "label": "左腕",
+      "canvas": {
+        "width": 512,
+        "height": 1024
+      },
+      "bones": [
+        {
+          "key": "armLU",
+          "name": "左上腕"
+        },
+        {
+          "key": "armLL",
+          "name": "左前腕"
+        },
+        {
+          "key": "handL",
+          "name": "左手"
+        }
+      ],
+      "controlPoints": [
+        {
+          "u": 0.5,
+          "v": 0.06,
+          "t": 0,
+          "leftWidth": 0.44,
+          "rightWidth": 0.44
+        },
+        {
+          "u": 0.5,
+          "v": 0.35333333333333333,
+          "t": 0.3333333333333333,
+          "leftWidth": 0.44,
+          "rightWidth": 0.44
+        },
+        {
+          "u": 0.5,
+          "v": 0.6466666666666667,
+          "t": 0.6666666666666666,
+          "leftWidth": 0.44,
+          "rightWidth": 0.44
+        },
+        {
+          "u": 0.5,
+          "v": 0.94,
+          "t": 1,
+          "leftWidth": 0.44,
+          "rightWidth": 0.44
+        }
+      ]
+    },
+    {
+      "slot": "right_leg",
+      "label": "右脚",
+      "canvas": {
+        "width": 512,
+        "height": 1024
+      },
+      "bones": [
+        {
+          "key": "legRU",
+          "name": "右太腿"
+        },
+        {
+          "key": "legRL",
+          "name": "右すね"
+        },
+        {
+          "key": "footR",
+          "name": "右足"
+        }
+      ],
+      "controlPoints": [
+        {
+          "u": 0.5,
+          "v": 0.06,
+          "t": 0,
+          "leftWidth": 0.44,
+          "rightWidth": 0.44
+        },
+        {
+          "u": 0.5,
+          "v": 0.35333333333333333,
+          "t": 0.3333333333333333,
+          "leftWidth": 0.44,
+          "rightWidth": 0.44
+        },
+        {
+          "u": 0.5,
+          "v": 0.6466666666666667,
+          "t": 0.6666666666666666,
+          "leftWidth": 0.44,
+          "rightWidth": 0.44
+        },
+        {
+          "u": 0.5,
+          "v": 0.94,
+          "t": 1,
+          "leftWidth": 0.44,
+          "rightWidth": 0.44
+        }
+      ]
+    },
+    {
+      "slot": "left_leg",
+      "label": "左脚",
+      "canvas": {
+        "width": 512,
+        "height": 1024
+      },
+      "bones": [
+        {
+          "key": "legLU",
+          "name": "左太腿"
+        },
+        {
+          "key": "legLL",
+          "name": "左すね"
+        },
+        {
+          "key": "footL",
+          "name": "左足"
+        }
+      ],
+      "controlPoints": [
+        {
+          "u": 0.5,
+          "v": 0.06,
+          "t": 0,
+          "leftWidth": 0.44,
+          "rightWidth": 0.44
+        },
+        {
+          "u": 0.5,
+          "v": 0.35333333333333333,
+          "t": 0.3333333333333333,
+          "leftWidth": 0.44,
+          "rightWidth": 0.44
+        },
+        {
+          "u": 0.5,
+          "v": 0.6466666666666667,
+          "t": 0.6666666666666666,
+          "leftWidth": 0.44,
+          "rightWidth": 0.44
+        },
+        {
+          "u": 0.5,
+          "v": 0.94,
+          "t": 1,
+          "leftWidth": 0.44,
+          "rightWidth": 0.44
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "backgroundSets": [
+    { "terrainType": "grassland", "far": "exterior_grassland_far", "mid": "exterior_grassland_mid", "foreground": "exterior_grassland_foreground", "status": "planned" },
+    { "terrainType": "forest", "far": "exterior_forest_far", "mid": "exterior_forest_mid", "foreground": "exterior_forest_foreground", "status": "planned" },
+    { "terrainType": "wetland", "far": "exterior_wetland_far", "mid": "exterior_wetland_mid", "foreground": "exterior_wetland_foreground", "status": "planned" },
+    { "terrainType": "coast", "far": "exterior_coast_far", "mid": "exterior_coast_mid", "foreground": "exterior_coast_foreground", "status": "planned" },
+    { "terrainType": "desert", "far": "exterior_desert_far", "mid": "exterior_desert_mid", "foreground": "exterior_desert_foreground", "status": "planned" },
+    { "terrainType": "snowfield", "far": "exterior_snowfield_far", "mid": "exterior_snowfield_mid", "foreground": "exterior_snowfield_foreground", "status": "planned" },
+    { "terrainType": "mountain", "far": "exterior_mountain_far", "mid": "exterior_mountain_mid", "foreground": "exterior_mountain_foreground", "status": "planned" },
+    { "terrainType": "canyon", "far": "exterior_canyon_far", "mid": "exterior_canyon_mid", "foreground": "exterior_canyon_foreground", "status": "planned" },
+    { "terrainType": "cave", "far": "exterior_cave_far", "mid": "exterior_cave_mid", "foreground": "exterior_cave_foreground", "status": "planned" },
+    { "terrainType": "underground_cave", "far": "exterior_underground_cave_far", "mid": "exterior_underground_cave_mid", "foreground": "exterior_underground_cave_foreground", "status": "planned" },
+    { "terrainType": "volcanic", "far": "exterior_volcanic_far", "mid": "exterior_volcanic_mid", "foreground": "exterior_volcanic_foreground", "status": "planned" },
+    { "terrainType": "ruins", "far": "exterior_ruins_far", "mid": "exterior_ruins_mid", "foreground": "exterior_ruins_foreground", "status": "planned" }
+  ],
+  "tileSets": [
+    { "terrainType": "grassland", "groundTop": "tile_grassland_ground_top_01", "groundFill": "tile_grassland_ground_fill_01", "platform": "tile_grassland_platform_01", "status": "planned" },
+    { "terrainType": "forest", "groundTop": "tile_forest_ground_top_01", "groundFill": "tile_forest_ground_fill_01", "platform": "tile_forest_platform_01", "status": "planned" },
+    { "terrainType": "wetland", "groundTop": "tile_wetland_ground_top_01", "groundFill": "tile_wetland_ground_fill_01", "platform": "tile_wetland_platform_01", "status": "planned" },
+    { "terrainType": "coast", "groundTop": "tile_coast_ground_top_01", "groundFill": "tile_coast_ground_fill_01", "platform": "tile_coast_platform_01", "status": "planned" },
+    { "terrainType": "desert", "groundTop": "tile_desert_ground_top_01", "groundFill": "tile_desert_ground_fill_01", "platform": "tile_desert_platform_01", "status": "planned" },
+    { "terrainType": "snowfield", "groundTop": "tile_snowfield_ground_top_01", "groundFill": "tile_snowfield_ground_fill_01", "platform": "tile_snowfield_platform_01", "status": "planned" },
+    { "terrainType": "mountain", "groundTop": "tile_mountain_ground_top_01", "groundFill": "tile_mountain_ground_fill_01", "platform": "tile_mountain_platform_01", "status": "planned" },
+    { "terrainType": "canyon", "groundTop": "tile_canyon_ground_top_01", "groundFill": "tile_canyon_ground_fill_01", "platform": "tile_canyon_platform_01", "status": "planned" },
+    { "terrainType": "cave", "groundTop": "tile_cave_ground_top_01", "groundFill": "tile_cave_ground_fill_01", "platform": "tile_cave_platform_01", "status": "planned" },
+    { "terrainType": "underground_cave", "groundTop": "tile_underground_cave_ground_top_01", "groundFill": "tile_underground_cave_ground_fill_01", "platform": "tile_underground_cave_platform_01", "status": "planned" },
+    { "terrainType": "volcanic", "groundTop": "tile_volcanic_ground_top_01", "groundFill": "tile_volcanic_ground_fill_01", "platform": "tile_volcanic_platform_01", "status": "planned" },
+    { "terrainType": "ruins", "groundTop": "tile_ruins_ground_top_01", "groundFill": "tile_ruins_ground_fill_01", "platform": "tile_ruins_platform_01", "status": "planned" }
+  ],
+  "placementTypes": [
+    { "id": "npc", "name": "NPC", "defaultAssetId": "placeholder_npc" },
+    { "id": "enemy", "name": "敵", "defaultAssetId": "placeholder_enemy" },
+    { "id": "boss", "name": "ボス", "defaultAssetId": "placeholder_boss" },
+    { "id": "treasure", "name": "宝箱", "defaultAssetId": "placeholder_treasure" },
+    { "id": "gathering", "name": "採取地点", "defaultAssetId": "placeholder_gathering" },
+    { "id": "save_point", "name": "セーブポイント", "defaultAssetId": "placeholder_save_point" },
+    { "id": "event", "name": "イベント地点", "defaultAssetId": "placeholder_event" },
+    { "id": "landmark", "name": "ランドマーク", "defaultAssetId": "placeholder_landmark" },
+    { "id": "hazard", "name": "地形ダメージ区域", "defaultAssetId": "placeholder_hazard" }
+  ],
+  "environmentEffects": [
+    { "id": "leaves", "name": "木の葉" },
+    { "id": "mist", "name": "霧" },
+    { "id": "rain", "name": "雨" },
+    { "id": "sea_spray", "name": "波しぶき" },
+    { "id": "dust", "name": "砂塵" },
+    { "id": "snow", "name": "雪" },
+    { "id": "wind", "name": "強風" },
+    { "id": "cave_dust", "name": "洞窟の塵" },
+    { "id": "glow_spores", "name": "発光胞子" },
+    { "id": "ash", "name": "火山灰" },
+    { "id": "embers", "name": "火の粉" },
+    { "id": "magic_motes", "name": "魔力粒子" }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "editor": {
+    "terrain": {
+      "id": "stairs_1",
+      "type": "stairs",
+      "x": 1952,
+      "width": 320,
+      "startY": 570,
+      "endY": 410
+    },
+    "transports": [
+      {
+        "id": "ladder_1",
+        "type": "ladder",
+        "x": 2112,
+        "topY": 314,
+        "bottomY": 570
+      },
+      {
+        "id": "elevator_2",
+        "type": "elevator",
+        "x": 2272,
+        "topY": 314,
+        "bottomY": 570
+      }
+    ]
+  },
+  "blockedSurface": {
+    "saveStatus": 200,
+    "before": {
+      "x": 180,
+      "y": 570,
+      "spawnId": "entrance_main",
+      "surfaceId": "base_ground",
+      "transportId": null
+    },
+    "after": {
+      "x": 299,
+      "y": 570,
+      "spawnId": "entrance_main",
+      "surfaceId": "base_ground",
+      "transportId": null
+    }
+  },
+  "connectedTraversal": {
+    "saveStatus": 200,
+    "before": {
+      "x": 180,
+      "y": 570,
+      "spawnId": "entrance_main",
+      "surfaceId": "base_ground",
+      "transportId": null
+    },
+    "afterStairs": {
+      "x": 583,
+      "y": 410,
+      "spawnId": "entrance_main",
+      "surfaceId": "middle_floor",
+      "transportId": null
+    },
+    "atLadder": {
+      "x": 624,
+      "y": 410,
+      "spawnId": "entrance_main",
+      "surfaceId": "middle_floor",
+      "transportId": null
+    },
+    "afterLadder": {
+      "x": 624,
+      "y": 250,
+      "spawnId": "entrance_main",
+      "surfaceId": "transport:test_ladder",
+      "transportId": "test_ladder"
+    },
+    "atElevator": {
+      "x": 846,
+      "y": 250,
+      "spawnId": "entrance_main",
+      "surfaceId": "upper_floor",
+      "transportId": null
+    },
+    "afterElevator": {
+      "x": 848,
+      "y": 410,
+      "spawnId": "entrance_main",
+      "surfaceId": "transport:test_elevator",
+      "transportId": "test_elevator"
+    },
+    "elevatorCabTop": "134.259px"
+  },
+  "errors": []
+}

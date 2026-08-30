@@ -1,0 +1,55 @@
+{
+  "editorThresholds": {
+    "maxStepUp": "48",
+    "maxStepDown": "72"
+  },
+  "thresholds": {
+    "maxStepUp": 48,
+    "maxStepDown": 72
+  },
+  "smallStep": {
+    "saveStatus": 200,
+    "before": {
+      "x": 180,
+      "y": 570,
+      "spawnId": "entrance_main",
+      "surfaceId": "base_ground",
+      "transportId": null
+    },
+    "onStep": {
+      "x": 335,
+      "y": 530,
+      "spawnId": "entrance_main",
+      "surfaceId": "small_step_40",
+      "transportId": null
+    },
+    "afterStep": {
+      "x": 588,
+      "y": 570,
+      "spawnId": "entrance_main",
+      "surfaceId": "base_ground",
+      "transportId": null
+    }
+  },
+  "largeStep": {
+    "saveStatus": 200,
+    "after": {
+      "x": 299,
+      "y": 570,
+      "spawnId": "entrance_main",
+      "surfaceId": "base_ground",
+      "transportId": null
+    }
+  },
+  "largeDrop": {
+    "saveStatus": 200,
+    "after": {
+      "x": 599,
+      "y": 490,
+      "spawnId": "entrance_main",
+      "surfaceId": "high_floor_before_drop",
+      "transportId": null
+    }
+  },
+  "errors": []
+}

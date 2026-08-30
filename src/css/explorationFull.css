@@ -1,0 +1,74 @@
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #020405;
+}
+
+html {
+  color: #d8fbff;
+  font-family: "Consolas", "Courier New", monospace;
+}
+
+html,
+body,
+#scalable-root {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  overscroll-behavior: none;
+}
+
+#scalable-root {
+  display: flex;
+  width: 100vw !important;
+  height: 100vh !important;
+  box-sizing: border-box;
+  align-items: stretch !important;
+  justify-content: stretch !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  background: #020405;
+  transform: none !important;
+}
+
+.fantasy-scrollbar {
+  scrollbar-color: #c99445 #241508;
+  scrollbar-width: thin;
+}
+
+.fantasy-scrollbar::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+.fantasy-scrollbar::-webkit-scrollbar-track {
+  border: 1px solid #6f4b24;
+  border-radius: 2px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 220, 145, 0.035) 0 5px, transparent 6px 11px),
+    #241508;
+  box-shadow: inset 0 0 4px rgba(5, 2, 1, 0.72);
+}
+
+.fantasy-scrollbar::-webkit-scrollbar-thumb {
+  border: 2px solid #2a190b;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #efd28e 0%, #bd853d 45%, #775025 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 238, 190, 0.28),
+    0 0 4px rgba(8, 3, 1, 0.7);
+}
+
+.fantasy-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ffe7a6 0%, #d79b4c 48%, #8f612d 100%);
+}
+
+.fantasy-scrollbar::-webkit-scrollbar-corner {
+  background: #241508;
+}

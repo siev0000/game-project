@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "flags": [
+    {
+      "id": "transport_route_open",
+      "label": "輸送経路が復旧済み",
+      "scope": "story",
+      "defaultValue": false
+    },
+    {
+      "id": "emergency_door_repaired",
+      "label": "非常扉が修理済み",
+      "scope": "story",
+      "defaultValue": false
+    },
+    {
+      "id": "rescue_event_complete",
+      "label": "居住区の救助イベント完了",
+      "scope": "story",
+      "defaultValue": false
+    }
+  ]
+}

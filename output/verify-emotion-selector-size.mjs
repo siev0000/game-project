@@ -1,0 +1,22 @@
+import { chromium } from 'file:///C:/Users/skkt3/.codex/skills/develop-web-game/node_modules/playwright/index.mjs'
+
+const browser = await chromium.launch({ headless: true })
+const page = await browser.newPage({ viewport: { width: 1040, height: 1051 } })
+const errors = []
+page.on('console', message => { if (message.type() === 'error') errors.push(message.text()) })
+page.on('pageerror', error => errors.push(String(error)))
+await page.goto('http://192.168.0.209:5173/character-library', { waitUntil: 'networkidle' })
+await page.locator('.character-card').first().click()
+await page.getByRole('button', { name: '表情・顔画像' }).click()
+const cropFrame = page.locator('.portrait-crop-frame')
+const box = await cropFrame.boundingBox()
+const labels = await page.locator('.emotion-selector button strong').allTextContents()
+if (!box || Math.round(box.width) !== 260 || Math.round(box.height) !== 284) throw new Error(`顔枠サイズが不正です: ${JSON.stringify(box)}`)
+if (labels.length !== 9) throw new Error(`表情項目数が不正です: ${labels.length}`)
+if (!await cropFrame.locator('img').count()) throw new Error('顔画像未設定時に基本設定の通常画像が代用されていません')
+const defaultY = Number(await page.getByLabel('Y位置').inputValue())
+const defaultScale = Number(await page.getByLabel('拡大率').inputValue())
+if (defaultY !== 150 || defaultScale !== 2) throw new Error(`顔表示の初期値が不正です: Y=${defaultY}, scale=${defaultScale}`)
+await page.screenshot({ path: 'output/character-face-crop-default-1040x1051.png', fullPage: false })
+console.log(JSON.stringify({ cropFrame: box, labels, normalImageFallback: true, defaultY, defaultScale, errors, state: await page.evaluate(() => window.render_game_to_text?.()) }, null, 2))
+await browser.close()

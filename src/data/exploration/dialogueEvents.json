@@ -1,0 +1,815 @@
+{
+  "version": 1,
+  "events": [
+    {
+      "id": "dialogue_demo_01",
+      "name": "会話イベント例",
+      "status": "draft",
+      "memo": "追加した発言が上から順番に再生されます。",
+      "entries": [
+        {
+          "id": "line_002",
+          "speakerId": "placeholder_player",
+          "speakerName": "仮プレイヤー",
+          "type": "3",
+          "emotion": "default",
+          "message": "はい。状況を確認してきます。",
+          "displayMode": "portrait",
+          "portraitEffect": "none"
+        },
+        {
+          "id": "line_001",
+          "speakerId": "npc_2",
+          "speakerName": "Type2",
+          "type": "2",
+          "emotion": "default",
+          "message": "中央環状路へ向かうのですか？",
+          "displayMode": "plain",
+          "portraitEffect": "none"
+        },
+        {
+          "id": "line_003",
+          "speakerId": "placeholder_player",
+          "speakerName": "仮プレイヤー",
+          "type": "3",
+          "emotion": "default",
+          "displayMode": "portrait",
+          "portraitEffect": "noise",
+          "message": "trdasaaaaaaaaaa\naa\nd\nad\na\nda\nda\nsd\na"
+        },
+        {
+          "id": "line_004",
+          "speakerId": "placeholder_player",
+          "speakerName": "仮プレイヤー",
+          "type": "3",
+          "emotion": "default",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "f"
+        }
+      ]
+    },
+    {
+      "id": "prologue_training_briefing",
+      "name": "プロローグ01：最終訓練・開始",
+      "status": "draft",
+      "memo": "上層・戦闘訓練区画。戦闘チュートリアル開始前に自動再生。",
+      "entries": [
+        {
+          "id": "line_001",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "default",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "主人公機の自己診断データを受信しました。右腕部、左腕部、脚部駆動、すべて正常。訓練設備からも、外付け武装との同期完了が報告されています"
+        },
+        {
+          "id": "line_002",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "default",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "確認しました。本機の稼働状態に異常はありません"
+        },
+        {
+          "id": "line_003",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "joy",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "いよいよ最終試験ですね。初期調整から見てきた私としては、感慨深いものがあります"
+        },
+        {
+          "id": "line_004",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "confusion",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "感情反応を確認しました。試験結果への影響はありますか"
+        },
+        {
+          "id": "line_005",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "default",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "ありません。ですが、成功してほしいとは思っています"
+        },
+        {
+          "id": "line_006",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "serious",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "要求を受領しました。試験内容の提示を要求します"
+        },
+        {
+          "id": "line_007",
+          "speakerId": "npc_2",
+          "speakerName": "第二世代訓練機・指揮",
+          "type": "2",
+          "emotion": "default",
+          "displayMode": "plain",
+          "portraitEffect": "none",
+          "message": "指揮、接続した"
+        },
+        {
+          "id": "line_008",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "serious",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "試験内容を通達します。第二世代訓練機六機の戦闘機能を停止させてください"
+        },
+        {
+          "id": "line_009",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "serious",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "訓練機はすべて正常な味方個体です。致命的損傷は禁止。外装や武装の損傷も、可能な限り抑えてください"
+        },
+        {
+          "id": "line_010",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "serious",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "制限事項を確認しました。制圧工程を開始します"
+        }
+      ]
+    },
+    {
+      "id": "prologue_training_complete",
+      "name": "プロローグ02：最終訓練・完了",
+      "status": "draft",
+      "memo": "訓練戦勝利後に自動再生。",
+      "entries": [
+        {
+          "id": "line_001",
+          "speakerId": "npc_2",
+          "speakerName": "第二世代訓練機・指揮",
+          "type": "2",
+          "emotion": "default",
+          "displayMode": "plain",
+          "portraitEffect": "none",
+          "message": "駆動、停止した。敗北、確認した"
+        },
+        {
+          "id": "line_002",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "default",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "全対象の戦闘機能停止を確認しました。試験終了を申請します"
+        },
+        {
+          "id": "line_003",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "joy",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "各機の自己診断と訓練設備の記録を集計しました。六対一で勝利。主人公機の損傷は軽微。訓練機側にも致命的損傷はありません"
+        },
+        {
+          "id": "line_004",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "joy",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "やはり本機の予測どおり、あなたは非常に優秀ですね"
+        },
+        {
+          "id": "line_005",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "confusion",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "評価を受領しました。ただし、試験を実行したのは本機です"
+        },
+        {
+          "id": "line_006",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "fun",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "細部は重要ではありません。私が最初から成功すると信じていたことが重要なのです"
+        },
+        {
+          "id": "line_007",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "serious",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "本機は、複数任務への対応を前提として製造されています。今回の結果は、事前に選定された装備構成が正常に機能したものです"
+        },
+        {
+          "id": "line_008",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "default",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "装備を選び、状況を判断し、六機を停止させたのはあなたでしょう。正式稼働後は、上層の高危険度任務へ配備される予定です"
+        },
+        {
+          "id": "line_009",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "default",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "任務情報の受領を待機します"
+        },
+        {
+          "id": "line_010",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "serious",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "ええ。あなたは、あらゆる問題を解決するために作られた第三世代機です"
+        }
+      ]
+    },
+    {
+      "id": "prologue_iron_ore_briefing",
+      "name": "プロローグ03：鉄鉱床・任務開始",
+      "status": "draft",
+      "memo": "鉄鉱床の確保任務。群体戦チュートリアル開始前。",
+      "entries": [
+        {
+          "id": "line_001",
+          "speakerId": "npc_2",
+          "speakerName": "第二世代・測量機B",
+          "type": "2",
+          "emotion": "default",
+          "displayMode": "plain",
+          "portraitEffect": "none",
+          "message": "群体反応、確認した。個体数、予測範囲"
+        },
+        {
+          "id": "line_002",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "default",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "測量機から観測データを受信しました。鉄喰い蟻の群れで間違いありません"
+        },
+        {
+          "id": "line_003",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "serious",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "情報を受領しました。現在の装備構成で対処可能です。採掘班は規定位置で待機してください"
+        },
+        {
+          "id": "line_004",
+          "speakerId": "npc_2",
+          "speakerName": "第二世代・測量機A",
+          "type": "2",
+          "emotion": "default",
+          "displayMode": "plain",
+          "portraitEffect": "none",
+          "message": "命令、了解した。待機する"
+        },
+        {
+          "id": "line_005",
+          "speakerId": "npc_2",
+          "speakerName": "第二世代・採掘機",
+          "type": "2",
+          "emotion": "default",
+          "displayMode": "plain",
+          "portraitEffect": "none",
+          "message": "作業、停止した"
+        }
+      ]
+    },
+    {
+      "id": "prologue_iron_ore_anomaly",
+      "name": "プロローグ04：鉄鉱床・未登録反応",
+      "status": "draft",
+      "memo": "巡回後、上方から大型飛行虫が侵入した時に自動再生。",
+      "entries": [
+        {
+          "id": "line_001",
+          "speakerId": "npc_2",
+          "speakerName": "第二世代・測量機B",
+          "type": "2",
+          "emotion": "surprise",
+          "displayMode": "plain",
+          "portraitEffect": "none",
+          "message": "上方、未登録反応。三。高速接近している"
+        },
+        {
+          "id": "line_002",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "surprise",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "測量機Bから未登録反応の報告を受信しました。全機へ転送します。上方を警戒してください！"
+        },
+        {
+          "id": "line_003",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "tense",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "測量機の観測値を事前データと照合しました。一致する対象はありません。大型飛行個体、三体です！"
+        },
+        {
+          "id": "line_004",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "serious",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "測量機の観測データを本機へ転送してください。対処手順を算出します。採掘班は作業を停止し、輸送地点へ退避してください"
+        },
+        {
+          "id": "line_005",
+          "speakerId": "npc_2",
+          "speakerName": "第二世代・測量機B",
+          "type": "2",
+          "emotion": "tense",
+          "displayMode": "plain",
+          "portraitEffect": "none",
+          "message": "表面温度、上昇。行動速度、低下なし"
+        },
+        {
+          "id": "line_006",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "serious",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "観測情報を受領しました。熱属性への高耐性があります。現装備では追従性能も不足しています"
+        }
+      ]
+    },
+    {
+      "id": "prologue_iron_ore_emergency",
+      "name": "プロローグ05：鉄鉱床・設備転用",
+      "status": "draft",
+      "memo": "強制被害演出後。クレーン・照明ギミック開始前に自動再生。",
+      "entries": [
+        {
+          "id": "line_001",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "tense",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "設備監視装置と各機の自己診断を受信しました。採掘設備一基が停止、第二世代二機が重大損傷です！"
+        },
+        {
+          "id": "line_002",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "serious",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "損傷個体を遮蔽物の後方へ移動させます。クレーンと採掘照明の操作権限を要求します"
+        },
+        {
+          "id": "line_003",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "surprise",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "現地設備を戦闘へ転用するつもりですか？"
+        },
+        {
+          "id": "line_004",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "serious",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "飛行経路を制限し、地上へ誘導します"
+        },
+        {
+          "id": "line_005",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "tense",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "クレーンを損傷させた場合、回収作業へ影響が出ます"
+        },
+        {
+          "id": "line_006",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "default",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "損傷を抑えます。現在、完全な保証は不可能です"
+        },
+        {
+          "id": "line_007",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "tense",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "……了解しました。設備操作権限を接続します。必ず戻ってきてください"
+        },
+        {
+          "id": "line_008",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "default",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "要求を受領しました"
+        }
+      ]
+    },
+    {
+      "id": "prologue_iron_ore_aftermath",
+      "name": "プロローグ06：鉄鉱床・戦闘後",
+      "status": "draft",
+      "memo": "大型飛行虫戦の勝利後に自動再生。",
+      "entries": [
+        {
+          "id": "line_001",
+          "speakerId": "npc_2",
+          "speakerName": "第二世代・測量機A",
+          "type": "2",
+          "emotion": "tense",
+          "displayMode": "plain",
+          "portraitEffect": "none",
+          "message": "損傷、重大。移動、不能"
+        },
+        {
+          "id": "line_002",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "serious",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "本機が回収します。稼働を停止せず、現在状態を維持してください"
+        },
+        {
+          "id": "line_003",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "sorrow",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "任務目標は達成されました。ですが、受信した記録では採掘設備一基が停止し、同行個体二機が重大損傷を受けています"
+        },
+        {
+          "id": "line_004",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "default",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "修復可能性を提示してください"
+        },
+        {
+          "id": "line_005",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "sorrow",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "現在のデータでは判定できません。……修復可能だと回答したいです"
+        },
+        {
+          "id": "line_006",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "confusion",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "希望は判定結果に影響しません"
+        },
+        {
+          "id": "line_007",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "sorrow",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "分かっています。それでも、希望することまで停止する必要はないでしょう"
+        }
+      ]
+    },
+    {
+      "id": "prologue_generation4_meeting",
+      "name": "プロローグ07：第四世代との初対面",
+      "status": "draft",
+      "memo": "上層・整備区画。第四世代へ戦闘工程を移管する通知。",
+      "entries": [
+        {
+          "id": "line_001",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "tense",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "共同管理から配備更新が届いています。今後、高危険度任務における戦闘工程は、第四世代機へ段階的に移管されます"
+        },
+        {
+          "id": "line_002",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "confusion",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "本機の任務処理能力に異常が検出されましたか"
+        },
+        {
+          "id": "line_003",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "sorrow",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "いいえ。あなたの性能は現在も基準値を上回っています。想定外の対象にも、あなたはすべて対処しています"
+        },
+        {
+          "id": "line_004",
+          "speakerId": "npc_4",
+          "speakerName": "第四世代マギテック",
+          "type": "4",
+          "emotion": "serious",
+          "displayMode": "plain",
+          "portraitEffect": "none",
+          "message": "本機からご説明いたします。テメェが最適な装備と戦術を構築するまでに、周辺へ被害が発生しているためです"
+        },
+        {
+          "id": "line_005",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "anger",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "初対面でその呼称は不適切です"
+        },
+        {
+          "id": "line_006",
+          "speakerId": "npc_4",
+          "speakerName": "第四世代マギテック",
+          "type": "4",
+          "emotion": "default",
+          "displayMode": "plain",
+          "portraitEffect": "none",
+          "message": "失礼いたしました。ですが、内容に誤りはありません"
+        },
+        {
+          "id": "line_007",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "serious",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "次回は、確認された敵性個体へ対応した装備構成を選択できます"
+        },
+        {
+          "id": "line_008",
+          "speakerId": "npc_4",
+          "speakerName": "第四世代マギテック",
+          "type": "4",
+          "emotion": "serious",
+          "displayMode": "plain",
+          "portraitEffect": "none",
+          "message": "次回まで待つ必要をなくすため、本機が製造されました。本機は戦闘中に攻撃属性と防御方式を変更できます"
+        },
+        {
+          "id": "line_009",
+          "speakerId": "npc_4",
+          "speakerName": "第四世代マギテック",
+          "type": "4",
+          "emotion": "default",
+          "displayMode": "plain",
+          "portraitEffect": "none",
+          "message": "調査、設備操作、救助、長期任務では、テメェの方が適しています。そのため、戦闘工程のみを引き継ぎます"
+        },
+        {
+          "id": "line_010",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "sorrow",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "主人公機が不要になったわけではありません"
+        },
+        {
+          "id": "line_011",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "sorrow",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "共同管理の判断を確認しました。……配備更新を受領します"
+        }
+      ]
+    },
+    {
+      "id": "prologue_reassignment",
+      "name": "プロローグ08：中層への配置変更",
+      "status": "draft",
+      "memo": "時間経過演出の後。中層・自然管理区画への異動通知。",
+      "entries": [
+        {
+          "id": "line_001",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "tense",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "新しい配置命令です。中層の自然管理区画へ移動してください"
+        },
+        {
+          "id": "line_002",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "confusion",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "配置理由を確認します"
+        },
+        {
+          "id": "line_003",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "default",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "第三世代の汎用性能を、船内環境の維持へ使用するためです"
+        },
+        {
+          "id": "line_004",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "serious",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "高危険度任務への再配備予定はありますか"
+        },
+        {
+          "id": "line_005",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "sorrow",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "現在、該当する予定は登録されていません"
+        },
+        {
+          "id": "line_006",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "default",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "了解しました。配置変更命令を受領します"
+        },
+        {
+          "id": "line_007",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "sorrow",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "……いいえ。中層でも、私が任務支援を継続します"
+        },
+        {
+          "id": "line_008",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "default",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "確認しました"
+        }
+      ]
+    },
+    {
+      "id": "main_natural_management_opening",
+      "name": "本編開始：自然管理区画の作業依頼",
+      "status": "draft",
+      "memo": "中層・自然管理区画。プレイヤー操作開始前に自動再生。",
+      "entries": [
+        {
+          "id": "line_001",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "default",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "自然管理区画から作業申請を受信しました。現地管理機の報告では、異常成長した蔓が灌水設備へ侵入しています"
+        },
+        {
+          "id": "line_002",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "serious",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "対象植物を確認しました。除去工程を開始します"
+        },
+        {
+          "id": "line_003",
+          "speakerId": "npc_6",
+          "speakerName": "支援電子AI",
+          "type": "3.5",
+          "emotion": "serious",
+          "displayMode": "portrait",
+          "portraitEffect": "monitor",
+          "message": "現地管理機の添付データでは、根元から切断すると配管を損傷する可能性があります。先に固定部分を調査してください"
+        },
+        {
+          "id": "line_004",
+          "speakerId": "placeholder_player",
+          "speakerName": "主人公",
+          "type": "3",
+          "emotion": "default",
+          "displayMode": "portrait",
+          "portraitEffect": "none",
+          "message": "了解しました。周辺調査へ移行します"
+        }
+      ]
+    }
+  ]
+}

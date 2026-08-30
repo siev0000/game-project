@@ -1,0 +1,17 @@
+:root {
+  --ui-font-size-body: 15px;
+  --ui-font-size-control: 15px;
+  --ui-font-size-secondary: 13px;
+  --ui-font-size-micro: 11px;
+}
+
+body {
+  font-size: var(--ui-font-size-body);
+}
+
+button,
+input,
+select,
+textarea {
+  font-size: var(--ui-font-size-control);
+}

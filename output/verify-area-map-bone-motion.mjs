@@ -1,0 +1,36 @@
+import { chromium } from 'file:///C:/Users/skkt3/.codex/skills/develop-web-game/node_modules/playwright/index.mjs'
+
+const browser = await chromium.launch({ headless: true })
+const page = await browser.newPage({ viewport: { width: 1280, height: 800 } })
+const errors = []
+page.on('console', message => { if (message.type() === 'error') errors.push(message.text()) })
+page.on('pageerror', error => errors.push(String(error)))
+
+await page.goto('http://192.168.0.209:5173/area-map/middle_terminal_concourse', { waitUntil: 'networkidle' })
+const player = page.locator('.player')
+const motion = page.locator('.map-bone-motion')
+await motion.waitFor()
+const playerBox = await player.boundingBox()
+const motionBox = await motion.boundingBox()
+const motionSize = await motion.evaluate(node => ({ width: getComputedStyle(node).width, height: getComputedStyle(node).height }))
+if (!playerBox || !motionBox || Math.abs(motionBox.width - playerBox.width) > .1 || Math.abs(motionBox.height - playerBox.height) > .1 || motionSize.width !== '42px' || motionSize.height !== '66px') throw new Error(`キャラクター表示サイズがモーションへ反映されていません: ${JSON.stringify({ playerBox, motionBox, motionSize })}`)
+await page.waitForFunction(() => typeof document.querySelector('.map-bone-motion iframe')?.contentWindow?.render_game_to_text === 'function')
+await page.waitForTimeout(250)
+const idleState = JSON.parse(await page.evaluate(() => document.querySelector('.map-bone-motion iframe').contentWindow.render_game_to_text()))
+if (idleState.project?.editing !== 'デフォルト') throw new Error(`停止中に待機モーションが使われていません: ${JSON.stringify(idleState.project)}`)
+
+const initialLeft = Number.parseFloat(await player.evaluate(node => node.style.left))
+await page.keyboard.down('ArrowRight')
+await page.waitForTimeout(420)
+if (await player.getAttribute('data-animation') !== 'walk') throw new Error('移動中の状態がwalkへ切り替わっていません')
+await page.waitForFunction(() => JSON.parse(document.querySelector('.map-bone-motion iframe').contentWindow.render_game_to_text()).project.editing === '走る')
+const movingLeft = Number.parseFloat(await player.evaluate(node => node.style.left))
+if (!(movingLeft > initialLeft)) throw new Error(`右移動していません: ${initialLeft} -> ${movingLeft}`)
+const movingState = JSON.parse(await page.evaluate(() => document.querySelector('.map-bone-motion iframe').contentWindow.render_game_to_text()))
+await page.screenshot({ path: 'output/area-map-bone-motion-walk.png', fullPage: false })
+await page.keyboard.up('ArrowRight')
+await page.waitForFunction(() => document.querySelector('.player')?.dataset.animation === 'idle')
+await page.waitForFunction(() => JSON.parse(document.querySelector('.map-bone-motion iframe').contentWindow.render_game_to_text()).project.editing === 'デフォルト')
+
+console.log(JSON.stringify({ playerBox, motionBox, motionSize, initialLeft, movingLeft, idle: idleState.project, moving: movingState.project, errors }))
+await browser.close()

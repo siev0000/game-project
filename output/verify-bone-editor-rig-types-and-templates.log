@@ -1,0 +1,537 @@
+{
+  "initialChoices": {
+    "standard": "＋ 通常2D・横向き17ボーン・横スクロール用",
+    "pixelSide": "＋ ドット2D・横向き15ボーン・横スクロール用",
+    "pixel": "＋ ドット2D・正面15ボーン・左右対称",
+    "front": "＋ 通常2D・正面17ボーン・左右対称"
+  },
+  "pixelSideState": {
+    "mode": "2d-bone-motion-editor",
+    "coordinates": "stage origin is top-left; x increases right, y increases down",
+    "project": {
+      "name": "pixel_side_motion",
+      "rigType": "pixel_simple",
+      "poseType": "side",
+      "frame": 1,
+      "frameCount": 1,
+      "boneCount": 15,
+      "referencePose": "ドット2D・横向き15ボーン",
+      "partGroups": [
+        {
+          "id": "head",
+          "bones": 1,
+          "mode": "rigid"
+        },
+        {
+          "id": "torso",
+          "bones": 2,
+          "mode": "mesh"
+        },
+        {
+          "id": "right_arm",
+          "bones": 3,
+          "mode": "mesh"
+        },
+        {
+          "id": "left_arm",
+          "bones": 3,
+          "mode": "mesh"
+        },
+        {
+          "id": "right_leg",
+          "bones": 3,
+          "mode": "mesh"
+        },
+        {
+          "id": "left_leg",
+          "bones": 3,
+          "mode": "mesh"
+        }
+      ]
+    },
+    "selectedBone": null,
+    "meshEditor": null,
+    "meshBindings": [],
+    "dialogs": {
+      "library": false,
+      "mesh": false,
+      "partReference": false
+    }
+  },
+  "pixelSidePose": {
+    "chestWidth": 84,
+    "headX": 10,
+    "armRAttach": 0.34,
+    "armLAttach": 0.55,
+    "legRU": -5,
+    "legLU": 7,
+    "footRFlip": false,
+    "footLFlip": false
+  },
+  "pixelState": {
+    "mode": "2d-bone-motion-editor",
+    "coordinates": "stage origin is top-left; x increases right, y increases down",
+    "project": {
+      "name": "pixel_motion",
+      "rigType": "pixel_simple",
+      "poseType": "front",
+      "frame": 1,
+      "frameCount": 1,
+      "boneCount": 15,
+      "referencePose": "ドット2D・正面15ボーン",
+      "partGroups": [
+        {
+          "id": "head",
+          "bones": 1,
+          "mode": "rigid"
+        },
+        {
+          "id": "torso",
+          "bones": 2,
+          "mode": "mesh"
+        },
+        {
+          "id": "right_arm",
+          "bones": 3,
+          "mode": "mesh"
+        },
+        {
+          "id": "left_arm",
+          "bones": 3,
+          "mode": "mesh"
+        },
+        {
+          "id": "right_leg",
+          "bones": 3,
+          "mode": "mesh"
+        },
+        {
+          "id": "left_leg",
+          "bones": 3,
+          "mode": "mesh"
+        }
+      ]
+    },
+    "selectedBone": null,
+    "meshEditor": null,
+    "meshBindings": [],
+    "dialogs": {
+      "library": false,
+      "mesh": false,
+      "partReference": false
+    }
+  },
+  "pixelBones": [
+    {
+      "key": "waist",
+      "name": "腰",
+      "parent": null
+    },
+    {
+      "key": "chest",
+      "name": "体",
+      "parent": "waist"
+    },
+    {
+      "key": "head",
+      "name": "頭",
+      "parent": "chest"
+    },
+    {
+      "key": "armRU",
+      "name": "右上腕",
+      "parent": "chest"
+    },
+    {
+      "key": "armRL",
+      "name": "右腕",
+      "parent": "armRU"
+    },
+    {
+      "key": "handR",
+      "name": "右手",
+      "parent": "armRL"
+    },
+    {
+      "key": "armLU",
+      "name": "左上腕",
+      "parent": "chest"
+    },
+    {
+      "key": "armLL",
+      "name": "左腕",
+      "parent": "armLU"
+    },
+    {
+      "key": "handL",
+      "name": "左手",
+      "parent": "armLL"
+    },
+    {
+      "key": "legRU",
+      "name": "右太腿",
+      "parent": "waist"
+    },
+    {
+      "key": "legRL",
+      "name": "右すね",
+      "parent": "legRU"
+    },
+    {
+      "key": "footR",
+      "name": "右足首",
+      "parent": "legRL"
+    },
+    {
+      "key": "legLU",
+      "name": "左太腿",
+      "parent": "waist"
+    },
+    {
+      "key": "legLL",
+      "name": "左すね",
+      "parent": "legLU"
+    },
+    {
+      "key": "footL",
+      "name": "左足首",
+      "parent": "legLL"
+    }
+  ],
+  "pixelReference": {
+    "label": "ドット2D・正面15ボーン",
+    "src": "./part_templates/reference/pixel_simple_modular_reference.png",
+    "width": 1254,
+    "height": 1254,
+    "note": "交換画像は頭・胴体・左右腕・左右脚の6パーツです。内部は体＋腰、上腕＋腕＋手、太腿＋すね＋足首に分け、1画像のまま連続メッシュで曲げます。"
+  },
+  "pixelChain": "右上腕 → 右腕 → 右手",
+  "pixelKit": {
+    "count": 12,
+    "names": [
+      "pixel_simple_head_sample.png",
+      "pixel_simple_head_guide.png",
+      "pixel_simple_torso_sample.png",
+      "pixel_simple_torso_guide.png",
+      "pixel_simple_right_arm_sample.png",
+      "pixel_simple_right_arm_guide.png",
+      "pixel_simple_left_arm_sample.png",
+      "pixel_simple_left_arm_guide.png",
+      "pixel_simple_right_leg_sample.png",
+      "pixel_simple_right_leg_guide.png",
+      "pixel_simple_left_leg_sample.png",
+      "pixel_simple_left_leg_guide.png"
+    ]
+  },
+  "pixelManifest": {
+    "parts": 6,
+    "first": {
+      "slot": "head",
+      "label": "頭",
+      "canvas": {
+        "width": 128,
+        "height": 128
+      },
+      "bones": [
+        {
+          "key": "head",
+          "name": "頭"
+        }
+      ],
+      "controlPoints": [
+        {
+          "u": 0.5,
+          "v": 0.88,
+          "t": 0,
+          "type": "anchor"
+        }
+      ]
+    }
+  },
+  "pixelApplied": {
+    "bindings": 1,
+    "canvases": 1
+  },
+  "sideState": {
+    "mode": "2d-bone-motion-editor",
+    "coordinates": "stage origin is top-left; x increases right, y increases down",
+    "project": {
+      "name": "motion",
+      "rigType": "standard_2d",
+      "poseType": "side",
+      "frame": 1,
+      "frameCount": 1,
+      "boneCount": 17,
+      "referencePose": "通常2D・横向き姿勢",
+      "partGroups": [
+        {
+          "id": "head",
+          "bones": 1,
+          "mode": "rigid"
+        },
+        {
+          "id": "torso",
+          "bones": 4,
+          "mode": "mesh"
+        },
+        {
+          "id": "right_arm",
+          "bones": 3,
+          "mode": "mesh"
+        },
+        {
+          "id": "left_arm",
+          "bones": 3,
+          "mode": "mesh"
+        },
+        {
+          "id": "right_leg",
+          "bones": 3,
+          "mode": "mesh"
+        },
+        {
+          "id": "left_leg",
+          "bones": 3,
+          "mode": "mesh"
+        }
+      ]
+    },
+    "selectedBone": null,
+    "meshEditor": null,
+    "meshBindings": [],
+    "dialogs": {
+      "library": false,
+      "mesh": false,
+      "partReference": false
+    }
+  },
+  "sidePose": {
+    "chestWidth": 132,
+    "armRAttach": 0.18,
+    "armLAttach": 0.82,
+    "armRU": 7,
+    "armLU": -12
+  },
+  "standardState": {
+    "mode": "2d-bone-motion-editor",
+    "coordinates": "stage origin is top-left; x increases right, y increases down",
+    "project": {
+      "name": "motion",
+      "rigType": "standard_2d",
+      "poseType": "front",
+      "frame": 1,
+      "frameCount": 1,
+      "boneCount": 17,
+      "referencePose": "通常2D・正面姿勢",
+      "partGroups": [
+        {
+          "id": "head",
+          "bones": 1,
+          "mode": "rigid"
+        },
+        {
+          "id": "torso",
+          "bones": 4,
+          "mode": "mesh"
+        },
+        {
+          "id": "right_arm",
+          "bones": 3,
+          "mode": "mesh"
+        },
+        {
+          "id": "left_arm",
+          "bones": 3,
+          "mode": "mesh"
+        },
+        {
+          "id": "right_leg",
+          "bones": 3,
+          "mode": "mesh"
+        },
+        {
+          "id": "left_leg",
+          "bones": 3,
+          "mode": "mesh"
+        }
+      ]
+    },
+    "selectedBone": null,
+    "meshEditor": null,
+    "meshBindings": [],
+    "dialogs": {
+      "library": false,
+      "mesh": false,
+      "partReference": false
+    }
+  },
+  "standardFrontPose": {
+    "chestWidth": 178,
+    "armRAttach": 0.08,
+    "armLAttach": 0.92,
+    "armRU": 8,
+    "armLU": -8,
+    "legRU": 3,
+    "legLU": -3,
+    "footR": {
+      "ox": 0.82,
+      "tailX": 0.08,
+      "flip": true
+    },
+    "footL": {
+      "ox": 0.18,
+      "tailX": 0.92,
+      "flip": false
+    },
+    "partGroups": {
+      "head": {
+        "id": "head",
+        "name": "頭",
+        "slot": "head",
+        "boneIds": [
+          "layer_suwexxy7"
+        ],
+        "boneKeys": [
+          "head"
+        ],
+        "renderMode": "rigid"
+      },
+      "torso": {
+        "id": "torso",
+        "name": "胴体",
+        "slot": "torso",
+        "boneIds": [
+          "layer_lakk875t",
+          "layer_23j62d6r",
+          "layer_nta6948f",
+          "layer_q5dbr9rf"
+        ],
+        "boneKeys": [
+          "waist",
+          "abdomen",
+          "chest",
+          "neck"
+        ],
+        "renderMode": "mesh"
+      },
+      "right_arm": {
+        "id": "right_arm",
+        "name": "右腕",
+        "slot": "right_arm",
+        "boneIds": [
+          "layer_zlw1uc26",
+          "layer_vo5mgmz7",
+          "layer_ooco4evu"
+        ],
+        "boneKeys": [
+          "armRU",
+          "armRL",
+          "handR"
+        ],
+        "renderMode": "mesh"
+      },
+      "left_arm": {
+        "id": "left_arm",
+        "name": "左腕",
+        "slot": "left_arm",
+        "boneIds": [
+          "layer_1er6fyfw",
+          "layer_zbm5oiku",
+          "layer_2jj8z33q"
+        ],
+        "boneKeys": [
+          "armLU",
+          "armLL",
+          "handL"
+        ],
+        "renderMode": "mesh"
+      },
+      "right_leg": {
+        "id": "right_leg",
+        "name": "右脚",
+        "slot": "right_leg",
+        "boneIds": [
+          "layer_ty2rwk3b",
+          "layer_p78agmbf",
+          "layer_zpkavbm6"
+        ],
+        "boneKeys": [
+          "legRU",
+          "legRL",
+          "footR"
+        ],
+        "renderMode": "mesh"
+      },
+      "left_leg": {
+        "id": "left_leg",
+        "name": "左脚",
+        "slot": "left_leg",
+        "boneIds": [
+          "layer_3ao8iadw",
+          "layer_ljycc002",
+          "layer_fcfhai78"
+        ],
+        "boneKeys": [
+          "legLU",
+          "legLL",
+          "footL"
+        ],
+        "renderMode": "mesh"
+      }
+    }
+  },
+  "standardReference": {
+    "label": "通常2D・標準17ボーン",
+    "src": "./part_templates/reference/standard_2d_modular_reference.png",
+    "width": 1254,
+    "height": 1254,
+    "note": "上腕・前腕・手、太腿・すね・足まで細かく作れます。連続メッシュ用画像では、右側の分解例を縦につないだ1枚として描けます。"
+  },
+  "standardKit": {
+    "count": 12,
+    "names": [
+      "standard_2d_head_sample.png",
+      "standard_2d_head_guide.png",
+      "standard_2d_torso_sample.png",
+      "standard_2d_torso_guide.png",
+      "standard_2d_right_arm_sample.png",
+      "standard_2d_right_arm_guide.png",
+      "standard_2d_left_arm_sample.png",
+      "standard_2d_left_arm_guide.png",
+      "standard_2d_right_leg_sample.png",
+      "standard_2d_right_leg_guide.png",
+      "standard_2d_left_leg_sample.png",
+      "standard_2d_left_leg_guide.png"
+    ]
+  },
+  "standardManifest": {
+    "parts": 6,
+    "first": {
+      "slot": "head",
+      "label": "頭",
+      "canvas": {
+        "width": 512,
+        "height": 512
+      },
+      "bones": [
+        {
+          "key": "head",
+          "name": "頭"
+        }
+      ],
+      "controlPoints": [
+        {
+          "u": 0.5,
+          "v": 0.88,
+          "t": 0,
+          "type": "anchor"
+        }
+      ]
+    }
+  },
+  "standardApplied": {
+    "bindings": 1,
+    "canvases": 1
+  },
+  "errors": []
+}

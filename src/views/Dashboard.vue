@@ -2,9 +2,9 @@
   <div class="container">
       <h1>ようこそ、<span>{{ username }}</span> さん！</h1>
       <p>次のアクションを選択してください。</p>
-      <div class="actions">
-      <button class="select" @click="goToSelect">キャラクターを選択</button>
-      <button @click="goToCreate">キャラクターを作成</button>
+       <div class="actions">
+       <button class="select" @click="goToSelect">キャラクターを選択</button>
+       <button @click="goToCreate">キャラクターを作成</button>
       </div>
   </div>
 </template>

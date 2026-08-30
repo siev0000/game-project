@@ -445,6 +445,70 @@ const sePlayers = new Map();
 let seMasterVolume = 1;
 const clamp01 = value => Math.max(0, Math.min(1, value));
 
+const BGM_VOLUME_STORAGE_KEY = 'global-bgm-volume-v1';
+const readBGMVolume = () => {
+  if (typeof window === 'undefined') return 1;
+  const raw = window.localStorage.getItem(BGM_VOLUME_STORAGE_KEY);
+  if (raw === null) return 1;
+  const stored = Number(raw);
+  return Number.isFinite(stored) ? clamp01(stored) : 1;
+};
+let bgmMasterVolume = readBGMVolume();
+let bgmPlayer = null;
+let bgmPlayerKey = '';
+
+const bgmMods = import.meta.glob(
+  "/src/assets/audio/bgm/robot/*.{mp3,wav,ogg}",
+  { eager: true, query: "?url", import: "default" }
+);
+const mapBGM = mods => Object.fromEntries(
+  Object.entries(mods).map(([path, url]) => [path.split('/').pop().replace(/\.(mp3|wav|ogg)$/i, ''), url])
+);
+export const BGM_SOUNDS = mapBGM(bgmMods);
+
+export function setBGMVolume(value) {
+  bgmMasterVolume = clamp01(Number(value) || 0);
+  if (bgmPlayer) {
+    const base = typeof bgmPlayer.__baseVolume === 'number' ? bgmPlayer.__baseVolume : bgmPlayer.volume;
+    bgmPlayer.__baseVolume = clamp01(base);
+    bgmPlayer.volume = clamp01(bgmPlayer.__baseVolume * bgmMasterVolume);
+  }
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(BGM_VOLUME_STORAGE_KEY, String(bgmMasterVolume));
+  }
+  return bgmMasterVolume;
+}
+
+export function getBGMVolume() {
+  return bgmMasterVolume;
+}
+
+export function stopBGM() {
+  if (!bgmPlayer) return;
+  bgmPlayer.pause();
+  bgmPlayer.currentTime = 0;
+  bgmPlayer = null;
+  bgmPlayerKey = '';
+}
+
+export function playBGM(value, options = {}) {
+  if (typeof Audio === 'undefined') return false;
+  const key = String(value || '');
+  const url = BGM_SOUNDS[key];
+  if (!url) return false;
+  if (bgmPlayer && bgmPlayerKey === key && !bgmPlayer.paused) return true;
+  stopBGM();
+  const audio = new Audio(url);
+  const baseVolume = clamp01(options.volume ?? 0.7);
+  audio.__baseVolume = baseVolume;
+  audio.volume = clamp01(baseVolume * bgmMasterVolume);
+  audio.loop = options.loop !== false;
+  bgmPlayer = audio;
+  bgmPlayerKey = key;
+  audio.play().catch(() => {});
+  return true;
+}
+
 export function setSEMasterVolume(value) {
   const next = clamp01(Number(value) || 0);
   seMasterVolume = next;
@@ -463,12 +527,19 @@ export function getSEMasterVolume() {
 // 値からSEを鳴らす共通処理
 export function playSE(value, options = {}) {
   if (typeof Audio === "undefined") return;
-  const { volume = 0.8, rate = 1, loop = false, id = null } = options;
+  const { volume = 0.8, rate = 1, loop = false, id = null, toggle = false } = options;
   const key = value || "ui_click";
   const url = SE_SOUNDS[key];
   if (!url) return;
 
   const playerKey = id || key;
+  if (toggle && sePlayers.has(playerKey)) {
+    const current = sePlayers.get(playerKey);
+    current.pause();
+    current.currentTime = 0;
+    sePlayers.delete(playerKey);
+    return false;
+  }
   if (loop && sePlayers.has(playerKey)) {
     const current = sePlayers.get(playerKey);
     current.pause();
@@ -482,11 +553,21 @@ export function playSE(value, options = {}) {
   audio.playbackRate = rate;
   audio.loop = loop;
   audio.currentTime = 0;
-  audio.play().catch(() => {});
+  audio.play().catch(() => {
+    if (sePlayers.get(playerKey) === audio) {
+      sePlayers.delete(playerKey);
+    }
+  });
 
-  if (loop) {
+  if (loop || toggle) {
     sePlayers.set(playerKey, audio);
+    audio.addEventListener("ended", () => {
+      if (sePlayers.get(playerKey) === audio) {
+        sePlayers.delete(playerKey);
+      }
+    }, { once: true });
   }
+  return true;
 }
 
 export function stopSE(id) {
@@ -553,7 +634,7 @@ export const ROLE_ICONS = mapIcons(roleIconMods);
 // ロールアイコン
 export function getRollIcon(name) {
   const entry = allData.value.find(c => c.名前 === name);
-  const result = entry.画像url && ROLE_ICONS[entry.画像url] ? ROLE_ICONS[entry.画像url] : "";
+  const result = entry?.画像url && ROLE_ICONS[entry.画像url] ? ROLE_ICONS[entry.画像url] : "";
   return result;
 }
 

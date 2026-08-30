@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2D Bone Motion Editor v34 Split</title>
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand">2D BONE</div>
+    <button class="project-list-btn" id="projectListBtn" type="button">編集対象</button>
+    <span class="current-project-name" id="currentProjectName">未保存</span>
+    <button class="icon-btn close-editor-btn" id="closeEditorBtn" data-tooltip="閉じてゲスト一覧へ戻る" aria-label="閉じてゲスト一覧へ戻る">×</button>
+
+    <div class="tool-group">
+      <button class="icon-btn" id="undoBtn" data-tooltip="戻る / Undo (Ctrl+Z)" aria-label="戻る">↶</button>
+      <button class="icon-btn" id="redoBtn" data-tooltip="進む / Redo (Ctrl+Y)" aria-label="進む">↷</button>
+    </div>
+
+    <div class="tool-group">
+      <button class="icon-btn" id="playBtn" data-tooltip="再生 / 停止 (Space)" aria-label="再生 / 停止">▶</button>
+      <button class="icon-btn" id="prevBtn" data-tooltip="前のフレーム (←)" aria-label="前のフレーム">‹</button>
+      <button class="icon-btn" id="nextBtn" data-tooltip="次のフレーム (→)" aria-label="次のフレーム">›</button>
+    </div>
+
+    <div class="tool-group mode-group">
+      <button class="icon-btn mode-btn active" id="rotateModeBtn" data-tooltip="回転モード (R)" aria-label="回転モード">R</button>
+      <button class="icon-btn mode-btn" id="moveModeBtn" data-tooltip="移動モード (G)" aria-label="移動モード">G</button>
+      <button class="icon-btn mode-btn" id="wholeMoveModeBtn" data-tooltip="ボーン全体を移動 (T)" aria-label="全体移動">全</button>
+      <button class="icon-btn mode-btn" id="scaleModeBtn" data-tooltip="キャラクター全体を縦横比固定で拡大縮小 (S)" aria-label="全体拡縮">拡</button>
+      <button class="icon-btn mode-btn" id="anchorModeBtn" data-tooltip="接続点・回転軸を調整 (P)" aria-label="接続点・回転軸を調整">接</button>
+      <select id="editModeSelect" class="visually-hidden" aria-label="編集モード">
+        <option value="rotate" selected>回転</option>
+        <option value="move">移動</option>
+        <option value="whole">全体移動</option>
+        <option value="scale">全体拡縮</option>
+        <option value="anchor">接続点調整</option>
+      </select>
+      <span class="mode-status" id="modeHint">ROTATE</span>
+    </div>
+
+    <div class="tool-group display-tools">
+      <label class="toggle-icon name-toggle" data-tooltip="ボーン名表示 ON/OFF"><input id="showLabels" type="checkbox" checked><span>ボーン名</span></label>
+      <label class="toggle-icon" data-tooltip="アンカー表示"><input id="showAnchors" type="checkbox" checked><span>A</span></label>
+      <label class="toggle-icon" data-tooltip="親子接続線表示"><input id="showLines" type="checkbox" checked><span>C</span></label>
+      <label class="toggle-icon" data-tooltip="ボーン形状だけ表示 ON/OFF"><input id="showBones" type="checkbox" checked><span>B</span></label>
+      <label class="toggle-icon" data-tooltip="設定画像だけ表示 ON/OFF"><input id="showImages" type="checkbox" checked><span>I</span></label>
+      <label class="toggle-icon" data-tooltip="前フレームを半透明表示"><input id="showOnionSkin" type="checkbox"><span>前</span></label>
+      <label class="toggle-icon" data-tooltip="中心点・中央補助線 ON/OFF"><input id="showCenterGuides" type="checkbox" checked><span>＋</span></label>
+    </div>
+
+    <div class="top-spacer"></div>
+
+    <label class="fps-control" data-tooltip="再生FPS">
+      <span>FPS</span>
+      <input id="fpsInput" type="number" min="1" max="60" value="8">
+    </label>
+
+    <div class="tool-group">
+      <button class="icon-btn" id="settingsBtn" data-tooltip="表示・地面設定" aria-label="設定">⚙</button>
+      <button class="icon-btn save-btn" id="saveMenuBtn" data-tooltip="保存・読込メニュー" aria-label="保存・読込">保存</button>
+      <input id="fileInput" type="file" accept="application/json,.json" hidden>
+    </div>
+  </header>
+
+  <section class="workspace" id="workspace">
+    <aside class="bone-panel panel-compact">
+      <div class="panel-title-row">
+        <span class="panel-title">BONES</span>
+        <span class="count" id="boneCount">0</span>
+      </div>
+      <div class="pose-layer-toolbar">
+        <label><span>編集</span><select id="animationSelect" aria-label="デフォルトまたは派生アニメーションを選択"></select></label>
+        <button type="button" class="motion-manager-button" id="motionManagerBtn">モーション</button>
+      </div>
+      <div class="layer-list" id="layerList"></div>
+
+      <div class="bone-actions">
+        <select id="newLayerShapeSelect" class="shape-select" data-tooltip="追加ボーンの仮形状">
+          <option value="bar">棒</option>
+          <option value="torso">胴</option>
+          <option value="circle">丸</option>
+          <option value="hand">手</option>
+          <option value="foot">足</option>
+        </select>
+        <button class="icon-btn" id="addEmptyLayerBtn" data-tooltip="ボーン追加 (B)" aria-label="ボーン追加">B+</button>
+        <button class="icon-btn" id="dupLayerBtn" data-tooltip="選択ボーンを複製" aria-label="ボーン複製">D</button>
+        <button class="icon-btn" id="zUpBtn" data-tooltip="現在フレームだけ表示階層を前へ (])" aria-label="表示階層を前へ">Z+</button>
+        <button class="icon-btn" id="zDownBtn" data-tooltip="現在フレームだけ表示階層を後ろへ ([)" aria-label="表示階層を後ろへ">Z-</button>
+        <button class="icon-btn danger" id="delLayerBtn" data-tooltip="選択ボーンを削除 (Delete)" aria-label="ボーン削除">X</button>
+        <button class="icon-btn" id="resetHumanoidBtn" data-tooltip="標準人型ボーンへリセット" aria-label="標準人型へリセット">H</button>
+      </div>
+    </aside>
+    <div class="panel-resizer left-panel-resizer" id="leftPanelResizer" title="ドラッグでBONES欄の幅を調整 / ダブルクリックで初期幅"></div>
+
+    <main class="canvas-wrap">
+      <div class="stage rotate-mode" id="stage">
+        <div class="whole-axis-tools" id="wholeAxisTools" aria-label="全体移動の軸固定">
+          <strong>移動軸</strong>
+          <label data-tooltip="自由移動"><input type="radio" name="wholeMoveAxis" value="free" checked><span>✣</span></label>
+          <label data-tooltip="横方向に固定"><input type="radio" name="wholeMoveAxis" value="horizontal"><span>↔</span></label>
+          <label data-tooltip="縦方向に固定"><input type="radio" name="wholeMoveAxis" value="vertical"><span>↕</span></label>
+          <small>Shift: 一時固定</small>
+        </div>
+        <div class="background-adjust-toolbar" id="backgroundAdjustToolbar" aria-live="polite">
+          <div><strong>背景位置を調整中</strong><span id="backgroundAdjustValue">X 0 / Y 0 / 100%</span></div>
+          <small>画像をドラッグして移動・ホイールで拡大縮小</small>
+          <button type="button" class="text-action-btn" id="backgroundAdjustDoneBtn">背景編集を終了</button>
+        </div>
+        <div class="canvas-message" id="canvasMessage">ボーンをクリックすると編集項目を表示</div>
+        <div class="bone-display-mode-notice">表示枠のみ調整中 — 画像は変わりません</div>
+        <div class="character" id="character">
+          <div class="origin-line-x"></div>
+          <div class="origin-line-y"></div>
+          <div class="background-image-layer" id="backgroundImageLayer"></div>
+          <canvas class="onion-skin-canvas" id="onionSkinCanvas" width="1000" height="1000" aria-label="前フレーム"></canvas>
+          <div class="canvas-origin-cross" id="canvasOriginCross" aria-label="キャンバス中心点"><span></span></div>
+          <div class="ground-line" id="groundLine"><i class="ground-center-mark"></i><span>GROUND</span></div>
+          <svg class="connections" id="connections"></svg>
+          <div class="whole-scale-overlay" id="wholeScaleOverlay">
+            <div class="whole-scale-box" id="wholeScaleBox">
+              <span class="whole-scale-label">全体拡縮</span>
+              <i class="whole-scale-handle tl" data-corner="tl"></i>
+              <i class="whole-scale-handle tr" data-corner="tr"></i>
+              <i class="whole-scale-handle bl" data-corner="bl"></i>
+              <i class="whole-scale-handle br" data-corner="br"></i>
+            </div>
+          </div>
+          <div class="resize-overlay" id="resizeOverlay"><div class="resize-box" id="resizeBox"></div></div>
+          <div class="anchor-ring" id="anchorRing"></div>
+          <div class="anchor-editor" id="anchorEditor" aria-live="polite"></div>
+        </div>
+      </div>
+    </main>
+
+    <div class="panel-resizer right-panel-resizer" id="rightPanelResizer" title="ドラッグで編集欄の幅を調整 / ダブルクリックで初期幅"></div>
+    <aside class="inspector panel-compact" id="inspector" aria-hidden="true">
+      <div class="panel-title-row inspector-head">
+        <span class="panel-title" id="inspectorTitle">🦴 BONE</span>
+        <div class="inspector-head-actions">
+          <div id="boneInspectorHeaderActions">
+            <button class="text-action-btn" id="headerSetImageBtn" data-tooltip="選択ボーンへ基準画像とは別の画像を追加 (I)" aria-label="追加画像">＋追加画像</button>
+            <button class="icon-btn mini" id="headerClearImageBtn" data-tooltip="選択ボーンの画像を解除" aria-label="画像解除">I×</button>
+            <button class="icon-btn mini" id="headerDetachMeshBindingBtn" data-tooltip="選択ボーンを含む連続メッシュを解除" aria-label="連続メッシュを解除" hidden>〰×</button>
+          </div>
+          <button class="icon-btn mini" id="closeInspectorBtn" data-tooltip="選択解除 (Esc)" aria-label="選択解除">×</button>
+        </div>
+      </div>
+
+      <div class="inspector-scroll" id="boneInspector">
+        <div class="section-label section-basic"><span class="section-icon">🏷️</span><span>基本</span></div>
+        <div class="form-grid">
+          <label class="field full">名前<input id="nameInput" type="text"></label>
+          <label class="field">形状
+            <select id="shapeInput">
+              <option value="bar">長丸</option>
+              <option value="torso">胴体</option>
+              <option value="circle">丸</option>
+              <option value="hand">手</option>
+              <option value="foot">足</option>
+            </select>
+          </label>
+          <label class="field">色<input id="colorInput" type="color"></label>
+          <label class="field full">親<select id="parentInput"></select></label>
+          <label class="attach-check" id="meshAttachRow" hidden><input id="attachedInput" type="checkbox"><span>メッシュ接続を固定 <small>ON時は親側の指定接続点へ子ボーンの頭を固定</small></span></label>
+          <label class="attach-check waist-position-lock" id="waistPositionLockRow" hidden><input id="waistPositionLockInput" type="checkbox"><span>腰の位置を固定 <small>移動モードの誤ドラッグを防止</small></span></label>
+        </div>
+
+        <div class="section-label section-connect"><span class="section-icon">🔗</span><span>接続</span></div>
+        <div class="form-grid">
+          <label class="field">親 X<input id="attachXInput" type="number" step="0.05" min="0" max="1"></label>
+          <label class="field">親 Y<input id="attachYInput" type="number" step="0.05" min="0" max="1"></label>
+          <label class="field">軸 X<input id="oxInput" type="number" step="0.05" min="0" max="1"></label>
+          <label class="field">軸 Y<input id="oyInput" type="number" step="0.05" min="0" max="1"></label>
+          <label class="field">頭 X<input id="headXInput" type="number" step="0.05" min="0" max="1"></label>
+          <label class="field">頭 Y<input id="headYInput" type="number" step="0.05" min="0" max="1"></label>
+          <label class="field">尾 X<input id="tailXInput" type="number" step="0.05" min="0" max="1"></label>
+          <label class="field">尾 Y<input id="tailYInput" type="number" step="0.05" min="0" max="1"></label>
+        </div>
+
+        <div class="section-label section-pose"><span class="section-icon">📐</span><span>サイズ / ポーズ</span></div>
+        <div class="form-grid">
+          <label class="attach-check bone-display-size-toggle"><input id="boneDisplaySizeModeInput" type="checkbox"><span>ボーン表示サイズだけ調整 <small>画像・メッシュ・関節位置は変更しません</small></span></label>
+          <label class="field bone-display-dimension-field">表示 W<input id="boneDisplayWidthInput" type="number" step="1" min="8" max="2000"></label>
+          <label class="field bone-display-dimension-field">表示 H<input id="boneDisplayHeightInput" type="number" step="1" min="8" max="2000"></label>
+          <label class="field">W<input id="wInput" type="number" step="1"></label>
+          <label class="field">H<input id="hInput" type="number" step="1"></label>
+          <label class="field">X<input id="xInput" type="number" step="1"></label>
+          <label class="field">Y<input id="yInput" type="number" step="1"></label>
+          <label class="field">角度<input id="rInput" type="number" step="1"></label>
+          <label class="field">レイヤー<input id="zInput" type="number" step="1" min="1"></label>
+        </div>
+
+        <div class="section-label section-image"><span class="section-icon">🖼️</span><span>画像調整</span></div>
+        <div class="form-grid">
+          <label class="field full" id="boneMorphField"><span id="boneMorphLabel">このコマのモーフ</span>
+            <span class="inline-field"><select id="boneMorphSelect"><option value="">通常（モーフなし）</option></select><button type="button" id="addBoneMorphBtn">＋作成</button><button type="button" id="deleteBoneMorphBtn">削除</button></span>
+          </label>
+          <div class="hand-swap-note full" id="handSwapNote" hidden>右手・左手ごとに手画像を登録し、このコマで使う形を選びます。位置・大きさは下の画像調整で合わせます。</div>
+          <label class="field full" id="boneMorphImageRow" hidden><span id="boneMorphImageLabel">モーフ画像</span>
+            <select id="boneMorphImageSelect"></select>
+          </label>
+          <label class="field full">画像元<input id="imageSourceNameInput" type="text" readonly placeholder="画像なし"></label>
+          <label class="field full">画像種類
+            <select id="imageSlotInput">
+              <option value="">個別画像（固定）</option>
+              <option value="body">体</option>
+              <option value="face">顔</option>
+              <option value="held">手持ち</option>
+              <option value="decoration">装飾</option>
+            </select>
+          </label>
+          <div class="image-edit-row full">
+            <button class="text-action-btn image-range-btn" id="editImageCropBtn" data-tooltip="画像を部位ごとに切り分ける" aria-label="画像範囲編集">✂️ 部位分割</button>
+            <button class="text-action-btn image-range-btn mesh-edit-btn" id="editMeshBindingBtn" data-tooltip="接続ボーンに沿って1枚の画像を曲げる" aria-label="連続メッシュ変形">〰 連続メッシュ</button>
+            <button class="text-action-btn image-range-btn danger" id="detachMeshBindingBtn" data-tooltip="選択ボーンを含む連続メッシュだけを解除" aria-label="連続メッシュを解除" hidden>〰 メッシュ解除</button>
+          </div>
+          <label class="field">画像X<input id="imageOffsetXInput" type="number" step="1"></label>
+          <label class="field">画像Y<input id="imageOffsetYInput" type="number" step="1"></label>
+          <label class="field">拡大X<input id="imageScaleXInput" type="number" step="0.1"></label>
+          <label class="field">拡大Y<input id="imageScaleYInput" type="number" step="0.1"></label>
+          <label class="field">画像角度<input id="imageRotationInput" type="number" step="1"></label>
+          <label class="field">不透明度<input id="imageOpacityInput" type="number" step="0.05" min="0" max="1"></label>
+          <label class="attach-check"><input id="imageFlipXInput" type="checkbox"><span>左右反転 <small>現在のコマ</small></span></label>
+          <label class="attach-check"><input id="imageFlipYInput" type="checkbox"><span>上下反転 <small>現在のコマ</small></span></label>
+        </div>
+
+        <div class="inspector-actions">
+          <button class="icon-btn wide" id="applyLayerBtn" data-tooltip="入力値を反映" aria-label="入力値を反映">OK</button>
+          <button class="icon-btn wide" id="resetImageAdjustBtn" data-tooltip="画像調整を初期値へ戻す" aria-label="画像調整をリセット">画像リセット</button>
+          <button class="icon-btn wide danger" id="deleteSelectedBoneBtn" data-tooltip="選択中のボーンを削除" aria-label="ボーン削除">削除</button>
+           <input id="replaceImageInput" type="file" accept="image/*" hidden>
+           <input id="handVariantImageInput" type="file" accept="image/*" hidden>
+           <input id="meshImageInput" type="file" accept="image/*" hidden>
+        </div>
+        <div class="pose-hint" id="poseHint"></div>
+      </div>
+      <div class="background-inspector-scroll" id="backgroundInspector" hidden>
+        <div class="section-label section-image"><span class="section-icon">🖼️</span><span>背景画像</span></div>
+        <div class="background-layer-status">
+          <strong id="backgroundImageStatus">未設定</strong>
+          <small>表示順を変更できる背景レイヤー</small>
+        </div>
+        <div class="background-layer-actions">
+          <button type="button" class="text-action-btn" id="backgroundAddBtn">＋ 背景を追加</button>
+          <button type="button" class="text-action-btn danger" id="backgroundLayerDeleteBtn">背景レイヤーを削除</button>
+          <button type="button" class="text-action-btn" id="backgroundImageSetBtn">画像を設定</button>
+          <button type="button" class="text-action-btn danger" id="backgroundImageRemoveBtn">画像を削除</button>
+          <input id="backgroundImageInput" type="file" accept="image/*" hidden>
+        </div>
+        <div class="background-inspector-note">背景を選択中は、キャンバス上の画像をドラッグして移動、ホイールで拡大縮小できます。</div>
+        <div class="background-inspector-controls">
+          <label class="field full">表示順（1が最背面）<input id="backgroundLayerInput" type="number" min="1" step="1"></label>
+          <label class="field">X位置<input id="backgroundXInput" type="number" min="-2000" max="2000" step="1"></label>
+          <label class="field">Y位置<input id="backgroundYInput" type="number" min="-2000" max="2000" step="1"></label>
+          <label class="field">大きさ %<input id="backgroundScaleInput" type="number" min="10" max="400" step="5"></label>
+          <label class="field">透明度 %<input id="backgroundOpacityInput" type="number" min="0" max="100" step="5"></label>
+          <label class="attach-check"><input id="backgroundFlipXInput" type="checkbox"><span>左右反転</span></label>
+          <label class="attach-check"><input id="backgroundFlipYInput" type="checkbox"><span>上下反転</span></label>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <footer class="timeline">
+    <div class="timeline-left">
+      <div class="frame-status" id="frameStatus">フレーム1/1</div>
+      <div class="frame-actions">
+        <button class="text-action-btn" id="addFrameBtn" data-tooltip="新しいフレームを追加 (F)" aria-label="フレーム追加">追加</button>
+        <button class="text-action-btn" id="dupFrameBtn" data-tooltip="現在のフレームを複製 (Ctrl+D)" aria-label="フレーム複製">複製</button>
+        <button class="text-action-btn tween-frame-btn" id="tweenFrameBtn" data-tooltip="現在と次の間、またはモーション全体へ中割フレームを作成" aria-label="中割フレーム作成">中割</button>
+        <button class="text-action-btn danger" id="delFrameBtn" data-tooltip="現在のフレームを削除" aria-label="フレーム削除">削除</button>
+        <button class="text-action-btn copy-to-motion-btn" id="copyFrameToMotionBtn" data-tooltip="現在のフレームを別のモーション末尾へ複製" aria-label="他のレイヤーに複製">他のレイヤーに複製</button>
+      </div>
+    </div>
+    <div class="frames" id="frameList"></div>
+  </footer>
+</div>
+
+<dialog id="motionManagerDialog" class="settings-dialog motion-manager-dialog">
+  <div class="dialog-head">
+    <strong>モーション</strong>
+    <button class="icon-btn mini" id="motionManagerCloseBtn" aria-label="閉じる">×</button>
+  </div>
+  <div class="motion-manager-body">
+    <section class="motion-manager-section">
+      <h2>モーション一覧</h2>
+      <div class="motion-manager-list" id="motionManagerList"></div>
+      <button type="button" class="text-action-btn danger motion-delete-button" id="deleteManagedMotionBtn">選択したモーションを削除</button>
+    </section>
+    <section class="motion-manager-section motion-create-section">
+      <h2>モーション追加</h2>
+      <label class="motion-field">モーション名<input id="newMotionNameInput" type="text" maxlength="60" placeholder="例：待機"></label>
+      <label class="motion-field">作成方法
+        <select id="motionCreateMode">
+          <option value="default">デフォルトから新規作成</option>
+          <option value="copy">既存のモーションを複製</option>
+        </select>
+      </label>
+      <label class="motion-field" id="motionCopySourceField">複製元モーション<select id="motionCopySourceSelect"></select></label>
+      <button type="button" class="text-action-btn motion-create-button" id="createMotionBtn">追加</button>
+    </section>
+  </div>
+</dialog>
+
+<dialog id="tweenFrameDialog" class="settings-dialog tween-frame-dialog">
+  <div class="dialog-head">
+    <strong>中割フレーム作成</strong>
+    <button class="icon-btn mini" id="tweenFrameCloseBtn" aria-label="閉じる">×</button>
+  </div>
+  <div class="tween-frame-body">
+    <div class="tween-mode-tabs" role="radiogroup" aria-label="中割フレームの作成範囲">
+      <label><input type="radio" name="tweenFrameMode" value="partial" checked><span>部分追加</span></label>
+      <label><input type="radio" name="tweenFrameMode" value="whole"><span>全体生成</span></label>
+    </div>
+    <section class="tween-mode-panel" id="tweenPartialPanel">
+      <h2>現在 → 次のフレーム</h2>
+      <p>選択中と次のフレームの間だけ、中間データを等間隔で追加します。</p>
+      <label class="motion-field">追加枚数
+        <select id="tweenPartialCountSelect">
+          <option value="1">1枚（50%）</option>
+          <option value="2">2枚（33%・67%）</option>
+          <option value="3">3枚（25%・50%・75%）</option>
+          <option value="4">4枚（20%・40%・60%・80%）</option>
+        </select>
+      </label>
+    </section>
+    <section class="tween-mode-panel" id="tweenWholePanel" hidden>
+      <h2>モーション全体</h2>
+      <p>元モーションを残し、中割りした別モーションを生成します。</p>
+      <label class="motion-field">生成倍率<select id="tweenWholeMultiplierSelect"></select></label>
+    </section>
+    <div class="tween-frame-summary" id="tweenFrameSummary"></div>
+    <button type="button" class="text-action-btn tween-frame-apply" id="tweenFrameApplyBtn">中割フレームを作成</button>
+  </div>
+</dialog>
+
+<dialog id="copyFrameDialog" class="settings-dialog copy-frame-dialog">
+  <div class="dialog-head">
+    <strong>他のレイヤーに複製</strong>
+    <button class="icon-btn mini" id="copyFrameCloseBtn" aria-label="閉じる">×</button>
+  </div>
+  <div class="copy-frame-body">
+    <p>現在のフレームを、選択したモーションの末尾へ追加します。</p>
+    <label class="motion-field">複製先モーション<select id="copyFrameTargetSelect"></select></label>
+    <button type="button" class="text-action-btn motion-create-button" id="copyFrameApplyBtn">複製する</button>
+  </div>
+</dialog>
+
+
+<dialog id="settingsDialog" class="settings-dialog">
+  <div class="dialog-head">
+    <strong>表示・動作設定 <small>上部をドラッグして移動</small></strong>
+    <button class="icon-btn mini" id="settingsCloseBtn" data-tooltip="閉じる" aria-label="閉じる">×</button>
+  </div>
+  <div class="settings-body">
+    <div class="settings-layout">
+      <section class="settings-section settings-display-section">
+        <div class="settings-title"><strong>表示</strong><small>作業中に見たい要素を切り替えます</small></div>
+        <div class="settings-toggle-grid">
+          <label class="settings-row settings-toggle-row"><span>ボーン名</span><span class="settings-check"><input id="settingLabels" type="checkbox"><i></i></span></label>
+          <label class="settings-row settings-toggle-row"><span>アンカー</span><span class="settings-check"><input id="settingAnchors" type="checkbox"><i></i></span></label>
+          <label class="settings-row settings-toggle-row"><span>親子接続線</span><span class="settings-check"><input id="settingLines" type="checkbox"><i></i></span></label>
+          <label class="settings-row settings-toggle-row"><span>ボーン形状</span><span class="settings-check"><input id="settingBones" type="checkbox"><i></i></span></label>
+          <label class="settings-row settings-toggle-row"><span>設定画像</span><span class="settings-check"><input id="settingImages" type="checkbox"><i></i></span></label>
+          <label class="settings-row settings-toggle-row"><span>グリッド</span><span class="settings-check"><input id="settingGrid" type="checkbox"><i></i></span></label>
+          <label class="settings-row settings-toggle-row"><span>ボーン色</span><span class="settings-check"><input id="settingBoneColors" type="checkbox"><i></i></span></label>
+          <label class="settings-row settings-toggle-row"><span>内部ボーンID</span><span class="settings-check"><input id="settingInternalIds" type="checkbox"><i></i></span></label>
+        </div>
+        <label class="settings-row settings-range-row" for="settingBoneColorIntensity"><span>ボーン色の濃さ</span><span><input id="settingBoneColorIntensity" type="range" min="0" max="100" step="1" value="100"><output id="settingBoneColorIntensityValue">100%</output></span></label>
+      </section>
+      <section class="settings-section settings-ground-section">
+        <div class="settings-title"><strong>地面・足</strong><small>接地と空中姿勢を調整します</small></div>
+        <div class="settings-ground-grid">
+          <label class="settings-row settings-toggle-row"><span>地面判定</span><span class="settings-check"><input id="settingGroundEnabled" type="checkbox"><i></i></span></label>
+          <label class="settings-row settings-toggle-row"><span>地面線</span><span class="settings-check"><input id="settingGroundVisible" type="checkbox"><i></i></span></label>
+          <label class="settings-row settings-value-row"><span>地面 Y</span><input id="settingGroundY" type="number" min="0" max="1000" step="1"></label>
+          <label class="settings-row settings-toggle-row"><span>足の自動向き</span><span class="settings-check"><input id="settingAutoFoot" type="checkbox"><i></i></span></label>
+          <label class="settings-row settings-value-row"><span>空中時の足先角度</span><span class="settings-unit-field"><input id="settingAirFootAngle" type="number" min="-180" max="180" step="1"><b>°</b></span></label>
+        </div>
+        <div class="settings-note">地面判定では足が地面線より下へ潜らないよう制限します。足の自動向きでは、接地時は水平、空中では指定角度へ向けます。</div>
+      </section>
+      <section class="settings-section settings-image-section">
+        <div class="settings-title"><strong>使用画像セット</strong><small>同じ配置の画像を種類ごとに登録し、表示中の画像を一括切り替えます</small></div>
+        <div class="image-slot-list" id="imageSlotList">
+          <div class="image-slot-row" data-slot="body"><strong>体</strong><select id="imageSlotBodySelect" aria-label="体の使用画像"></select><button type="button" class="text-action-btn image-slot-add" id="baseImageSetBtn" data-slot="body">画像を追加</button><button type="button" class="text-action-btn danger image-slot-remove" data-slot="body">削除</button><span class="image-slot-status" id="baseImageSourceStatus">未設定</span></div>
+          <div class="image-slot-row" data-slot="face"><strong>顔</strong><select id="imageSlotFaceSelect" aria-label="顔の使用画像"></select><button type="button" class="text-action-btn image-slot-add" data-slot="face">画像を追加</button><button type="button" class="text-action-btn danger image-slot-remove" data-slot="face">削除</button><span class="image-slot-status">未設定</span></div>
+          <div class="image-slot-row" data-slot="held"><strong>手持ち</strong><select id="imageSlotHeldSelect" aria-label="手持ちの使用画像"></select><button type="button" class="text-action-btn image-slot-add" data-slot="held">画像を追加</button><button type="button" class="text-action-btn danger image-slot-remove" data-slot="held">削除</button><span class="image-slot-status">未設定</span></div>
+          <div class="image-slot-row" data-slot="decoration"><strong>装飾</strong><select id="imageSlotDecorationSelect" aria-label="装飾の使用画像"></select><button type="button" class="text-action-btn image-slot-add" data-slot="decoration">画像を追加</button><button type="button" class="text-action-btn danger image-slot-remove" data-slot="decoration">削除</button><span class="image-slot-status">未設定</span></div>
+          <input id="baseImageInput" type="file" accept="image/*" multiple hidden>
+        </div>
+        <div class="base-image-scale-row">
+          <div><strong>画像表示倍率</strong><small>腰を中心に通常画像とメッシュをまとめて拡大します</small></div>
+          <input id="settingImageDisplayScale" type="range" min="50" max="250" step="5" value="100">
+          <label class="settings-percent-field"><input id="settingImageDisplayScaleNumber" type="number" min="50" max="250" step="5" value="100"><b>%</b></label>
+          <button type="button" class="text-action-btn image-scale-reset-btn" id="settingImageDisplayScaleReset">100%に戻す</button>
+        </div>
+        <div class="settings-note">各パーツは右側の「画像種類」で体・顔・手持ち・装飾のどれを使うか指定します。ここで使用画像を変更すると、同じ種類を参照する全パーツが同時に切り替わります。切り抜き・メッシュ・位置・倍率・反転設定は維持されます。</div>
+      </section>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="saveDialog" class="settings-dialog save-dialog">
+  <div class="dialog-head">
+    <strong>保存 / 読込</strong>
+    <button class="icon-btn mini" id="saveMenuCloseBtn" data-tooltip="閉じる" aria-label="閉じる">×</button>
+  </div>
+  <div class="save-menu-body">
+    <label class="save-name-field">セーブデータ名<input id="projectNameInput" type="text" maxlength="60" value="motion"></label>
+    <button class="save-menu-btn source-save-btn source-save-primary" id="saveSourceJsonBtn">セーブデータを上書き保存</button>
+    <button class="save-menu-btn source-save-as-btn" id="saveSourceAsJsonBtn">別名で保存</button>
+    <button class="save-menu-btn" id="openProjectListBtn">保存済み一覧から開く</button>
+    <button class="save-menu-btn danger-menu-btn" id="initializeProjectBtn">新規作成・初期化</button>
+    <button class="save-menu-btn" id="saveJsonFileBtn">JSONファイルを保存</button>
+    <button class="save-menu-btn sprite-export-menu-btn" id="openSpriteExportBtn">スプライトアニメーションを書き出す</button>
+    <button class="save-menu-btn" id="loadJsonFileBtn">JSONファイルを読み込む</button>
+    <button class="save-menu-btn" id="editJsonBtn">JSONを表示・編集</button>
+    <button class="save-menu-btn material-guide-btn" id="exportMaterialGuideBtn">素材作成ガイドPNGを出力</button>
+    <button class="save-menu-btn material-guide-btn" id="exportPartTemplateKitBtn">交換パーツ作画見本を開く</button>
+  </div>
+  <div class="save-menu-note">「上書き保存」は現在のセーブデータを更新します。「別名で保存」は元データを残し、入力した名前で新しいセーブデータを追加します。</div>
+</dialog>
+
+<dialog id="spriteExportDialog" class="settings-dialog sprite-export-dialog">
+  <div class="dialog-head">
+    <strong>スプライトアニメーション書き出し</strong>
+    <button class="icon-btn mini" id="spriteExportCloseBtn" data-tooltip="閉じる" aria-label="閉じる">×</button>
+  </div>
+  <div class="sprite-export-body">
+    <div class="sprite-export-summary" id="spriteExportSummary">設定済みモーションを確認しています。</div>
+    <div class="sprite-export-fields">
+      <label>出力倍率
+        <span><input id="spriteExportScaleInput" type="number" min="10" max="200" step="10" value="100"><b>%</b></span>
+      </label>
+      <label>余白
+        <span><input id="spriteExportPaddingInput" type="number" min="0" max="100" step="1" value="8"><b>px</b></span>
+      </label>
+    </div>
+    <div class="sprite-export-note">全モーションの透明PNGをプロジェクト名のフォルダへまとめ、ZIPとして通常ダウンロードします。保存先の指定はありません。</div>
+    <div class="sprite-export-status" id="spriteExportStatus" role="status"></div>
+    <button class="sprite-export-run" id="spriteExportRunBtn">全モーションを書き出す</button>
+  </div>
+</dialog>
+
+<dialog id="projectLibraryDialog" class="project-library-dialog">
+  <div class="dialog-head">
+    <div><strong>編集対象を選択</strong><small>ソースJSONに保存されたモーション</small></div>
+    <button class="icon-btn mini" id="projectLibraryCloseBtn" aria-label="閉じる">×</button>
+  </div>
+  <div class="project-library-actions">
+    <button class="save-menu-btn source-save-btn rig-create-btn" id="createStandardProjectBtn"><strong>＋ 通常2D・横向き</strong><small>19ボーン・横スクロール用</small></button>
+    <button class="save-menu-btn pixel-create-btn rig-create-btn" id="createPixelSideProjectBtn"><strong>＋ ドット2D・横向き</strong><small>15ボーン・横スクロール用</small></button>
+    <button class="save-menu-btn rig-create-btn front-create-btn" id="createFrontProjectBtn"><strong>＋ 通常2D・正面</strong><small>17ボーン・左右対称</small></button>
+    <button class="save-menu-btn pixel-create-btn rig-create-btn" id="createPixelProjectBtn"><strong>＋ ドット2D・正面</strong><small>15ボーン・左右対称</small></button>
+    <button class="save-menu-btn recover-project-btn" id="recoverDraftBtn">ブラウザの作業中データを開く</button>
+  </div>
+  <div class="project-library-status" id="projectLibraryStatus">保存済みデータを読み込んでいます…</div>
+  <div class="project-library-list" id="projectLibraryList"></div>
+</dialog>
+
+<dialog id="partReferenceDialog" class="part-reference-dialog">
+  <div class="dialog-head">
+    <div><strong>交換パーツ作画見本</strong><small id="partReferenceRigLabel">通常2D</small></div>
+    <button class="icon-btn mini" id="partReferenceCloseBtn" aria-label="閉じる">×</button>
+  </div>
+  <div class="part-reference-body">
+    <div class="part-reference-image-wrap"><img id="partReferenceImage" alt="交換パーツの組立・分解見本"></div>
+    <aside class="part-reference-help">
+      <h3>この形で用意します</h3>
+      <p>左側が組み立て後、右側が実際に交換する画像パーツです。</p>
+      <ul>
+        <li>シアン部分は、回転しても隙間が出ないための重なり代です。</li>
+        <li>外周までキャラクターとして描き、棒や中心線だけにはしません。</li>
+        <li>左右の腕・脚は別画像にします。</li>
+        <li>完成画像は背景を透明にします。</li>
+      </ul>
+      <div class="part-reference-type" id="partReferenceTypeNote"></div>
+      <h3 class="part-example-title">そのまま読める個別PNG例</h3>
+      <select id="partExampleSelect">
+        <option value="head">頭</option>
+        <option value="torso">胴体</option>
+        <option value="right_arm" selected>右腕</option>
+        <option value="left_arm">左腕</option>
+        <option value="right_leg">右脚</option>
+        <option value="left_leg">左脚</option>
+      </select>
+      <div class="part-example-preview"><img id="partExampleImage" alt="選択パーツの個別PNG例"></div>
+      <button class="text-action-btn" id="partExampleDownloadBtn">選択パーツPNGを保存</button>
+    </aside>
+  </div>
+  <div class="dialog-actions part-reference-actions">
+    <button class="text-action-btn" id="partReferenceTechnicalBtn">座標PNG・JSON（補助）</button>
+    <span class="crop-action-spacer"></span>
+    <button class="text-action-btn crop-apply-btn" id="partReferenceDownloadBtn">実物見本PNGを保存</button>
+  </div>
+</dialog>
+
+<dialog id="jsonDialog" class="json-dialog">
+  <div class="dialog-head">
+    <strong>JSON</strong>
+    <button class="icon-btn mini" id="jsonCloseBtn" data-tooltip="閉じる" aria-label="閉じる">×</button>
+  </div>
+  <textarea id="jsonArea"></textarea>
+  <div class="dialog-actions">
+    <button id="exportBtn">現在値をJSONへ反映</button>
+    <button id="applyJsonBtn">JSONを読み込む</button>
+  </div>
+</dialog>
+
+
+<dialog id="imageCropDialog" class="image-crop-dialog">
+  <div class="dialog-head">
+    <strong>✂️ 画像範囲編集</strong>
+    <button class="icon-btn mini" id="imageCropCloseBtn" data-tooltip="キャンセルして閉じる" aria-label="閉じる">×</button>
+  </div>
+
+  <div class="image-crop-body">
+    <div class="crop-preview-panel">
+      <div class="crop-preview-title">
+        <span id="cropSourceLabel">画像</span>
+        <small>ホイールで拡大 / 部位枠をドラッグ / 画像上端をドラッグして回転 <strong id="cropZoomValue">100%</strong></small>
+      </div>
+      <div class="crop-preview-area" id="cropPreviewArea">
+        <div class="crop-image-frame" id="cropImageFrame">
+          <img id="cropEditorImage" alt="">
+          <div class="crop-selections" id="cropSelections"></div>
+          <button class="crop-image-rotate-handle" id="cropImageRotateHandle" type="button" aria-label="画像角度を変更">
+            <span>↻ 画像角度</span><strong id="cropHeaderRotationValue">0°</strong>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <aside class="crop-controls">
+      <div class="crop-control-block">
+        <div class="crop-control-title">🦴 選択中の部位</div>
+        <select id="cropBoneSelect"></select>
+        <div class="crop-note">画像上には使用する部位がすべて表示されます。枠または部位名を選び、範囲を個別に指定してください。</div>
+      </div>
+
+      <div class="crop-control-block">
+        <div class="crop-control-title">🔗 この画像を使うボーン</div>
+        <div class="crop-bone-checks" id="cropBoneChecks"></div>
+        <div class="crop-note">チェックしたボーンは同じ元画像を共有します。例：胴体画像なら「胸・腹・腰」をチェックし、上の選択欄で切り替えて3つの範囲に分けます。</div>
+      </div>
+
+      <div class="crop-control-block">
+        <div class="crop-control-title">↻ 元画像の向き</div>
+        <input id="cropRotationInput" type="hidden" value="0">
+        <div class="crop-source-flips">
+          <label><input id="cropFlipXInput" type="checkbox"><span>左右反転</span></label>
+          <label><input id="cropFlipYInput" type="checkbox"><span>上下反転</span></label>
+        </div>
+        <div class="crop-note">角度は画像上端の「画像角度」を横へドラッグします。回転・反転は、この画像を使う全部位に適用されます。</div>
+      </div>
+
+      <div class="crop-control-block">
+        <div class="crop-control-title">📐 使用範囲（%）</div>
+        <div class="crop-group-width-note" id="cropGroupWidthNote">X位置・W横幅は全部位で共通</div>
+        <div class="crop-number-grid">
+          <label class="crop-shared-width-field">X（連動）<input id="cropXInput" type="number" min="0" max="100" step="0.1"></label>
+          <label>Y<input id="cropYInput" type="number" min="0" max="100" step="0.1"></label>
+          <label class="crop-shared-width-field">W（連動）<input id="cropWInput" type="number" min="1" max="100" step="0.1"></label>
+          <label>H<input id="cropHInput" type="number" min="1" max="100" step="0.1"></label>
+        </div>
+        <label class="crop-auto-adjust-toggle"><input id="cropSymmetricXInput" type="checkbox" checked><span><strong>左右自動調整</strong><small>横幅変更時、中心を保って左右を同じ量だけ狭めます</small></span></label>
+        <div class="crop-note">横位置と横幅は、チェックした全部位で同じ値になります。Y位置と高さだけを部位別に指定します。</div>
+        <button class="text-action-btn crop-full-btn" id="cropFullBtn">画像全体</button>
+      </div>
+    </aside>
+  </div>
+
+  <div class="crop-dialog-actions">
+    <button class="text-action-btn crop-remove-all-btn" id="imageCropRemoveAllBtn">全部位から画像を外す</button>
+    <span class="crop-action-spacer"></span>
+    <button class="text-action-btn" id="imageCropCancelBtn">キャンセル</button>
+    <button class="text-action-btn crop-apply-btn" id="imageCropApplyBtn">適用</button>
+  </div>
+</dialog>
+
+<dialog id="meshBindingDialog" class="image-crop-dialog mesh-binding-dialog">
+  <div class="dialog-head">
+    <strong>〰 連続ボーン・メッシュ変形</strong>
+    <button class="icon-btn mini" id="meshBindingCloseBtn" aria-label="閉じる">×</button>
+  </div>
+  <div class="image-crop-body">
+    <div class="crop-preview-panel">
+      <div class="crop-preview-title">
+        <span id="meshSourceLabel">画像未設定</span>
+        <small>ホイールで拡大 / 関節点をドラッグして画像上の中心線を合わせる <strong id="meshZoomValue">100%</strong></small>
+      </div>
+      <div class="crop-preview-area mesh-preview-area" id="meshPreviewArea">
+        <div class="mesh-preview-frame" id="meshPreviewFrame">
+          <img id="meshPreviewImage" alt="">
+          <svg id="meshControlOverlay" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+        </div>
+      </div>
+    </div>
+    <aside class="crop-controls">
+      <div class="crop-control-block">
+        <div class="crop-control-title">🦴 接続ボーン列</div>
+        <div class="mesh-chain-range">
+          <label>開始
+            <select id="meshChainStartSelect"></select>
+          </label>
+          <span aria-hidden="true">→</span>
+          <label>終了
+            <select id="meshChainEndSelect"></select>
+          </label>
+        </div>
+        <select id="meshChainSelect" hidden aria-hidden="true" tabindex="-1"></select>
+        <div class="crop-note" id="meshChainRangeHint"></div>
+        <div class="crop-note">開始から終了まで、親子関係が連続する範囲を使います。足を開始にすると「つま先」までの1ボーン範囲も選べます。</div>
+      </div>
+      <div class="crop-control-block">
+        <div class="crop-control-title">🧩 交換パーツ</div>
+        <label class="mesh-compact-field">パーツスロット
+          <select id="meshPartSlotSelect">
+            <option value="right_arm">右腕</option>
+            <option value="left_arm">左腕</option>
+            <option value="right_leg">右脚</option>
+            <option value="left_leg">左脚</option>
+            <option value="torso">胴体</option>
+            <option value="custom">カスタム</option>
+          </select>
+        </label>
+        <div class="crop-note">同じスロットの画像を後から選び直すと、範囲とボーン設定を保ったまま外見だけ交換できます。</div>
+      </div>
+      <div class="crop-control-block">
+        <div class="crop-control-title">🖼️ 使用画像</div>
+        <button class="text-action-btn mesh-source-btn" id="meshChooseImageBtn">画像を選択・差し替え</button>
+        <div class="crop-note" id="meshImageStatus">腕・脚全体が1枚につながった透過画像を使用します。</div>
+      </div>
+      <div class="crop-control-block">
+        <div class="crop-control-title">↔ 画像の向き</div>
+        <div class="mesh-transform-row">
+          <button type="button" class="text-action-btn mesh-toggle-btn" id="meshFlipXBtn" aria-pressed="false">左右反転</button>
+          <button type="button" class="text-action-btn mesh-toggle-btn" id="meshFlipYBtn" aria-pressed="false">上下反転</button>
+        </div>
+        <label class="mesh-compact-field">画像角度
+          <input id="meshRotationInput" type="number" min="-180" max="180" step="1" value="0">
+          <span>°</span>
+        </label>
+      </div>
+      <div class="crop-control-block">
+        <div class="crop-control-title">▣ 関節の変形範囲</div>
+        <div class="mesh-range-grid">
+          <label>X<input id="meshRangeXInput" type="number" min="0" max="97" step="0.1" value="0"><span>%</span></label>
+          <label>Y<input id="meshRangeYInput" type="number" min="0" max="97" step="0.1" value="0"><span>%</span></label>
+          <label>幅<input id="meshRangeWInput" type="number" min="3" max="100" step="0.1" value="100"><span>%</span></label>
+          <label>高さ<input id="meshRangeHInput" type="number" min="3" max="100" step="0.1" value="100"><span>%</span></label>
+        </div>
+        <div class="mesh-range-actions">
+          <button type="button" class="text-action-btn mesh-range-reset-btn" id="meshRangeResetBtn">腕・脚全体を変形</button>
+          <button type="button" class="text-action-btn" id="meshRangeCopyOppositeBtn">反対側へコピー</button>
+        </div>
+        <div class="mesh-range-copy-status" id="meshRangeCopyStatus" aria-live="polite"></div>
+        <div class="crop-note">シアン枠内だけを滑らかに歪ませます。枠外の画像は消えず、各ボーンへ直線的に追従します。肘や膝を囲むように指定してください。</div>
+      </div>
+      <div class="crop-control-block">
+        <div class="crop-control-title">⌖ 選択中の範囲点</div>
+        <div id="meshActivePointLabel" class="mesh-active-point-label">根元</div>
+        <label class="mesh-point-name-field">分割点名
+          <input id="meshPointNameInput" type="text" maxlength="24" placeholder="例：肘">
+        </label>
+        <label class="mesh-setting-field">ボーン列上の位置
+          <input id="meshPointTInput" type="range" min="0" max="100" step="1" value="0">
+          <output id="meshPointTValue">0%</output>
+        </label>
+        <label class="mesh-setting-field">左側の幅
+          <input id="meshPointLeftInput" type="range" min="1" max="100" step="1" value="44">
+          <output id="meshPointLeftValue">44%</output>
+        </label>
+        <label class="mesh-setting-field">右側の幅
+          <input id="meshPointRightInput" type="range" min="1" max="100" step="1" value="44">
+          <output id="meshPointRightValue">44%</output>
+        </label>
+        <label class="crop-auto-adjust-toggle mesh-auto-adjust-toggle"><input id="meshSymmetricWidthInput" type="checkbox" checked><span><strong>左右自動調整</strong><small>片側の幅を変えると、中心線から両側を同じ幅に揃えます</small></span></label>
+        <label class="crop-auto-adjust-toggle mesh-auto-adjust-toggle"><input id="meshLockWidthInput" type="checkbox"><span><strong>四角形固定</strong><small>幅を統一して中心線を固定。端点で傾け、中間点は線上を個別に移動できます</small></span></label>
+        <div class="mesh-point-actions">
+          <button type="button" class="text-action-btn" id="meshAddPointBtn">＋ 分割点を追加</button>
+          <button type="button" class="text-action-btn danger-subtle" id="meshRemovePointBtn">選択中を削除</button>
+        </div>
+        <div class="crop-note">分割点には「肘」など自由に名前を付けられます。画像上の丸点をドラッグして画像側の位置を決め、ボーン列上の位置で追従先を決めます。</div>
+      </div>
+      <div class="crop-control-block">
+        <div class="crop-control-title">変形設定</div>
+        <label class="mesh-setting-field">全点の範囲幅
+          <input id="meshSourceWidthInput" type="range" min="10" max="140" step="1" value="88">
+          <output id="meshSourceWidthValue">88%</output>
+        </label>
+        <label class="mesh-setting-field">ボーン側の太さ
+          <input id="meshTargetWidthInput" type="range" min="40" max="180" step="1" value="100">
+          <output id="meshTargetWidthValue">100%</output>
+        </label>
+        <label class="mesh-setting-field">曲線の滑らかさ
+          <input id="meshSegmentsInput" type="range" min="1" max="12" step="1" value="6">
+          <output id="meshSegmentsValue">6</output>
+        </label>
+        <div class="crop-note">中心線をボーンへ追従させます。「関節の変形範囲」を狭めると、上腕・前腕などの硬い部分を歪ませず、関節周辺だけを滑らかに曲げられます。</div>
+      </div>
+      <div class="crop-control-block">
+        <div class="crop-control-title">📐 基準ポーズ</div>
+        <div class="crop-note" id="meshReferencePoseStatus">標準人型の初期姿勢を基準にします。</div>
+        <div class="mesh-reference-actions">
+          <button type="button" class="text-action-btn" id="meshSaveReferencePoseBtn">現在を基準に保存</button>
+          <button type="button" class="text-action-btn" id="meshApplyReferencePoseBtn">基準姿勢へ戻す</button>
+          <button type="button" class="text-action-btn" id="meshGuideDownloadBtn">素材ガイドPNG</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <div class="crop-dialog-actions">
+    <button class="text-action-btn crop-remove-all-btn" id="meshBindingDeleteBtn">メッシュ設定を削除</button>
+    <span class="crop-action-spacer"></span>
+    <button class="text-action-btn" id="meshBindingCancelBtn">キャンセル</button>
+    <button class="text-action-btn crop-apply-btn" id="meshBindingApplyBtn">適用</button>
+  </div>
+</dialog>
+
+<script src="app.js"></script>
+</body>
+</html>

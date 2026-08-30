@@ -1,0 +1,51 @@
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+html {
+  transform-origin: center center;
+  background: #020405;
+  color: #d8fbff;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+html,
+body,
+#scalable-root {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  overscroll-behavior: none;
+}
+
+body {
+  margin: 0;
+}
+
+#app {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#scalable-root {
+  flex: 0 0 auto;
+  display: flex;
+  width: 720px;
+  height: 1280px;
+  box-sizing: border-box;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
+  overflow: hidden;
+  transform-origin: center center;
+  border: 1px solid rgba(109, 245, 255, 0.24);
+  background: #020405;
+}

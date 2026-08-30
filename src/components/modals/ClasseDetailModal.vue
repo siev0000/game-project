@@ -114,20 +114,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { statMap, statDescriptions, Skill_List,
-  getAttrIcon, getAttackIcon, getCharIllust, getRollIcon
-} from '@/constants/statData.js';
-
-// 画像取得
-const imageMap = import.meta.glob('@/assets/images/**/*', { eager: true, import: 'default' })
-const getImageUrl = (relativePath) => {
-  try {
-    const match = Object.entries(imageMap).find(([key]) => key.endsWith(relativePath))
-    return match ? match[1] : ''
-  } catch {
-    return ''
-  }
-}
+import { statMap, statDescriptions, Skill_List, getRollIcon } from '@/constants/statData.js';
 
 const props = defineProps({
   classeList: Array,

@@ -1,6 +1,52 @@
 <template>
   <BaseBattleModal @close="$emit('close')">
-    <div class="battle-root" :class="{ 'is-custom-marker-editor-open': showCustomMarkerModal }">
+    <div
+      ref="battleRootRef"
+      class="battle-root"
+      :class="{
+        'is-custom-marker-editor-open': showCustomMarkerModal
+      }"
+    >
+      <svg class="screen-shift-filter" aria-hidden="true">
+        <filter id="battle-screen-shift-filter" x="-8%" y="-8%" width="116%" height="116%">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.004 0.42"
+            numOctaves="1"
+            :seed="screenGlitchSeed"
+            result="shiftNoise"
+          />
+          <feColorMatrix
+            in="shiftNoise"
+            type="matrix"
+            values="1 0 0 0 0 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 1 0"
+            result="horizontalShiftNoise"
+          />
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="horizontalShiftNoise"
+            :scale="Math.max(4, Math.round(noiseIntensity * 0.32))"
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+      </svg>
+      <canvas ref="cameraDamageCanvasRef" class="battle-camera-damage-layer" :class="{ active: cameraStaticActive }" aria-hidden="true"></canvas>
+      <div v-if="runeRainEnabled" class="rune-rain-layer" aria-hidden="true">
+        <span
+          v-for="column in runeRainColumns"
+          :key="column.id"
+          class="rune-rain-column"
+          :style="{
+            '--rune-left': `${column.left}%`,
+            '--rune-delay': `${column.delay}s`,
+            '--rune-duration': `${column.duration}s`,
+            '--rune-opacity': column.opacity
+          }"
+        >{{ column.text }}</span>
+      </div>
+      <div class="battle-screen-content" :class="{ 'is-screen-shifting': noiseEnabled && noiseIntensity > 0 && screenNoiseEnabled.includes('shift'), 'is-camera-shifting': cameraShiftActive }">
+      <canvas ref="noiseCanvasRef" class="battle-noise-layer" aria-hidden="true"></canvas>
 
       <!-- ===== 上：バトルフィールド（40%） ===== -->
       <div
@@ -71,13 +117,15 @@
         </div>
         <OptionsModal
           v-if="showOptionsModal"
-          :seVolume="seVolume"
-          :spark-effect-enabled="sparkEffectEnabled"
+           :seVolume="seVolume"
+           :bgm-volume="bgmVolume"
+           :spark-effect-enabled="sparkEffectEnabled"
           :gen4MarkerNodes="gen4MarkerNodes"
           :gen45MarkerNodes="gen45MarkerNodes"
           @close="showOptionsModal = false"
-          @update-se-volume="onSeVolumeChange"
-          @update-spark-effect-enabled="onSparkEffectEnabled"
+           @update-se-volume="onSeVolumeChange"
+           @update-bgm-volume="onBgmVolumeChange"
+           @update-spark-effect-enabled="onSparkEffectEnabled"
           @update-marker-node-count="onMarkerNodeCountChange"
           @update-marker-node-color="onMarkerNodeColorChange"
           @update-marker-node-strength="onMarkerNodeStrengthChange"
@@ -152,6 +200,7 @@
               <div
                 v-if="slot.unit"
                 class="enemy-card"
+                :class="{ 'is-noise-target': isTargetDigitalNoise(slot.unit) }"
                 :style="enemyDistanceStyle(slot.unit, slot.index)"
               >
                 <div class="enemy-icon" :class="{ 'has-icon': slot.unit.icon }">
@@ -162,6 +211,20 @@
                     :style="enemyColorStyle(slot.unit)"
                     @click="selectTargetBySlot(slot.index)"
                   />
+                  <div v-if="isTargetDigitalNoise(slot.unit)" class="target-digital-noise" :class="targetNoiseEnabled.map(type => `target-noise-${type}`)" aria-hidden="true">
+                    <span
+                      v-for="particle in targetNoiseParticles"
+                      :key="particle.id"
+                      class="target-noise-particle"
+                      :style="{
+                        '--noise-x': `${particle.x}%`,
+                        '--noise-y': `${particle.y}%`,
+                        '--noise-size': `${particle.size}px`,
+                        '--noise-delay': `${particle.delay}ms`,
+                        '--noise-duration': `${particle.duration}ms`
+                      }"
+                    ></span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -190,10 +253,12 @@
                 :src="getCharIllust(slot.unit.icon) || getCharIllust('スレイブ (新)')"
                 :alt="slot.unit.name"
               />
+              <span v-else class="ally-icon-fallback">{{ slot.unit.name?.slice(0, 1) || 'Ω' }}</span>
             </div>
 
             <!-- 右：ステータス -->
             <div class="ally-info">
+              <div class="ally-name">{{ slot.unit.name }}</div>
               <div class="meter">
                 <span>HP</span>
                 <div class="bar big">
@@ -261,12 +326,23 @@
         </div>
 
         <div class="info-panel">
-          <template v-if="selectedCommand === 'attack'">
+          <template v-if="character">
+            <div class="character-battle-summary">
+              <p class="info-title">ACTIVE UNIT</p>
+              <p class="character-battle-name">{{ allies[0]?.name || character.name }}</p>
+              <p>種族: {{ allies[0]?.character?.Role?.[0]?.roleName || character.race || '未設定' }}</p>
+              <p>Lv: {{ allies[0]?.character?.stats?.allLv ?? character.raceLevel ?? 0 }}</p>
+              <p>習得技: {{ (allies[0]?.character?.skills || []).map(skill => skill.名前).filter(Boolean).join(' / ') || 'なし' }}</p>
+              <p class="character-battle-note">遭遇データ未設定のため、敵ユニットは表示していません。</p>
+            </div>
+          </template>
+          <template v-else-if="selectedCommand === 'attack'">
             <div class="attack-effect-test">
               <div class="attack-effect-title-row">
-                <p class="info-title">ATTACK EFFECT TEST</p>
+                <p class="info-title">ATTACK</p>
                 <button type="button" class="attack-effect-editor-open" @click="showSkillEffectEditor = true">技演出設定</button>
               </div>
+              <p v-if="attackResultText" class="attack-result" role="status">{{ attackResultText }}</p>
               <div class="attack-effect-setting">
                 <span class="attack-effect-label">ATTACK TYPE</span>
                 <div class="attack-type-buttons">
@@ -276,7 +352,7 @@
                     :class="{ active: attackEffectType === type.key }"
                     @click="selectAttackEffectType(type.key)"
                   >
-                    {{ type.label }}
+              {{ type.label }} {{ screenNoiseEnabled.includes(type.id) ? 'ON' : 'OFF' }}
                   </button>
                 </div>
               </div>
@@ -336,9 +412,9 @@
                   <strong>{{ attackEffectCount }}</strong>
                   <button @click="changeAttackEffectCount(1)">+</button>
                 </div>
-                <button class="attack-effect-execute" @click="triggerAttackEffect">TEST EXECUTE</button>
+                <button class="attack-effect-execute" @click="triggerAttackEffect">攻撃を実行</button>
               </div>
-              <p class="attack-effect-note">種別と回数を選んで実行します。未選択時はフィールド中央を対象にします。</p>
+              <p class="attack-effect-note">種別と回数を選んで実行します。敵を選択していない場合は先頭の敵へ適用します。</p>
             </div>
           </template>
           <template v-else-if="selectedCommand === 'ui'">
@@ -380,7 +456,7 @@
                 {{ btn.label }}
               </button>
             </div>
-            
+
           </template>
           <template v-else>
             <p class="info-title">{{ panelTitle }}</p>
@@ -389,6 +465,64 @@
         </div>
       </div>
 
+      </div>
+      <div v-if="showNoiseSettings" class="noise-settings-modal" role="dialog" aria-label="砂嵐設定">
+        <div class="noise-settings-title">SCREEN DIGITAL NOISE</div>
+        <label class="noise-settings-row">
+          <span>SIZE</span>
+          <input v-model.number="noiseIntensity" type="range" min="0" max="200" step="5" @input="drawNoiseFrame" />
+          <strong>{{ noiseIntensity }}%</strong>
+        </label>
+        <label class="noise-settings-row">
+          <span>INTERVAL</span>
+          <input v-model.number="noiseIntervalMs" type="range" min="16" max="1000" step="16" />
+          <strong>{{ noiseIntervalMs }}ms</strong>
+        </label>
+        <div class="screen-noise-type-grid">
+          <button
+            v-for="type in screenNoiseTypes"
+            :key="type.id"
+            type="button"
+            :class="{ active: screenNoiseEnabled.includes(type.id) }"
+            @click="toggleScreenNoiseType(type.id)"
+          >
+              {{ type.label }} {{ screenNoiseEnabled.includes(type.id) ? 'ON' : 'OFF' }}
+          </button>
+        </div>
+        <button type="button" class="noise-settings-close" @click="closeNoiseSettings">CLOSE</button>
+      </div>
+      <div v-if="showTargetNoiseSettings" class="noise-settings-modal target-noise-settings-modal" role="dialog" aria-label="ターゲットノイズ設定">
+        <div class="noise-settings-title">TARGET DIGITAL NOISE</div>
+        <p class="target-noise-note">ターゲットを選択後、表示するノイズを選びます。</p>
+        <div class="target-noise-type-grid">
+          <button
+            v-for="type in targetNoiseTypes"
+            :key="type.id"
+            type="button"
+            :class="{ active: targetNoiseEnabled.includes(type.id) }"
+            @click="toggleTargetNoiseType(type.id)"
+          >
+            {{ type.label }} {{ targetNoiseEnabled.includes(type.id) ? 'ON' : 'OFF' }}
+          </button>
+        </div>
+        <button type="button" class="noise-settings-close" @click="showTargetNoiseSettings = false">CLOSE</button>
+      </div>
+      <div v-if="showDamageEffectsModal" class="noise-settings-modal damage-effect-settings-modal" role="dialog" aria-label="ダメージ演出設定">
+        <div class="noise-settings-title">DAMAGE EFFECTS</div>
+        <p class="damage-effect-note">ONにした演出を同時に再生します。</p>
+        <label
+          v-for="effect in damageEffectOptions"
+          :key="effect.key"
+          class="damage-effect-toggle"
+          :class="{ active: enabledDamageEffects[effect.key] }"
+        >
+          <input v-model="enabledDamageEffects[effect.key]" type="checkbox" />
+          <span>{{ effect.label }}</span>
+          <strong>{{ enabledDamageEffects[effect.key] ? 'ON' : 'OFF' }}</strong>
+        </label>
+        <button type="button" class="damage-effect-play" @click="playEnabledDamageEffects">再生</button>
+        <button type="button" class="noise-settings-close" @click="showDamageEffectsModal = false">CLOSE</button>
+      </div>
     </div>
   </BaseBattleModal>
 </template>
@@ -405,6 +539,8 @@ import CustomMarkerModal from './CustomMarkerModal.vue'
 import DialogueMessageModal from './DialogueMessageModal.vue'
 import SkillEffectEditorModal from './SkillEffectEditorModal.vue'
 import { battleAllies, battleEnemies } from '../data/battleAllies.js'
+import { buildBattleAlliesFromCharacter } from '../data/battleCharacterAdapter.js'
+import { resolveDamage } from '@/constants/damageResolver.js'
 import savedSkillEffectSettings from '../../../../data/skillEffectSettings.json'
 import {
   ATTACK_EFFECT_DIRECTIONS,
@@ -417,7 +553,10 @@ import {
   getAttackEffectType,
   getEffectSprite
 } from '../data/battleEffects.js'
-import { getBackgroundIllust, getCharIllust, getSEMasterVolume, playSE, setSEMasterVolume } from '@/constants/statData.js'
+import { getBackgroundIllust, getBGMVolume, getCharIllust, getSEMasterVolume, playBGM, playSE, setBGMVolume, setSEMasterVolume } from '@/constants/statData.js'
+const props = defineProps({
+  character: { type: Object, default: null }
+})
 defineEmits(['close'])
 const DIALOGUE_SETTINGS_STORAGE_KEY = 'battle-dialogue-settings-v1'
 const CUSTOM_MARKER_SETTINGS_STORAGE_KEY = 'battle-custom-target-marker-settings-v1'
@@ -429,13 +568,14 @@ const DIALOGUE_PLAYBACK_DEFAULTS = {
 
 // 表示用：戦闘味方データ（表示専用にラップ）
 const allies = reactive(
-  battleAllies.map(u => ({
+  (buildBattleAlliesFromCharacter(props.character) || battleAllies).map(u => ({
     ...u,
     hpDisplay: 0,
     mpDisplay: 0
   }))
 )
-const enemyUnits = battleEnemies
+// 戦闘中にHP・ガードを更新するため、定義データは直接書き換えず表示側を複製する。
+const enemyUnits = reactive(props.character ? [] : battleEnemies.map(unit => ({ ...unit })))
 const ENEMY_SLOT_COUNT = 4
 const enemySlots = computed(() => {
   const front = enemyUnits.filter(enemy => enemy.position !== 'back')
@@ -620,11 +760,18 @@ const enemyColorStyle = (enemy) => {
 const selectedCommand = ref('attack')
 const showUIModal = ref(true)
 const showTarget = ref(true)
+const selectedEnemyKey = ref(null)
 const targetPos = ref({ x: 0, y: 0 })
 const targetPositions = reactive({})
 const enemyRenderOffsets = reactive({})
+const battleRootRef = ref(null)
 const battleFieldRef = ref(null)
 const effectCanvasRef = ref(null)
+const noiseCanvasRef = ref(null)
+const cameraDamageCanvasRef = ref(null)
+const showNoiseSettings = ref(false)
+const showTargetNoiseSettings = ref(false)
+const showDamageEffectsModal = ref(false)
 const allyIconRefs = ref([])
 const showOptionsModal = ref(false)
 const showCustomMarkerModal = ref(false)
@@ -647,7 +794,49 @@ const gen45MarkerNodes = ref([
 const showDialogueModal = ref(false)
 const dialogueTestMode = ref(false)
 const seVolume = ref(Math.round(getSEMasterVolume() * 100))
+const bgmVolume = ref(Math.round(getBGMVolume() * 100))
 const sparkEffectEnabled = ref(false)
+const noiseEnabled = ref(false)
+const runeRainEnabled = ref(false)
+const noiseIntensity = ref(100)
+const noiseIntervalMs = ref(90)
+const cameraStaticActive = ref(false)
+const cameraShiftActive = ref(false)
+const screenNoiseEnabled = ref([])
+const screenNoiseTypes = [
+  { id: 'pixel', label: 'PIXEL' },
+  { id: 'scan', label: 'SCAN BLOCKS' },
+  { id: 'data', label: 'DATA RAIN' },
+  { id: 'rgb', label: 'RGB GLITCH' },
+  { id: 'macro', label: 'WIDE GLITCH' },
+  { id: 'shift', label: 'SCREEN SHIFT' }
+]
+const RUNE_RAIN_CHARACTERS = Array.from('ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟᚩᚪᚫᚣᚤᚥᚸᛋᛝ')
+const runeRainColumns = Array.from({ length: 26 }, (_, index) => ({
+  id: index,
+  left: (index + 0.5) * (100 / 26),
+  delay: -((index * 1.37) % 8),
+  duration: 6 + (index % 5) * 0.8,
+  opacity: 0.28 + (index % 4) * 0.1,
+  text: Array.from({ length: 52 }, (_, runeIndex) => RUNE_RAIN_CHARACTERS[(index * 11 + runeIndex * 7) % RUNE_RAIN_CHARACTERS.length]).join('\n')
+}))
+const targetNoiseEnabled = ref([])
+const targetNoiseTypes = [
+  { id: 'pixel', label: 'PIXEL' },
+  { id: 'scan', label: 'SCAN BLOCKS' },
+  { id: 'data', label: 'DATA RAIN' },
+  { id: 'rgb', label: 'RGB GLITCH' }
+]
+const targetNoiseParticles = Array.from({ length: 30 }, (_, index) => {
+  return {
+    id: index,
+    x: 3 + Math.random() * 94,
+    y: 3 + Math.random() * 94,
+    size: 3 + Math.round(Math.random() * 8),
+    delay: Math.round(Math.random() * 1100),
+    duration: 360 + Math.round(Math.random() * 860)
+  }
+})
 const sparkEffects = ref([])
 let sparkEffectId = 0
 const sparkEffectTimers = new Map()
@@ -656,11 +845,18 @@ const activeEffectPlayers = new Set()
 let effectGame = null
 let effectScene = null
 let effectCanvasResizeObserver = null
+let noiseAnimationFrame = 0
+let cameraStaticTimer = 0
+let cameraStaticFrameTimer = 0
+let cameraShiftTimer = 0
+let cameraShiftFrameTimer = 0
+const screenGlitchSeed = ref(1)
 const attackEffectType = ref('slash')
 const attackEffectDirection = ref('right')
 const attackEffectCount = ref(1)
 const attackEffectSpeed = ref(100)
 const attackEffectSize = ref(100)
+const attackResultText = ref('')
 const attackEffectTypes = ATTACK_EFFECT_TYPES
 const attackEffectDirections = ATTACK_EFFECT_DIRECTIONS
 const effectOptions = EFFECT_OPTIONS
@@ -713,7 +909,7 @@ const dialogueVoiceVolume = ref(DIALOGUE_PLAYBACK_DEFAULTS.voiceVolume)
 const dialogueMessageId = ref(1)
 // タイプ完了後に入力待ちマーカーを出すか
 const dialogueWaitInput = ref(true)
-const dialogueTypeOptions = [0, 1, 2, 2.5, 3, 3.5, 4, 4.5]
+const dialogueTypeOptions = [0, 1, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5]
 
 // 速度ボタンで循環させる候補値（0=瞬時）
 const dialogueSpeedOptions = [0, 16, 28, 40]
@@ -920,8 +1116,55 @@ const onAllyTargetGenerationChange = (value) => {
   allyTargetGeneration.value = numeric
   uiModalRef.value?.setTargetGeneration?.(numeric)
 }
+const onBgmVolumeChange = (value) => {
+  const raw = Number(value)
+  const clamped = Math.max(0, Math.min(100, Number.isFinite(raw) ? raw : 0))
+  bgmVolume.value = clamped
+  setBGMVolume(clamped / 100)
+}
 const onSparkEffectEnabled = (enabled) => {
   sparkEffectEnabled.value = enabled === true
+}
+const onNoiseEnabled = (enabled) => {
+  noiseEnabled.value = enabled === true
+  if (noiseEnabled.value) startNoiseAnimation()
+  else {
+    stopNoiseAnimation()
+    drawNoiseFrame()
+  }
+}
+const openNoiseSettings = () => {
+  showTargetNoiseSettings.value = false
+  noiseIntensity.value = 100
+  if (screenNoiseEnabled.value.length === 0) screenNoiseEnabled.value = ['pixel']
+  showNoiseSettings.value = true
+  onNoiseEnabled(true)
+}
+const closeNoiseSettings = () => {
+  showNoiseSettings.value = false
+  onNoiseEnabled(false)
+}
+const toggleScreenNoiseType = (type) => {
+  if (!screenNoiseTypes.some(option => option.id === type)) return
+  screenNoiseEnabled.value = screenNoiseEnabled.value.includes(type)
+    ? screenNoiseEnabled.value.filter(enabledType => enabledType !== type)
+    : [...screenNoiseEnabled.value, type]
+  drawNoiseFrame()
+}
+const openTargetNoiseSettings = () => {
+  closeNoiseSettings()
+  showTargetNoiseSettings.value = true
+}
+const toggleTargetNoiseType = (type) => {
+  if (!targetNoiseTypes.some(option => option.id === type)) return
+  targetNoiseEnabled.value = targetNoiseEnabled.value.includes(type)
+    ? targetNoiseEnabled.value.filter(enabledType => enabledType !== type)
+    : [...targetNoiseEnabled.value, type]
+}
+const isTargetDigitalNoise = (unit) => {
+  if (!unit || targetNoiseEnabled.value.length === 0) return false
+  const key = unit.id ?? unit.name
+  return key != null && key === selectedEnemyKey.value
 }
 const createSparkEffect = (x, y) => {
   const spark = {
@@ -939,9 +1182,197 @@ const createSparkEffect = (x, y) => {
 }
 const resizeEffectCanvas = () => {
   const field = battleFieldRef.value
-  if (!field || !effectGame) return
+  if (field && effectGame) {
+    effectGame.scale.resize(Math.max(1, field.clientWidth), Math.max(1, field.clientHeight))
+  }
+  resizeNoiseCanvas()
+}
 
-  effectGame.scale.resize(Math.max(1, field.clientWidth), Math.max(1, field.clientHeight))
+const resizeNoiseCanvas = () => {
+  const canvas = noiseCanvasRef.value
+  const root = battleRootRef.value
+  if (!canvas || !root) return
+  const ratio = Math.min(2, window.devicePixelRatio || 1)
+  const width = Math.max(1, root.clientWidth)
+  const height = Math.max(1, root.clientHeight)
+  canvas.width = Math.round(width * ratio)
+  canvas.height = Math.round(height * ratio)
+  canvas.style.width = `${width}px`
+  canvas.style.height = `${height}px`
+  const context = canvas.getContext('2d')
+  context?.setTransform(ratio, 0, 0, ratio, 0, 0)
+  drawNoiseFrame()
+  resizeCameraDamageCanvas()
+}
+
+const resizeCameraDamageCanvas = () => {
+  const canvas = cameraDamageCanvasRef.value
+  const root = battleRootRef.value
+  if (!canvas || !root) return
+  const ratio = Math.min(2, window.devicePixelRatio || 1)
+  const width = Math.max(1, root.clientWidth)
+  const height = Math.max(1, root.clientHeight)
+  canvas.width = Math.round(width * ratio)
+  canvas.height = Math.round(height * ratio)
+  canvas.style.width = `${width}px`
+  canvas.style.height = `${height}px`
+  canvas.getContext('2d')?.setTransform(ratio, 0, 0, ratio, 0, 0)
+}
+
+const drawCameraStaticFrame = () => {
+  const canvas = cameraDamageCanvasRef.value
+  const root = battleRootRef.value
+  if (!canvas || !root) return
+  const context = canvas.getContext('2d')
+  if (!context) return
+  const width = root.clientWidth
+  const height = root.clientHeight
+  context.clearRect(0, 0, width, height)
+  context.fillStyle = 'rgba(1, 8, 11, 0.28)'
+  context.fillRect(0, 0, width, height)
+
+  const bandCount = 5 + Math.floor(Math.random() * 5)
+  for (let band = 0; band < bandCount; band += 1) {
+    const y = Math.random() * height
+    const bandHeight = 8 + Math.random() * Math.max(18, height * 0.12)
+    context.fillStyle = Math.random() > 0.48 ? 'rgba(246, 255, 255, 0.94)' : 'rgba(0, 0, 0, 0.9)'
+    context.fillRect(0, y, width, bandHeight)
+    const grainCount = Math.round(width * bandHeight * 0.028)
+    for (let grain = 0; grain < grainCount; grain += 1) {
+      const brightness = Math.floor(Math.random() * 256)
+      context.fillStyle = `rgba(${brightness}, ${brightness}, ${brightness}, ${0.32 + Math.random() * 0.68})`
+      context.fillRect(Math.random() * width, y + Math.random() * bandHeight, 1 + Math.random() * 4, 1 + Math.random() * 3)
+    }
+  }
+
+  context.fillStyle = 'rgba(255, 255, 255, 0.72)'
+  context.fillRect(0, height * (0.42 + Math.random() * 0.18), width, 2 + Math.random() * 8)
+}
+
+const triggerCameraStatic = () => {
+  if (cameraStaticTimer) window.clearTimeout(cameraStaticTimer)
+  if (cameraStaticFrameTimer) window.clearTimeout(cameraStaticFrameTimer)
+  cameraStaticActive.value = true
+  resizeCameraDamageCanvas()
+  const render = () => {
+    if (!cameraStaticActive.value) return
+    drawCameraStaticFrame()
+    cameraStaticFrameTimer = window.setTimeout(render, 42)
+  }
+  render()
+  cameraStaticTimer = window.setTimeout(() => {
+    cameraStaticActive.value = false
+    if (cameraStaticFrameTimer) window.clearTimeout(cameraStaticFrameTimer)
+    cameraStaticFrameTimer = 0
+    cameraStaticTimer = 0
+    const context = cameraDamageCanvasRef.value?.getContext('2d')
+    context?.clearRect(0, 0, battleRootRef.value?.clientWidth || 0, battleRootRef.value?.clientHeight || 0)
+  }, 460)
+}
+
+const triggerCameraShift = () => {
+  if (cameraShiftTimer) window.clearTimeout(cameraShiftTimer)
+  if (cameraShiftFrameTimer) window.clearTimeout(cameraShiftFrameTimer)
+  cameraShiftActive.value = true
+  const shiftSeed = () => {
+    if (!cameraShiftActive.value) return
+    screenGlitchSeed.value = 1 + Math.floor(Math.random() * 9999)
+    cameraShiftFrameTimer = window.setTimeout(shiftSeed, 38)
+  }
+  shiftSeed()
+  cameraShiftTimer = window.setTimeout(() => {
+    cameraShiftActive.value = false
+    if (cameraShiftFrameTimer) window.clearTimeout(cameraShiftFrameTimer)
+    cameraShiftFrameTimer = 0
+    cameraShiftTimer = 0
+  }, 240)
+}
+
+const playEnabledDamageEffects = () => {
+  if (enabledDamageEffects.damage) uiModalRef.value?.triggerDamage?.()
+  if (enabledDamageEffects.static) triggerCameraStatic()
+  if (enabledDamageEffects.shift) triggerCameraShift()
+}
+
+const drawNoiseFrame = () => {
+  const canvas = noiseCanvasRef.value
+  const root = battleRootRef.value
+  if (!canvas || !root) return
+  const context = canvas.getContext('2d')
+  if (!context) return
+  const width = root.clientWidth
+  const height = root.clientHeight
+  context.clearRect(0, 0, width, height)
+  if (!noiseEnabled.value || !width || !height) return
+  const intensity = noiseIntensity.value / 100
+  if (intensity <= 0) return
+  if (screenNoiseEnabled.value.includes('shift')) {
+    screenGlitchSeed.value = 1 + Math.floor(Math.random() * 9999)
+  }
+
+  const alpha = Math.min(0.62, 0.16 + intensity * 0.42)
+  screenNoiseEnabled.value
+    .filter(type => type !== 'shift')
+    .forEach(type => drawScreenNoiseType(context, type, width, height, intensity, alpha))
+}
+
+const drawScreenNoiseType = (context, type, width, height, intensity, alpha) => {
+  const particleCount = type === 'macro'
+    ? Math.round(8 + 32 * intensity)
+    : Math.round(width * height * 0.0012 * intensity)
+
+  for (let index = 0; index < particleCount; index += 1) {
+    const x = Math.floor(Math.random() * width)
+    const y = Math.floor(Math.random() * height)
+
+    if (type === 'macro') {
+      const color = index % 4 === 0 ? '255, 109, 221' : index % 4 === 1 ? '43, 222, 255' : index % 4 === 2 ? '40, 92, 255' : '229, 247, 255'
+      context.fillStyle = `rgba(${color}, ${alpha})`
+      context.fillRect(
+        x,
+        y,
+        36 + Math.random() * width * 0.28 * intensity,
+        3 + Math.random() * 22 * intensity
+      )
+      continue
+    }
+    if (type === 'scan') {
+      context.fillStyle = `rgba(126, 238, 255, ${alpha})`
+      context.fillRect(x, y, 8 + Math.random() * 52 * intensity, Math.max(1, Math.round(2 * intensity)))
+      continue
+    }
+    if (type === 'data') {
+      context.fillStyle = `rgba(95, 255, 180, ${alpha})`
+      context.fillRect(x, y, 1 + Math.round(intensity), 4 + Math.random() * 22 * intensity)
+      continue
+    }
+    if (type === 'rgb') {
+      const color = index % 3 === 0 ? '255, 72, 138' : index % 3 === 1 ? '66, 236, 255' : '232, 246, 255'
+      context.fillStyle = `rgba(${color}, ${alpha})`
+      context.fillRect(x, y, 2 + Math.random() * 10 * intensity, 1 + Math.random() * 4 * intensity)
+      continue
+    }
+
+    context.fillStyle = `rgba(220, 244, 255, ${alpha})`
+    const size = Math.random() < 0.88 ? 1 : 2
+    context.fillRect(x, y, size, size)
+  }
+}
+
+const startNoiseAnimation = () => {
+  if (noiseAnimationFrame) return
+  const tick = () => {
+    drawNoiseFrame()
+    const interval = Math.max(16, Math.min(1000, Number(noiseIntervalMs.value) || 90))
+    noiseAnimationFrame = noiseEnabled.value ? window.setTimeout(tick, interval) : 0
+  }
+  tick()
+}
+
+const stopNoiseAnimation = () => {
+  if (!noiseAnimationFrame) return
+  window.clearTimeout(noiseAnimationFrame)
+  noiseAnimationFrame = 0
 }
 
 const initializeEffectCanvas = () => {
@@ -963,6 +1394,7 @@ const initializeEffectCanvas = () => {
   })
   effectCanvasResizeObserver = new ResizeObserver(resizeEffectCanvas)
   effectCanvasResizeObserver.observe(field)
+  if (battleRootRef.value) effectCanvasResizeObserver.observe(battleRootRef.value)
 }
 
 const playAttackSpriteEffect = async ({ x, y, source, rotation, scale, frameDurationMs }) => {
@@ -1058,6 +1490,50 @@ const triggerAttackEffect = async (overrides = {}) => {
     }, effectDelayMs + delay)
     attackEffectTimers.add(timer)
   })
+
+  const target = enemyUnits.find(unit => (unit.id ?? unit.name) === selectedEnemyKey.value) || enemyUnits[0]
+  if (target) {
+    const effectType = getAttackEffectType(attackEffectType.value)
+    const attacker = allies[0] || {}
+    const attackerStats = attacker.character?.stats || {}
+    const statSources = [attackerStats.currentStats, attackerStats.totalStats, attackerStats.baseStats, attackerStats, attacker]
+    const readNumber = (keys, fallback = 0) => {
+      for (const source of statSources) {
+        for (const key of keys) {
+          const value = Number(source?.[key])
+          if (Number.isFinite(value)) return value
+        }
+      }
+      return fallback
+    }
+    const damageType = effectType.label === '打撃' ? '打撃' : effectType.label
+    const result = resolveDamage({
+      power: readNumber(['基礎威力', '威力', '攻撃力', '攻撃'], 40),
+      baseAttackCount: hitCount,
+      judge: readNumber(['判定値', '命中判定', '命中'], 0),
+      extra: readNumber(['追加威力', '追加'], 0),
+      attribute: attacker.attribute || attacker.character?.attribute || '',
+      app: readNumber(['APP', 'app'], 0),
+      physicalGuard: Number(target.physicalGuard ?? target.guard ?? 0),
+      defense: Number(target.defense ?? target.防御 ?? 0),
+      guardCount: Number(target.guardCount ?? 1),
+      targetHp: target.hp,
+      targetHpMax: target.hpMax,
+      damageType
+    })
+    target.hp = Math.round(result.nextHp)
+    target.guardRemaining = result.guard.guardRemaining
+    target.lastInjury = result.injury
+    const states = [
+      result.injury.instantDeath ? '即死' : '',
+      result.injury.incapacitated ? '一時戦闘不能' : '',
+      result.injury.limbLost ? '欠損' : '',
+      result.injury.fractured ? '骨折' : ''
+    ].filter(Boolean)
+    attackResultText.value = `${target.name} に ${Math.round(result.totalDamage)} ダメージ（HP ${target.hp}/${target.hpMax}${states.length ? `・${states.join('・')}` : ''}）`
+  } else {
+    attackResultText.value = '対象がいないため、演出のみ再生しました。'
+  }
 }
 const applySkillEffectSettings = (skills) => {
   skillEffectSettings.value = Object.fromEntries(skills.map(skill => [skill.id, { ...skill }]))
@@ -1110,10 +1586,38 @@ const panelTitle = computed(() => panelTitleMap[selectedCommand.value] || 'INFO'
 const uiModalRef = ref(null)
 const uiButtons = ref([])
 const uiGenButtons = ref([])
+const damageEffectOptions = [
+  { key: 'damage', label: '通常ダメージ' },
+  { key: 'static', label: '被弾ノイズ' },
+  { key: 'shift', label: '被弾シフト' }
+]
+const enabledDamageEffects = reactive({
+  damage: false,
+  static: false,
+  shift: false
+})
 
 const targetSelectMode = ref(false)
 
 const invokeUiAction = (btn) => {
+  if (btn?.key === 'damage') {
+    closeNoiseSettings()
+    showTargetNoiseSettings.value = false
+    showDamageEffectsModal.value = true
+    return
+  }
+  if (btn?.key === 'battle-noise') {
+    openNoiseSettings()
+    return
+  }
+  if (btn?.key === 'target-noise') {
+    openTargetNoiseSettings()
+    return
+  }
+  if (btn?.key === 'rune-rain') {
+    runeRainEnabled.value = !runeRainEnabled.value
+    return
+  }
   if (btn?.key === 'custom-edit') {
     openCustomMarkerModal()
     return
@@ -1163,6 +1667,7 @@ const selectTargetBySlot = (slotIndex) => {
   const slot = enemySlots.value?.[slotIndex]
   const unit = slot?.unit
   if (!unit) return
+  selectedEnemyKey.value = unit.id ?? unit.name
 
   // DOMが見つからない場合のフォールバック
   const key = unit.id ?? unit.name
@@ -1264,6 +1769,16 @@ const segmentFill = (current, max, index) => {
 }
 
 onBeforeUnmount(() => {
+    playBGM('incredible')
+  stopNoiseAnimation()
+  if (cameraStaticTimer) window.clearTimeout(cameraStaticTimer)
+  if (cameraStaticFrameTimer) window.clearTimeout(cameraStaticFrameTimer)
+  if (cameraShiftTimer) window.clearTimeout(cameraShiftTimer)
+  if (cameraShiftFrameTimer) window.clearTimeout(cameraShiftFrameTimer)
+  cameraStaticTimer = 0
+  cameraStaticFrameTimer = 0
+  cameraShiftTimer = 0
+  cameraShiftFrameTimer = 0
   sparkEffectTimers.forEach(timer => window.clearTimeout(timer))
   sparkEffectTimers.clear()
   attackEffectTimers.forEach(timer => window.clearTimeout(timer))
@@ -1279,10 +1794,12 @@ onBeforeUnmount(() => {
 
 // 起動時に HP / MP を 0 → 現在値までアニメーション
 onMounted(() => {
+  playBGM('zensen he totugekiseyo')
   loadDialoguePlaybackSettings()
   loadCustomMarkerSettings()
   nextTick(() => {
     initializeEffectCanvas()
+    resizeNoiseCanvas()
     loadUiButtons()
     const field = battleFieldRef.value
     if (field) {
@@ -1312,8 +1829,29 @@ onMounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
   font-family: Consolas, monospace;
   color: #bff6ff;
+}
+
+.battle-screen-content {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.battle-screen-content.is-screen-shifting,
+.battle-screen-content.is-camera-shifting {
+  filter: url(#battle-screen-shift-filter);
+}
+
+.screen-shift-filter {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
 }
 
 /* ===== 上：フィールド ===== */
@@ -1441,6 +1979,164 @@ onMounted(() => {
   overflow: hidden;
 }
 
+.battle-noise-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 78;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.8;
+}
+
+.battle-camera-damage-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+}
+
+.battle-camera-damage-layer.active {
+  opacity: 1;
+}
+
+.rune-rain-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 92;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background: linear-gradient(90deg, rgba(0, 20, 8, .16), transparent 18%, transparent 82%, rgba(0, 20, 8, .16));
+}
+
+.rune-rain-column {
+  position: absolute;
+  top: -126%;
+  left: var(--rune-left);
+  width: 1.1em;
+  color: #69ff9d;
+  font-family: "Noto Sans Runic", "Segoe UI Historic", "Magic Ring", serif;
+  font-size: clamp(13px, 1.85vw, 25px);
+  font-weight: 700;
+  line-height: 1.18;
+  text-align: center;
+  white-space: pre;
+  opacity: var(--rune-opacity);
+  text-shadow: 0 0 4px rgba(91, 255, 145, .9), 0 0 13px rgba(15, 170, 68, .5);
+  animation: rune-rain-fall var(--rune-duration) linear var(--rune-delay) infinite;
+}
+
+@keyframes rune-rain-fall {
+  from { transform: translate(-50%, 0); }
+  to { transform: translate(-50%, 210%); }
+}
+
+.noise-settings-modal {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  z-index: 120;
+  width: min(360px, calc(100% - 32px));
+  box-sizing: border-box;
+  transform: translateX(-50%);
+  padding: 16px;
+  border: 1px solid rgba(160, 230, 255, 0.65);
+  border-radius: 8px;
+  background: rgba(5, 14, 22, 0.94);
+  color: #bff6ff;
+  box-shadow: 0 0 24px rgba(45, 190, 255, 0.28);
+  font-family: Consolas, monospace;
+}
+
+.noise-settings-title {
+  margin-bottom: 12px;
+  color: #fff1a8;
+  letter-spacing: 0.14em;
+}
+
+.noise-settings-row {
+  display: grid;
+  grid-template-columns: 54px 1fr 48px;
+  gap: 10px;
+  align-items: center;
+  font-size: 13px;
+}
+
+.noise-settings-row input {
+  width: 100%;
+  accent-color: #60eaff;
+}
+
+.noise-settings-row strong {
+  text-align: right;
+  color: #fff1a8;
+}
+
+.noise-settings-close {
+  width: 100%;
+  margin-top: 14px;
+  padding: 8px 12px;
+  border: 1px solid rgba(160, 230, 255, 0.45);
+  border-radius: 5px;
+  background: rgba(8, 16, 24, 0.8);
+  color: #bff6ff;
+  cursor: pointer;
+}
+
+.target-noise-settings-modal {
+  width: min(470px, calc(100% - 32px));
+}
+
+.damage-effect-settings-modal {
+  width: min(460px, calc(100% - 32px));
+}
+
+.target-noise-note {
+  margin: 0 0 12px;
+  color: rgba(190, 245, 255, 0.78);
+  font-size: 12px;
+}
+
+.target-noise-type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.screen-noise-type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.target-noise-type-grid button,
+.screen-noise-type-grid button {
+  min-height: 34px;
+  border: 1px solid rgba(160, 230, 255, 0.35);
+  border-radius: 5px;
+  background: rgba(8, 16, 24, 0.8);
+  color: #bff6ff;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.target-noise-type-grid button:hover,
+.target-noise-type-grid button.active,
+.screen-noise-type-grid button:hover,
+.screen-noise-type-grid button.active {
+  border-color: rgba(190, 245, 255, 0.9);
+  background: rgba(24, 94, 120, 0.8);
+  box-shadow: 0 0 12px rgba(64, 223, 255, 0.36);
+}
+
 .battle-effect-canvas :deep(canvas) {
   display: block;
 }
@@ -1545,6 +2241,50 @@ onMounted(() => {
   justify-content: center;
   overflow: hidden;
   transform-origin: center center;
+}
+
+.target-digital-noise {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.target-noise-particle {
+  position: absolute;
+  left: var(--noise-x);
+  top: var(--noise-y);
+  width: var(--noise-size);
+  height: var(--noise-size);
+  background: #c9fbff;
+  box-shadow: 0 0 5px rgba(84, 233, 255, 0.95);
+  animation: targetDigitalNoise var(--noise-duration) steps(2, end) var(--noise-delay) infinite;
+}
+
+.target-noise-scan .target-noise-particle {
+  width: calc(var(--noise-size) * 3.5);
+  height: 2px;
+  background: #86efff;
+}
+
+.target-noise-data .target-noise-particle {
+  width: 2px;
+  height: calc(var(--noise-size) * 3);
+  background: #70ffbb;
+  box-shadow: 0 0 6px rgba(74, 255, 174, 0.9);
+}
+
+.target-noise-rgb .target-noise-particle {
+  background: #f5fbff;
+  box-shadow: -4px 0 0 rgba(255, 54, 128, 0.88), 4px 0 0 rgba(53, 232, 255, 0.88);
+}
+
+@keyframes targetDigitalNoise {
+  0%, 24% { opacity: 0; transform: translate(0, 0) scale(0.45); }
+  25%, 52% { opacity: 0.95; transform: translate(-2px, 1px) scale(1); }
+  53%, 67% { opacity: 0.22; transform: translate(3px, -2px) scale(1.45); }
+  68%, 100% { opacity: 0; transform: translate(-1px, 2px) scale(0.25); }
 }
 
 .enemy-icon img {
@@ -1825,10 +2565,91 @@ onMounted(() => {
   font-size: 12px;
   color: #9feaff;
 }
+.ally-icon-fallback {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  color: #85f5ff;
+  font-size: 30px;
+  font-weight: 700;
+  text-shadow: 0 0 10px #1bd4ef;
+}
+.ally-name {
+  overflow: hidden;
+  color: #d9fbff;
+  font-size: 13px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.character-battle-summary {
+  min-height: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+  border: 1px solid rgba(87, 220, 240, .5);
+  background: linear-gradient(145deg, rgba(5, 35, 49, .92), rgba(8, 20, 29, .92));
+  color: #d9fbff;
+}
+.character-battle-summary p { margin: 0 0 10px; }
+.character-battle-name { color: #79f3ff; font-size: 22px; font-weight: 700; }
+.character-battle-note { color: #8ac4cd; font-size: 13px; }
 
 .attack-effect-test {
   display: grid;
   gap: 5px;
+}
+
+.damage-effect-test {
+  display: grid;
+  gap: 10px;
+  max-width: 520px;
+}
+
+.damage-effect-note {
+  margin: 0;
+  color: rgba(190, 245, 255, 0.74);
+  font-size: 12px;
+}
+
+.damage-effect-toggle {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid rgba(102, 207, 239, 0.34);
+  border-radius: 6px;
+  background: rgba(7, 18, 28, 0.76);
+  cursor: pointer;
+}
+
+.damage-effect-toggle input {
+  accent-color: #63eaff;
+}
+
+.damage-effect-toggle.active {
+  border-color: rgba(143, 245, 255, 0.88);
+  box-shadow: 0 0 12px rgba(69, 220, 255, 0.28);
+}
+
+.damage-effect-toggle strong {
+  color: #fff1a8;
+  font-size: 12px;
+}
+
+.damage-effect-play {
+  padding: 10px 14px;
+  border: 1px solid #74efff;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #0d526d, #18334c);
+  color: #effdff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.damage-effect-play:hover {
+  background: linear-gradient(90deg, #147c9c, #24476a);
 }
 
 .attack-effect-title-row {
@@ -1963,6 +2784,13 @@ onMounted(() => {
   color: #a8c2ca;
   font-size: 10px;
   line-height: 1.45;
+}
+
+.attack-result {
+  margin: 6px 0 0;
+  color: #9ff8ff;
+  font-size: 14px;
+  line-height: 1.35;
 }
 
 .ui-controls {

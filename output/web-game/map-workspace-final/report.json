@@ -1,0 +1,27 @@
+{
+  "drag": {
+    "before": {
+      "id": "forest_npc_01",
+      "type": "npc",
+      "x": 1288,
+      "y": 570,
+      "visible": true
+    },
+    "after": {
+      "id": "forest_npc_01",
+      "type": "npc",
+      "x": 1760,
+      "y": 416,
+      "visible": true
+    },
+    "selected": {
+      "kind": "placement",
+      "id": "forest_npc_01",
+      "layerId": ""
+    }
+  },
+  "connectionsTab": "connections",
+  "mapSaveStatus": 200,
+  "stateSaveStatus": 200,
+  "errors": []
+}

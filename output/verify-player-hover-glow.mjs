@@ -1,0 +1,22 @@
+import { chromium } from 'file:///C:/Users/skkt3/.codex/skills/develop-web-game/node_modules/playwright/index.mjs'
+
+const browser = await chromium.launch({ headless: true })
+const page = await browser.newPage({ viewport: { width: 1280, height: 720 } })
+const errors = []
+page.on('console', message => { if (message.type() === 'error') errors.push(message.text()) })
+page.on('pageerror', error => errors.push(String(error)))
+await page.goto('http://127.0.0.1:5173/area-map/middle_terminal_concourse', { waitUntil: 'networkidle' })
+const player = page.getByRole('button', { name: 'プレイヤー' })
+const normal = await player.evaluate(element => getComputedStyle(element).filter)
+await page.screenshot({ path: 'output/player-normal-no-glow.png' })
+await player.dispatchEvent('pointerenter')
+const hovered = await player.evaluate(element => getComputedStyle(element).filter)
+await player.dispatchEvent('pointerleave')
+await player.focus()
+const focused = await player.evaluate(element => getComputedStyle(element).filter)
+if (normal !== 'none') throw new Error(`通常時に発光が残っています: ${normal}`)
+if (!hovered.includes('drop-shadow')) throw new Error(`ホバー時に発光しません: ${hovered}`)
+if (!focused.includes('drop-shadow')) throw new Error(`フォーカス時に発光しません: ${focused}`)
+await page.screenshot({ path: 'output/player-hover-glow.png' })
+console.log(JSON.stringify({ normal, hovered, focused, errors }, null, 2))
+await browser.close()

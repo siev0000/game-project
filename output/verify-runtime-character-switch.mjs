@@ -1,0 +1,21 @@
+import { chromium } from 'file:///C:/Users/skkt3/.codex/skills/develop-web-game/node_modules/playwright/index.mjs'
+
+const browser = await chromium.launch({ headless: true })
+const page = await browser.newPage({ viewport: { width: 1280, height: 720 } })
+const errors = []
+page.on('console', message => { if (message.type() === 'error') errors.push(message.text()) })
+page.on('pageerror', error => errors.push(String(error)))
+await page.goto('http://192.168.0.209:5173/area-map/middle_public_ring', { waitUntil: 'networkidle' })
+const selector = page.getByLabel('テスト用プレイヤーキャラクター')
+await selector.waitFor()
+const initial = await selector.inputValue()
+const options = await selector.locator('option').allTextContents()
+await selector.selectOption('player_2')
+await page.keyboard.down('d')
+await page.waitForTimeout(180)
+await page.keyboard.up('d')
+await page.waitForTimeout(150)
+const state = await page.evaluate(() => window.render_game_to_text?.())
+await page.screenshot({ path: 'output/runtime-character-switch.png', fullPage: false })
+console.log(JSON.stringify({ initial, options, state, errors }))
+await browser.close()

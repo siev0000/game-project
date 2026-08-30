@@ -91,6 +91,10 @@ function loadExcelData(filePath, type) {
           shopData = safeData.map((row) => ({
             店名: row["店名"],
             ルビ: row["ルビ"],
+            // ショップシートでは今後、画像ファイル名を「店員」「背景」列で指定する。
+            // 旧データとの互換性のため、未入力の場合は undefined のまま返す。
+            店員: row["店員"],
+            背景: row["背景"],
             商品: Object.keys(row)
               .filter((key) => key.startsWith("商品"))
               .map((key) => row[key])

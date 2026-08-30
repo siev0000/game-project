@@ -1,0 +1,931 @@
+{
+  "version": 1,
+  "characters": [
+    {
+      "id": "placeholder_player",
+      "kind": "player",
+      "name": "仮プレイヤー",
+      "status": "placeholder",
+      "messageType": "3",
+      "displayWidth": 175,
+      "displayHeight": 210,
+      "hitboxWidth": 95,
+      "hitboxHeight": 125,
+      "footOffsetX": 0,
+      "footOffsetY": 0,
+      "mirrorLeft": true,
+      "animations": {
+        "idle": {
+          "imageSource": "/api/local/image-assets/file?path=pixel_art%2F%E7%AC%AC%E4%B8%89%E4%B8%96%E4%BB%A3.png",
+          "frames": 1,
+          "fps": 30,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "walk": {
+          "imageSource": "/api/local/image-assets/file?path=pixel_art%2F%E7%AC%AC%E4%B8%89%E4%B8%96%E4%BB%A3_%E6%AD%A9%E3%81%8D.png",
+          "frames": 2,
+          "fps": 15,
+          "columns": 2,
+          "rows": 1,
+          "frameOrder": [
+            1,
+            2
+          ]
+        },
+        "jump": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "fall": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "talk": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        }
+      },
+      "portrait": {
+        "images": {
+          "default": "",
+          "joy": "",
+          "anger": "",
+          "sorrow": "",
+          "fun": "",
+          "surprise": "",
+          "confusion": "",
+          "tense": "",
+          "serious": ""
+        },
+        "offsetX": 0,
+        "offsetY": 150,
+        "scale": 2
+      },
+      "motionProjectId": "motion_20260815184750_wxfw",
+      "motionProjectName": "ver3_1作成",
+      "motionStates": {
+        "idle": "__default__",
+        "walk": "animation_msuc9fds_7c8w",
+        "jump": "",
+        "fall": "",
+        "talk": ""
+      }
+    },
+    {
+      "id": "placeholder_npc",
+      "kind": "npc",
+      "name": "Type1",
+      "status": "placeholder",
+      "messageType": "1",
+      "displayWidth": 42,
+      "displayHeight": 66,
+      "hitboxWidth": 26,
+      "hitboxHeight": 58,
+      "footOffsetX": 0,
+      "footOffsetY": 0,
+      "mirrorLeft": true,
+      "animations": {
+        "idle": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "walk": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "jump": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "fall": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "talk": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        }
+      },
+      "portrait": {
+        "images": {
+          "default": "",
+          "joy": "",
+          "anger": "",
+          "sorrow": "",
+          "fun": "",
+          "surprise": "",
+          "confusion": "",
+          "tense": "",
+          "serious": ""
+        },
+        "offsetX": 0,
+        "offsetY": 150,
+        "scale": 2
+      },
+      "motionProjectId": "",
+      "motionProjectName": "",
+      "motionStates": {
+        "idle": "",
+        "walk": "",
+        "jump": "",
+        "fall": "",
+        "talk": ""
+      }
+    },
+    {
+      "id": "player_2",
+      "kind": "player",
+      "name": "新しいプレイヤー",
+      "status": "draft",
+      "messageType": "1",
+      "displayWidth": 84,
+      "displayHeight": 132,
+      "hitboxWidth": 52,
+      "hitboxHeight": 116,
+      "footOffsetX": 0,
+      "footOffsetY": 0,
+      "mirrorLeft": true,
+      "animations": {
+        "idle": {
+          "imageSource": "/api/local/image-assets/file?path=pixel_art%2F%E7%AC%AC%E4%B8%80%E4%B8%96%E4%BB%A3.png",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "walk": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "jump": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "fall": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "talk": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        }
+      },
+      "portrait": {
+        "images": {
+          "default": "",
+          "joy": "",
+          "anger": "",
+          "sorrow": "",
+          "fun": "",
+          "surprise": "",
+          "confusion": "",
+          "tense": "",
+          "serious": ""
+        },
+        "offsetX": 0,
+        "offsetY": 150,
+        "scale": 2
+      },
+      "motionProjectId": "",
+      "motionProjectName": "",
+      "motionStates": {
+        "idle": "",
+        "walk": "",
+        "jump": "",
+        "fall": "",
+        "talk": ""
+      }
+    },
+    {
+      "id": "npc_2",
+      "kind": "npc",
+      "name": "Type2",
+      "status": "draft",
+      "displayWidth": 42,
+      "displayHeight": 66,
+      "hitboxWidth": 26,
+      "hitboxHeight": 58,
+      "footOffsetX": 0,
+      "footOffsetY": 0,
+      "mirrorLeft": true,
+      "animations": {
+        "idle": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "walk": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "jump": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "fall": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "talk": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        }
+      },
+      "portrait": {
+        "images": {
+          "default": "",
+          "joy": "",
+          "anger": "",
+          "sorrow": "",
+          "fun": "",
+          "surprise": "",
+          "confusion": "",
+          "tense": "",
+          "serious": ""
+        },
+        "offsetX": 0,
+        "offsetY": 150,
+        "scale": 2
+      },
+      "messageType": "2",
+      "motionProjectId": "",
+      "motionProjectName": "",
+      "motionStates": {
+        "idle": "",
+        "walk": "",
+        "jump": "",
+        "fall": "",
+        "talk": ""
+      }
+    },
+    {
+      "id": "npc_3",
+      "kind": "npc",
+      "name": "Type3",
+      "status": "draft",
+      "displayWidth": 42,
+      "displayHeight": 66,
+      "hitboxWidth": 26,
+      "hitboxHeight": 58,
+      "footOffsetX": 0,
+      "footOffsetY": 0,
+      "mirrorLeft": true,
+      "animations": {
+        "idle": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "walk": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "jump": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "fall": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "talk": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        }
+      },
+      "portrait": {
+        "images": {
+          "default": "",
+          "joy": "",
+          "anger": "",
+          "sorrow": "",
+          "fun": "",
+          "surprise": "",
+          "confusion": "",
+          "tense": "",
+          "serious": ""
+        },
+        "offsetX": 0,
+        "offsetY": 150,
+        "scale": 2
+      },
+      "messageType": "3",
+      "motionProjectId": "",
+      "motionProjectName": "",
+      "motionStates": {
+        "idle": "",
+        "walk": "",
+        "jump": "",
+        "fall": "",
+        "talk": ""
+      }
+    },
+    {
+      "id": "npc_4",
+      "kind": "npc",
+      "name": "Type4",
+      "status": "draft",
+      "displayWidth": 42,
+      "displayHeight": 66,
+      "hitboxWidth": 26,
+      "hitboxHeight": 58,
+      "footOffsetX": 0,
+      "footOffsetY": 0,
+      "mirrorLeft": true,
+      "animations": {
+        "idle": {
+          "imageSource": "/api/local/image-assets/file?path=pixel_art%2F%E7%AC%AC%EF%BC%94%E4%B8%96%E4%BB%A3.png",
+          "frames": 1,
+          "fps": 6,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "walk": {
+          "imageSource": "/api/local/image-assets/file?path=pixel_art%2FChatGPT%20Image%202026%E5%B9%B48%E6%9C%8815%E6%97%A5%2002_31_52_sorted_result.png",
+          "frames": 6,
+          "fps": 6,
+          "columns": 6,
+          "rows": 1,
+          "frameOrder": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ]
+        },
+        "jump": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "fall": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "talk": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        }
+      },
+      "portrait": {
+        "images": {
+          "default": "",
+          "joy": "",
+          "anger": "",
+          "sorrow": "",
+          "fun": "",
+          "surprise": "",
+          "confusion": "",
+          "tense": "",
+          "serious": ""
+        },
+        "offsetX": 0,
+        "offsetY": 150,
+        "scale": 2
+      },
+      "messageType": "4",
+      "motionProjectId": "",
+      "motionProjectName": "",
+      "motionStates": {
+        "idle": "",
+        "walk": "",
+        "jump": "",
+        "fall": "",
+        "talk": ""
+      }
+    },
+    {
+      "id": "npc_5",
+      "kind": "npc",
+      "name": "Type5",
+      "status": "draft",
+      "displayWidth": 42,
+      "displayHeight": 66,
+      "hitboxWidth": 26,
+      "hitboxHeight": 58,
+      "footOffsetX": 0,
+      "footOffsetY": 0,
+      "mirrorLeft": true,
+      "animations": {
+        "idle": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "walk": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "jump": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "fall": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "talk": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        }
+      },
+      "portrait": {
+        "images": {
+          "default": "",
+          "joy": "",
+          "anger": "",
+          "sorrow": "",
+          "fun": "",
+          "surprise": "",
+          "confusion": "",
+          "tense": "",
+          "serious": ""
+        },
+        "offsetX": 0,
+        "offsetY": 150,
+        "scale": 2
+      },
+      "messageType": "5",
+      "motionProjectId": "",
+      "motionProjectName": "",
+      "motionStates": {
+        "idle": "",
+        "walk": "",
+        "jump": "",
+        "fall": "",
+        "talk": ""
+      }
+    },
+    {
+      "id": "npc_6",
+      "kind": "npc",
+      "name": "上層AI",
+      "status": "draft",
+      "displayWidth": 42,
+      "displayHeight": 66,
+      "hitboxWidth": 26,
+      "hitboxHeight": 58,
+      "footOffsetX": 0,
+      "footOffsetY": 0,
+      "mirrorLeft": true,
+      "animations": {
+        "idle": {
+          "imageSource": "/api/local/image-assets/file?path=pixel_art%2FU-wer.png",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "walk": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "jump": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "fall": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "talk": {
+          "imageSource": "",
+          "frames": 1,
+          "fps": 1,
+          "columns": 1,
+          "rows": 1,
+          "frameOrder": [
+            1
+          ]
+        }
+      },
+      "messageType": "3.5",
+      "portrait": {
+        "images": {
+          "default": "",
+          "joy": "",
+          "anger": "",
+          "sorrow": "",
+          "fun": "",
+          "surprise": "",
+          "confusion": "",
+          "tense": "",
+          "serious": ""
+        },
+        "offsetX": 2,
+        "offsetY": 132,
+        "scale": 2
+      },
+      "motionProjectId": "",
+      "motionProjectName": "",
+      "motionStates": {
+        "idle": "",
+        "walk": "",
+        "jump": "",
+        "fall": "",
+        "talk": ""
+      }
+    },
+    {
+      "id": "player_3",
+      "kind": "player",
+      "name": "ver4",
+      "status": "draft",
+      "displayWidth": 175,
+      "displayHeight": 205,
+      "hitboxWidth": 95,
+      "hitboxHeight": 125,
+      "footOffsetX": 0,
+      "footOffsetY": 0,
+      "mirrorLeft": true,
+      "animations": {
+        "idle": {
+          "imageSource": "",
+          "columns": 1,
+          "rows": 1,
+          "frames": 1,
+          "fps": 6,
+          "frameOrder": [
+            1
+          ]
+        },
+        "walk": {
+          "imageSource": "",
+          "columns": 6,
+          "rows": 1,
+          "frames": 6,
+          "fps": 6,
+          "frameOrder": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ]
+        },
+        "jump": {
+          "imageSource": "",
+          "columns": 1,
+          "rows": 1,
+          "frames": 1,
+          "fps": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "fall": {
+          "imageSource": "",
+          "columns": 1,
+          "rows": 1,
+          "frames": 1,
+          "fps": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "talk": {
+          "imageSource": "",
+          "columns": 1,
+          "rows": 1,
+          "frames": 1,
+          "fps": 1,
+          "frameOrder": [
+            1
+          ]
+        }
+      },
+      "messageType": "1",
+      "portrait": {
+        "images": {
+          "default": "",
+          "joy": "",
+          "anger": "",
+          "sorrow": "",
+          "fun": "",
+          "surprise": "",
+          "confusion": "",
+          "tense": "",
+          "serious": ""
+        },
+        "offsetX": 0,
+        "offsetY": 150,
+        "scale": 2
+      },
+      "motionProjectId": "motion_20260816133413_r1zy",
+      "motionProjectName": "ver4_2作成",
+      "motionStates": {
+        "idle": "__default__",
+        "walk": "animation_mt2ag0cy_n22u",
+        "jump": "",
+        "fall": "",
+        "talk": ""
+      }
+    },
+    {
+      "id": "player_4",
+      "kind": "player",
+      "name": "type4_pixcl",
+      "status": "draft",
+      "displayWidth": 125,
+      "displayHeight": 188,
+      "hitboxWidth": 26,
+      "hitboxHeight": 58,
+      "footOffsetX": 0,
+      "footOffsetY": 0,
+      "mirrorLeft": true,
+      "animations": {
+        "idle": {
+          "imageSource": "/api/local/image-assets/file?path=pixel_art%2F%E7%AC%AC%EF%BC%94%E4%B8%96%E4%BB%A3%20-%20%E3%82%B3%E3%83%94%E3%83%BC.png",
+          "columns": 1,
+          "rows": 1,
+          "frames": 1,
+          "fps": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "walk": {
+          "imageSource": "/api/local/image-assets/file?path=pixel_art%2FChatGPT%20Image%202026%E5%B9%B48%E6%9C%8815%E6%97%A5%2002_31_52_sorted_result.png",
+          "columns": 6,
+          "rows": 1,
+          "frames": 6,
+          "fps": 1,
+          "frameOrder": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ]
+        },
+        "jump": {
+          "imageSource": "",
+          "columns": 1,
+          "rows": 1,
+          "frames": 1,
+          "fps": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "fall": {
+          "imageSource": "",
+          "columns": 1,
+          "rows": 1,
+          "frames": 1,
+          "fps": 1,
+          "frameOrder": [
+            1
+          ]
+        },
+        "talk": {
+          "imageSource": "",
+          "columns": 1,
+          "rows": 1,
+          "frames": 1,
+          "fps": 1,
+          "frameOrder": [
+            1
+          ]
+        }
+      },
+      "messageType": "1",
+      "motionProjectId": "",
+      "motionProjectName": "",
+      "motionStates": {
+        "idle": "",
+        "walk": "",
+        "jump": "",
+        "fall": "",
+        "talk": ""
+      },
+      "portrait": {
+        "images": {
+          "default": "",
+          "joy": "",
+          "anger": "",
+          "sorrow": "",
+          "fun": "",
+          "surprise": "",
+          "confusion": "",
+          "tense": "",
+          "serious": ""
+        },
+        "offsetX": 0,
+        "offsetY": 150,
+        "scale": 2
+      }
+    }
+  ]
+}

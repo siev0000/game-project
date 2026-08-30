@@ -40,7 +40,9 @@ const message = ref('')
 const router = useRouter()
 
 const goGuest = () => {
-  router.push('/guest')   // ← 遷移先は自由に変更OK
+  window.sessionStorage.removeItem('active-adventure-character')
+  window.sessionStorage.removeItem('machine-world-character')
+  router.push('/guest')
 }
 
 const handleLogin = async () => {

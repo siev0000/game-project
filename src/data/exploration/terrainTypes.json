@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "terrainTypes": [
+    {
+      "id": "artificial",
+      "name": "人工施設",
+      "group": "artificial",
+      "description": "都市、道路、工場、研究施設など人工物を主体とする地形。"
+    },
+    {
+      "id": "grassland",
+      "name": "草原",
+      "group": "surface",
+      "description": "見通しがよく、緩やかな高低差を持つ開けた地形。"
+    },
+    {
+      "id": "forest",
+      "name": "森",
+      "group": "surface",
+      "description": "樹木、倒木、茂みなどで視界と進路が区切られる地形。"
+    },
+    {
+      "id": "wetland",
+      "name": "湿地",
+      "group": "surface",
+      "description": "浅瀬、ぬかるみ、足場となる植物が混在する水辺の地形。"
+    },
+    {
+      "id": "coast",
+      "name": "海岸",
+      "group": "surface",
+      "description": "砂浜、岩礁、海食洞などを組み合わせられる沿岸地形。"
+    },
+    {
+      "id": "desert",
+      "name": "砂漠・荒野",
+      "group": "surface",
+      "description": "砂丘や乾いた岩場が続き、遮蔽物の少ない地形。"
+    },
+    {
+      "id": "snowfield",
+      "name": "雪原・氷雪地",
+      "group": "surface",
+      "description": "積雪、氷床、吹雪などを扱う寒冷地形。"
+    },
+    {
+      "id": "mountain",
+      "name": "山岳",
+      "group": "surface",
+      "description": "急斜面、尾根、崖、段差の多い高所地形。"
+    },
+    {
+      "id": "canyon",
+      "name": "渓谷",
+      "group": "surface",
+      "description": "断崖、谷底、吊り橋など上下差を強調する地形。"
+    },
+    {
+      "id": "cave",
+      "name": "洞窟",
+      "group": "underground",
+      "description": "地表から入る自然洞窟。外光や植生を一部残せる地形。"
+    },
+    {
+      "id": "underground_cave",
+      "name": "地下洞窟",
+      "group": "underground",
+      "description": "地底湖、深部鉱床、発光体などを扱う閉鎖的な地下地形。"
+    },
+    {
+      "id": "volcanic",
+      "name": "火山地帯",
+      "group": "special",
+      "description": "溶岩、噴気孔、崩落など継続的な危険を持つ地形。"
+    },
+    {
+      "id": "ruins",
+      "name": "遺跡",
+      "group": "special",
+      "description": "自然地形に旧文明の建造物や地下構造が混在する地形。"
+    }
+  ]
+}

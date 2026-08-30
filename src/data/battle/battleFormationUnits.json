@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "baseline": {
+    "offsetX": 3,
+    "offsetY": 78
+  },
+  "enemy": {
+    "101": {
+      "column": "front",
+      "row": 0,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    "102": {
+      "column": "back",
+      "row": 0,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    "103": {
+      "column": "back",
+      "row": 1,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    "104": {
+      "column": "front",
+      "row": 1,
+      "offsetX": 0,
+      "offsetY": 0
+    }
+  },
+  "ally": {
+    "1": {
+      "column": "front",
+      "row": 1,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    "2": {
+      "column": "back",
+      "row": 0,
+      "offsetX": 0,
+      "offsetY": 0
+    },
+    "3": {
+      "column": "back",
+      "row": 1,
+      "offsetX": 0,
+      "offsetY": 0
+    }
+  }
+}

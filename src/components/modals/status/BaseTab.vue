@@ -1,9 +1,9 @@
 <template>
-  <div class="tab-panel">
+  <div class="tab-panel" :class="`theme-${theme}`">
 
     <div class="info-row"><span class="label">Lv：</span><span class="value">{{ character?.stats?.allLv }}</span></div>
-    <div class="info-row"><span class="label">種族：</span><span class="value">{{ character?.Role?.[1]?.roleName || '未設定' }}</span></div>
-    <div class="info-row"><span class="label">クラス：</span><span class="value">{{ character?.Role?.[0]?.roleName || '未設定' }}</span></div>
+    <div class="info-row"><span class="label">種族：</span><span class="value">{{ character?.Role?.[0]?.roleName || '未設定' }}</span></div>
+    <div class="info-row"><span class="label">クラス：</span><span class="value">{{ character?.Role?.[1]?.roleName || '未設定' }}</span></div>
 
     <hr />
 
@@ -53,7 +53,8 @@ import { getRankStyleByName } from "@/constants/statData.js";
 
 const { character, player } = defineProps({
   character: { type: Object, required: true },
-  player: { type: Object, required: true }
+  player: { type: Object, required: true },
+  theme: { type: String, default: 'fantasy' }
 });
 
 console.log("=========== 基本タブ st ==========");
@@ -86,4 +87,12 @@ h2, h3 {
   font-size: 14px;
   color: #fff;
 }
+.tab-panel.theme-machine {
+  background: linear-gradient(145deg, rgba(11, 50, 65, .96), rgba(5, 29, 43, .96));
+  border-color: #46d3eb;
+  color: #d9faff;
+  box-shadow: inset 0 0 18px rgba(49, 197, 225, .12);
+}
+.theme-machine h2, .theme-machine h3 { color: #8ceeff; }
+.theme-machine hr { border-color: rgba(111, 225, 244, .35); }
 </style>

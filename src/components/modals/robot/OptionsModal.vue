@@ -31,7 +31,21 @@
           />
           <span class="options-value">{{ seVolume }}%</span>
         </div>
+        <div class="options-row">
+          <span class="options-label">BGM</span>
+          <input
+            class="options-slider"
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            :value="bgmVolume"
+            @input="onBgmVolumeInput"
+          />
+          <span class="options-value">{{ bgmVolume }}%</span>
+        </div>
       </div>
+      <template v-if="!soundOnly">
       <div class="options-section">
         <div class="options-section-title">EFFECT TEST</div>
         <label class="options-toggle-row">
@@ -104,6 +118,7 @@
           <span class="options-value">{{ Math.round(node.connectionStrength * 100) }}%</span>
         </div>
       </div>
+      </template>
       </div>
     </div>
   </BaseHudModal>
@@ -113,8 +128,10 @@
 <script setup>
 import BaseHudModal from './BaseHudModal.vue'
 
-const { seVolume, sparkEffectEnabled, gen4MarkerNodes, gen45MarkerNodes } = defineProps({
+const { seVolume, bgmVolume, soundOnly, sparkEffectEnabled, gen4MarkerNodes, gen45MarkerNodes } = defineProps({
   seVolume: { type: Number, default: 100 },
+  bgmVolume: { type: Number, default: 100 },
+  soundOnly: { type: Boolean, default: false },
   sparkEffectEnabled: { type: Boolean, default: false },
   gen4MarkerNodes: { type: Array, default: () => [] },
   gen45MarkerNodes: { type: Array, default: () => [] }
@@ -123,6 +140,7 @@ const { seVolume, sparkEffectEnabled, gen4MarkerNodes, gen45MarkerNodes } = defi
 const emit = defineEmits([
   'close',
   'update-se-volume',
+  'update-bgm-volume',
   'update-spark-effect-enabled',
   'update-marker-node-count',
   'update-marker-node-color',
@@ -140,6 +158,14 @@ const onSeVolumeInput = (event) => {
   }
   emit('update-se-volume', clamped)
 }
+
+const onBgmVolumeInput = (event) => {
+  const raw = Number(event?.target?.value)
+  const clamped = Math.max(0, Math.min(100, Number.isFinite(raw) ? raw : 0))
+  if (event?.target) event.target.value = clamped
+  emit('update-bgm-volume', clamped)
+}
+
 
 </script>
 

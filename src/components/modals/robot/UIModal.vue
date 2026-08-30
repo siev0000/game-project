@@ -174,6 +174,9 @@ const controlButtons = computed(() => [
   { key: "static2", label: "砂嵐2", action: "toggleStatic2" },
   { key: "static3", label: "砂嵐3", action: "triggerStatic", args: [3] },
   { key: "static4", label: "砂嵐4", action: "toggleStatic4" },
+  { key: "battle-noise", label: "砂嵐設定", action: "toggleBattleNoise" },
+  { key: "target-noise", label: "ターゲットノイズ", action: "toggleTargetNoise" },
+  { key: "rune-rain", label: "ルーン雨", action: "toggleRuneRain" },
 
   { key: "anomaly", label: "異常", action: "triggerAnomaly" },
   { key: "reboot", label: "再起動", action: "triggerReboot" },
@@ -654,7 +657,7 @@ watch(targetPos, (newPos, oldPos) => {
 //   showTargetVer2.value = !showTargetVer2.value
 // }
 const triggerEyeOpen = () => {
-  playSE('パソコンの電源を入れる')
+  if (!playSE('パソコンの電源を入れる', { toggle: true, id: 'ui-eye-open' })) return
   eyeClosed.value = true
   eyeOpen.value = false
   requestAnimationFrame(() => {
@@ -667,7 +670,7 @@ const triggerEyeOpen = () => {
 }
 
 const triggerEyeClose = () => {
-  playSE('パソコンの電源を切る')
+  if (!playSE('パソコンの電源を切る', { toggle: true, id: 'ui-eye-close' })) return
   eyeClosing.value = false
   eyeClosed.value = false
   requestAnimationFrame(() => {
@@ -680,7 +683,7 @@ const triggerEyeClose = () => {
 }
 
 const triggerDamage = () => {
-  playSE('ロボットを殴る2')
+  if (!playSE('ロボットを殴る2', { toggle: true, id: 'ui-damage' })) return
   damageFlash.value = true
   triggerShake()
   setTimeout(() => {
@@ -689,7 +692,7 @@ const triggerDamage = () => {
 }
 
 const triggerShake = () => {
-  playSE('ロボットの足音3')
+  if (!playSE('ロボットの足音3', { toggle: true, id: 'ui-shake' })) return
   shakeView.value = true
   setTimeout(() => {
     shakeView.value = false
@@ -697,7 +700,7 @@ const triggerShake = () => {
 }
 
 const triggerStatic = (level = 1) => {
-  playSE('マイクノイズ')
+  if (!playSE('マイクノイズ', { toggle: true, id: `ui-static-${level}` })) return
   staticLevel.value = level
   staticFlash.value = true
   setTimeout(() => {
@@ -706,7 +709,7 @@ const triggerStatic = (level = 1) => {
 }
 
 const triggerAnalyze = () => {
-  playSE('データ表示4')
+  if (!playSE('データ表示4', { toggle: true, id: 'ui-analyze' })) return
   isAnalyze.value = !isAnalyze.value
 }
 
@@ -735,7 +738,7 @@ const toggleNightVision = () => {
 }
 
 const triggerAnomaly = () => {
-  playSE('妨害電波')
+  if (!playSE('妨害電波', { toggle: true, id: 'ui-anomaly' })) return
   damageFlash.value = true
   setTimeout(() => {
     damageFlash.value = false
@@ -743,7 +746,7 @@ const triggerAnomaly = () => {
 }
 
 const triggerReboot = () => {
-  playSE('パソコンの電源を切る')
+  playSE('パソコンの電源を切る', { toggle: true, id: 'ui-reboot' })
 }
 
 const toggleStatic2 = () => {
