@@ -1706,6 +1706,29 @@ function meshCanvasResolutionScale(image){
   return Math.max(1,Math.min(2,Math.max(image.naturalWidth,image.naturalHeight)/1000));
 }
 
+function meshCompositeLayerEntries(binding,frame){
+  return (binding?.boneChain || []).map((boneId,index)=>{
+    const layer=project.layers?.[boneId];
+    const pose=frame?.[boneId];
+    if(!layer || !pose) return null;
+    const visualLayer=visualLayerForPose(layer,pose);
+    const data=getLayerRenderImageData(visualLayer);
+    if(!data) return null;
+    return {boneId,index,layer,pose,visualLayer,data};
+  }).filter(Boolean);
+}
+
+function drawMeshCompositeLayers(context,binding,world,frame){
+  for(const entry of meshCompositeLayerEntries(binding,frame)){
+    const state=world[entry.boneId];
+    if(!state) continue;
+    const variantId=String(entry.pose.morphId || 'base');
+    const image=requestMeshImage(`composite:${binding.id}:${entry.boneId}:${variantId}`,entry.data);
+    if(!image.complete || !image.naturalWidth) continue;
+    drawOnionBoneImage(context,state,image,1,null);
+  }
+}
+
 function drawMeshBinding(canvas,binding,world,image,frame=currentFrameData()){
   const resolutionScale=meshCanvasResolutionScale(image);
   const renderWidth=Math.round(1000*resolutionScale);
@@ -1733,13 +1756,14 @@ function drawMeshBinding(canvas,binding,world,image,frame=currentFrameData()){
   const sourceEdges=getMeshSourceEdges(binding,transformedImage), targetEdges=stripEdges(targetPath);
   if(!isFullMeshSourceRect(binding.sourceRect)){
     drawLocalizedMesh(context,transformedImage,sourceEdges,binding,stripEdges(rigidPath),targetEdges,binding.sourceRect,frame);
-    return;
+  }else{
+    for(let index=0; index<sourceEdges.length-1; index++){
+      const [s0,s1]=meshTextureSegmentEdges(sourceEdges,binding,index,frame),d0=targetEdges[index],d1=targetEdges[index+1];
+      drawTexturedTriangle(context,transformedImage,[s0.left,s0.right,s1.right],[d0.left,d0.right,d1.right]);
+      drawTexturedTriangle(context,transformedImage,[s0.left,s1.right,s1.left],[d0.left,d1.right,d1.left]);
+    }
   }
-  for(let index=0; index<sourceEdges.length-1; index++){
-    const [s0,s1]=meshTextureSegmentEdges(sourceEdges,binding,index,frame),d0=targetEdges[index],d1=targetEdges[index+1];
-    drawTexturedTriangle(context,transformedImage,[s0.left,s0.right,s1.right],[d0.left,d0.right,d1.right]);
-    drawTexturedTriangle(context,transformedImage,[s0.left,s1.right,s1.left],[d0.left,d1.right,d1.left]);
-  }
+  drawMeshCompositeLayers(context,binding,world,frame);
 }
 
 function drawMeshBindings(world){
@@ -1855,7 +1879,7 @@ async function regenerateOnionSkin(frame,token){
   const imageDisplayOrigin=world[getRootId()] || null;
   const items=[];
   project.layerOrder.filter(isLayerActiveForCurrentAnimation).forEach((id,index)=>{
-    if(frame[id]) items.push({type:'bone',id,z:sharedLayerNoForBone(id),index});
+    if(frame[id]) items.push({type:'bone',id,z:sharedLayerNoForBone(id),index,meshComposited:!!findMeshBindingForBone(id)});
   });
   Object.values(project.meshBindings || {}).forEach((binding,index)=>{
     ensureMeshBinding(binding);
@@ -1865,7 +1889,7 @@ async function regenerateOnionSkin(frame,token){
   const imageJobs=[];
   for(const item of items){
     if(item.type==='bone'){
-      const data=getLayerRenderImageData(visualLayerForPose(project.layers[item.id],frame[item.id]));
+      const data=item.meshComposited ? null : getLayerRenderImageData(visualLayerForPose(project.layers[item.id],frame[item.id]));
       if(data) imageJobs.push(loadOnionImage(data).then(image=>{item.image=image;}));
     }else{
       const sourceId=activeImageSlotSourceId(item.binding.imageSourceSlot)||item.binding.sourceId;
@@ -1881,7 +1905,7 @@ async function regenerateOnionSkin(frame,token){
     if(item.type==='bone'){
       const state=world[item.id];
       if(project.meta.display.bones) drawOnionBoneShape(context,state);
-      if(project.meta.display.images && item.image) drawOnionBoneImage(context,state,item.image,imageDisplayScale,imageDisplayOrigin);
+      if(project.meta.display.images && item.image && !item.meshComposited) drawOnionBoneImage(context,state,item.image,imageDisplayScale,imageDisplayOrigin);
     }else if(project.meta.display.images && item.image){
       const temporary=document.createElement('canvas'); temporary.width=1000; temporary.height=1000;
       drawMeshBinding(temporary,item.binding,world,item.image,frame);
@@ -4088,7 +4112,7 @@ function render(playbackOnly=false){
     placeholder.style.transform=state.layer.shapeFlipX?'scaleX(-1)':'';
 
     const imageLayer=visualLayerForPose(state.layer,state.pose);
-    const imageData = getLayerRenderImageData(imageLayer);
+    const imageData = findMeshBindingForBone(id) ? null : getLayerRenderImageData(imageLayer);
     const shapeFlipClass = state.layer.shapeFlipX ? ' shape-flip-x' : '';
     if(imageData){
       visual.className = `layer-visual has-image ${state.layer.shape || 'bar'}${shapeFlipClass}`;
@@ -5155,7 +5179,7 @@ async function renderMotionFrameImage(frame){
   const items=[];
 
   project.layerOrder.filter(isLayerActiveForCurrentAnimation).forEach((id,index)=>{
-    if(frame[id]) items.push({type:'bone',id,z:sharedLayerNoForBone(id),index});
+    if(frame[id]) items.push({type:'bone',id,z:sharedLayerNoForBone(id),index,meshComposited:!!findMeshBindingForBone(id)});
   });
   Object.values(project.meshBindings || {}).forEach((binding,index)=>{
     ensureMeshBinding(binding);
@@ -5168,7 +5192,7 @@ async function renderMotionFrameImage(frame){
   const imageJobs=[];
   for(const item of items){
     if(item.type==='bone'){
-      const data=getLayerRenderImageData(visualLayerForPose(project.layers[item.id],frame[item.id]));
+      const data=item.meshComposited ? null : getLayerRenderImageData(visualLayerForPose(project.layers[item.id],frame[item.id]));
       if(data) imageJobs.push(loadOnionImage(data).then(image=>{item.image=image;}));
     }else{
       const sourceId=activeImageSlotSourceId(item.binding.imageSourceSlot)||item.binding.sourceId;
